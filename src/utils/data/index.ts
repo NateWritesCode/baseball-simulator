@@ -1,0 +1,9 @@
+export { default as cities } from "./cities.json";
+export { default as countries } from "./countries.json";
+export { default as namesFirstFemale } from "./namesFirstFemale.json";
+export { default as namesFirstFemaleWeights } from "./namesFirstFemaleWeights.json";
+export { default as namesFirstMale } from "./namesFirstMale.json";
+export { default as namesFirstMaleWeights } from "./namesFirstMaleWeights.json";
+export { default as namesLast } from "./namesLast.json";
+export { default as namesLastWeights } from "./namesLastWeights.json";
+export { default as subregions } from "./subregions.json";

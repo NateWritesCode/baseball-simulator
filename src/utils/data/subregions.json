@@ -1,0 +1,314 @@
+[
+   {
+      "name": "New York",
+      "abbrev": "NY",
+      "idCountry": "united-states",
+      "id": "new-york"
+   },
+   {
+      "name": "California",
+      "abbrev": "CA",
+      "idCountry": "united-states",
+      "id": "california"
+   },
+   {
+      "name": "Illinois",
+      "abbrev": "IL",
+      "idCountry": "united-states",
+      "id": "illinois"
+   },
+   {
+      "name": "Florida",
+      "abbrev": "FL",
+      "idCountry": "united-states",
+      "id": "florida"
+   },
+   {
+      "name": "Texas",
+      "abbrev": "TX",
+      "idCountry": "united-states",
+      "id": "texas"
+   },
+   {
+      "name": "Pennsylvania",
+      "abbrev": "PA",
+      "idCountry": "united-states",
+      "id": "pennsylvania"
+   },
+   {
+      "name": "Georgia",
+      "abbrev": "GA",
+      "idCountry": "united-states",
+      "id": "georgia"
+   },
+   {
+      "name": "District of Columbia",
+      "abbrev": "DC",
+      "idCountry": "united-states",
+      "id": "district-of-columbia"
+   },
+   {
+      "name": "Massachusetts",
+      "abbrev": "MA",
+      "idCountry": "united-states",
+      "id": "massachusetts"
+   },
+   {
+      "name": "Arizona",
+      "abbrev": "AZ",
+      "idCountry": "united-states",
+      "id": "arizona"
+   },
+   {
+      "name": "Michigan",
+      "abbrev": "MI",
+      "idCountry": "united-states",
+      "id": "michigan"
+   },
+   {
+      "name": "Washington",
+      "abbrev": "WA",
+      "idCountry": "united-states",
+      "id": "washington"
+   },
+   {
+      "name": "Minnesota",
+      "abbrev": "MN",
+      "idCountry": "united-states",
+      "id": "minnesota"
+   },
+   {
+      "name": "Colorado",
+      "abbrev": "CO",
+      "idCountry": "united-states",
+      "id": "colorado"
+   },
+   {
+      "name": "Maryland",
+      "abbrev": "MD",
+      "idCountry": "united-states",
+      "id": "maryland"
+   },
+   {
+      "name": "Nevada",
+      "abbrev": "NV",
+      "idCountry": "united-states",
+      "id": "nevada"
+   },
+   {
+      "name": "Missouri",
+      "abbrev": "MO",
+      "idCountry": "united-states",
+      "id": "missouri"
+   },
+   {
+      "name": "Oregon",
+      "abbrev": "OR",
+      "idCountry": "united-states",
+      "id": "oregon"
+   },
+   {
+      "name": "Puerto Rico",
+      "abbrev": "PR",
+      "idCountry": "united-states",
+      "id": "puerto-rico"
+   },
+   {
+      "name": "Ohio",
+      "abbrev": "OH",
+      "idCountry": "united-states",
+      "id": "ohio"
+   },
+   {
+      "name": "Indiana",
+      "abbrev": "IN",
+      "idCountry": "united-states",
+      "id": "indiana"
+   },
+   {
+      "name": "North Carolina",
+      "abbrev": "NC",
+      "idCountry": "united-states",
+      "id": "north-carolina"
+   },
+   {
+      "name": "Virginia",
+      "abbrev": "VA",
+      "idCountry": "united-states",
+      "id": "virginia"
+   },
+   {
+      "name": "Wisconsin",
+      "abbrev": "WI",
+      "idCountry": "united-states",
+      "id": "wisconsin"
+   },
+   {
+      "name": "Rhode Island",
+      "abbrev": "RI",
+      "idCountry": "united-states",
+      "id": "rhode-island"
+   },
+   {
+      "name": "Utah",
+      "abbrev": "UT",
+      "idCountry": "united-states",
+      "id": "utah"
+   },
+   {
+      "name": "Tennessee",
+      "abbrev": "TN",
+      "idCountry": "united-states",
+      "id": "tennessee"
+   },
+   {
+      "name": "Kentucky",
+      "abbrev": "KY",
+      "idCountry": "united-states",
+      "id": "kentucky"
+   },
+   {
+      "name": "Oklahoma",
+      "abbrev": "OK",
+      "idCountry": "united-states",
+      "id": "oklahoma"
+   },
+   {
+      "name": "Connecticut",
+      "abbrev": "CT",
+      "idCountry": "united-states",
+      "id": "connecticut"
+   },
+   {
+      "name": "Louisiana",
+      "abbrev": "LA",
+      "idCountry": "united-states",
+      "id": "louisiana"
+   },
+   {
+      "name": "Hawaii",
+      "abbrev": "HI",
+      "idCountry": "united-states",
+      "id": "hawaii"
+   },
+   {
+      "name": "Nebraska",
+      "abbrev": "NE",
+      "idCountry": "united-states",
+      "id": "nebraska"
+   },
+   {
+      "name": "New Mexico",
+      "abbrev": "NM",
+      "idCountry": "united-states",
+      "id": "new-mexico"
+   },
+   {
+      "name": "Alabama",
+      "abbrev": "AL",
+      "idCountry": "united-states",
+      "id": "alabama"
+   },
+   {
+      "name": "South Carolina",
+      "abbrev": "SC",
+      "idCountry": "united-states",
+      "id": "south-carolina"
+   },
+   {
+      "name": "Iowa",
+      "abbrev": "IA",
+      "idCountry": "united-states",
+      "id": "iowa"
+   },
+   {
+      "name": "Kansas",
+      "abbrev": "KS",
+      "idCountry": "united-states",
+      "id": "kansas"
+   },
+   {
+      "name": "Arkansas",
+      "abbrev": "AR",
+      "idCountry": "united-states",
+      "id": "arkansas"
+   },
+   {
+      "name": "Idaho",
+      "abbrev": "ID",
+      "idCountry": "united-states",
+      "id": "idaho"
+   },
+   {
+      "name": "Mississippi",
+      "abbrev": "MS",
+      "idCountry": "united-states",
+      "id": "mississippi"
+   },
+   {
+      "name": "New Jersey",
+      "abbrev": "NJ",
+      "idCountry": "united-states",
+      "id": "new-jersey"
+   },
+   {
+      "name": "Alaska",
+      "abbrev": "AK",
+      "idCountry": "united-states",
+      "id": "alaska"
+   },
+   {
+      "name": "New Hampshire",
+      "abbrev": "NH",
+      "idCountry": "united-states",
+      "id": "new-hampshire"
+   },
+   {
+      "name": "Maine",
+      "abbrev": "ME",
+      "idCountry": "united-states",
+      "id": "maine"
+   },
+   {
+      "name": "North Dakota",
+      "abbrev": "ND",
+      "idCountry": "united-states",
+      "id": "north-dakota"
+   },
+   {
+      "name": "West Virginia",
+      "abbrev": "WV",
+      "idCountry": "united-states",
+      "id": "west-virginia"
+   },
+   {
+      "name": "South Dakota",
+      "abbrev": "SD",
+      "idCountry": "united-states",
+      "id": "south-dakota"
+   },
+   {
+      "name": "Delaware",
+      "abbrev": "DE",
+      "idCountry": "united-states",
+      "id": "delaware"
+   },
+   {
+      "name": "Montana",
+      "abbrev": "MT",
+      "idCountry": "united-states",
+      "id": "montana"
+   },
+   {
+      "name": "Vermont",
+      "abbrev": "VT",
+      "idCountry": "united-states",
+      "id": "vermont"
+   },
+   {
+      "name": "Wyoming",
+      "abbrev": "WY",
+      "idCountry": "united-states",
+      "id": "wyoming"
+   }
+]

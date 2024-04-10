@@ -1,0 +1,32 @@
+{
+   "$schema": "https://biomejs.dev/schemas/1.3.3/schema.json",
+   "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 3
+   },
+   "linter": {
+      "enabled": true,
+      "rules": {
+         "recommended": true,
+         "a11y": {
+            "noSvgWithoutTitle": "off"
+         },
+         "suspicious": {
+            "noExplicitAny": "warn"
+         }
+      }
+   },
+   "organizeImports": {
+      "enabled": true
+   },
+   "files": {
+      "ignore": [
+         "dist",
+         "node_modules",
+         "src/styled-system/*.*",
+         "src/routeTree.gen.ts"
+      ],
+      "maxSize": 3145728
+   }
+}

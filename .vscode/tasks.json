@@ -1,0 +1,30 @@
+{
+   "version": "2.0.0",
+   "tasks": [
+      {
+         "label": "build",
+         "type": "shell",
+         "command": "bun run ./scripts/build.ts"
+      },
+      {
+         "label": "dev",
+         "type": "shell",
+         "command": "bunx vite"
+      },
+      {
+         "label": "preview",
+         "type": "shell",
+         "command": "bunx vite preview"
+      },
+      {
+         "label": "svg",
+         "type": "shell",
+         "command": "bunx svgr --config-file=./src/utils/svg/processing/svgr.config.cjs -- ./src/utils/svg/processing/inkscape-svgs/my_person.svg > ./src/utils/svg/SvgPerson.tsx"
+      },
+      {
+         "label": "test",
+         "type": "shell",
+         "command": "bun test"
+      }
+   ]
+}
