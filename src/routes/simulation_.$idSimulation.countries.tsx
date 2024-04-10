@@ -14,8 +14,12 @@ import {
 import { number, object, optional, parse } from "valibot";
 
 const Countries = () => {
-   const { numTotal, countries } = useLoaderData({ from: "/countries" });
-   const searchParams = useSearch({ from: "/countries" });
+   const { numTotal, countries } = useLoaderData({
+      from: "/simulation/$idSimulation/countries",
+   });
+   const searchParams = useSearch({
+      from: "/simulation/$idSimulation/countries",
+   });
    const { limit, offset } = searchParams;
 
    return (
@@ -37,13 +41,13 @@ const Countries = () => {
             limit={limit}
             numTotal={numTotal}
             offset={offset}
-            to="/countries"
+            to="/simulation/$idSimulation/countries"
          />
       </Container>
    );
 };
 
-export const Route = createFileRoute("/countries")({
+export const Route = createFileRoute("/simulation/$idSimulation/countries")({
    validateSearch: (search?: { limit?: number; offset?: number }) => {
       return {
          limit: search?.limit,

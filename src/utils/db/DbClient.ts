@@ -24,9 +24,12 @@ import {
    VDbPersonPhysical,
    VDbPersonSkillMental,
    VDbPersonSkillPhysical,
+   VDbSimulation,
    VDbSubregion,
 } from "../types";
 import { valibotParse } from "../valibot";
+
+const DEFAULT_ID_SIMULATION = "my-first-simulation";
 
 class DbClient {
    private fakeClientPerson = new FakeClientPerson({
@@ -37,18 +40,21 @@ class DbClient {
       cities: {
          id: { type: "string" },
          idCountry: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          idSubregion: { type: "string" },
          name: { type: "string" },
          population: { type: "number" },
       },
       countries: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          code: { type: "string" },
          name: { type: "string" },
       },
       persons: {
          id: { type: "string" },
          idBirthplace: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          birthdate: { type: "string" },
          firstName: { type: "string" },
          genderCis: { type: "string" },
@@ -57,6 +63,7 @@ class DbClient {
       },
       personsAlignment: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          chaotic: { type: "number" },
          evil: { type: "number" },
          good: { type: "number" },
@@ -66,6 +73,7 @@ class DbClient {
       },
       personsMyersBriggs: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          extroversion: { type: "number" },
          feeling: { type: "number" },
          introversion: { type: "number" },
@@ -77,6 +85,7 @@ class DbClient {
       },
       personsCurrentSkillMental: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          charisma: { type: "number" },
          constitution: { type: "number" },
          intelligence: { type: "number" },
@@ -86,16 +95,19 @@ class DbClient {
       },
       personsCurrentSkillPhysical: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          dexterity: { type: "number" },
          strength: { type: "number" },
       },
       personsCurrentPhysical: {
-         height: { type: "number" },
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
+         height: { type: "number" },
          weight: { type: "number" },
       },
       personsPotentialSkillMental: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          charisma: { type: "number" },
          constitution: { type: "number" },
          intelligence: { type: "number" },
@@ -105,25 +117,30 @@ class DbClient {
       },
       personsPotentialSkillPhysical: {
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          dexterity: { type: "number" },
          strength: { type: "number" },
       },
       personsPotentialPhysical: {
-         height: { type: "number" },
          id: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
+         height: { type: "number" },
          weight: { type: "number" },
       },
       personsHealth: {
-         id: { type: "string" },
+         id: { type: "string", default: DEFAULT_ID_SIMULATION },
+         idSimulation: { type: "string" },
          health: { type: "string" },
       },
       simulations: {
          date: { type: "string" },
          id: { type: "string" },
+         name: { type: "string" },
       },
       subregions: {
          id: { type: "string" },
          idCountry: { type: "string" },
+         idSimulation: { type: "string", default: DEFAULT_ID_SIMULATION },
          abbrev: { type: "string" },
          name: { type: "string" },
       },
@@ -295,12 +312,15 @@ class DbClient {
          },
       );
 
-      this.queries.setQueryDefinition("simulations", "simulations", ({ select }) => {
-         select("date");
-         select("id");
-      });
-
-
+      this.queries.setQueryDefinition(
+         "simulations",
+         "simulations",
+         ({ select }) => {
+            select("date");
+            select("id");
+            select("name");
+         },
+      );
 
       this.queries.setQueryDefinition(
          "subregions",
@@ -323,6 +343,12 @@ class DbClient {
       );
 
       this.store.transaction(() => {
+         this.store.setRow("simulations", DEFAULT_ID_SIMULATION, {
+            date: getDateString(new Date()),
+            id: DEFAULT_ID_SIMULATION,
+            name: "My First Simulation",
+         });
+
          for (const person of persons) {
             const {
                alignment,
@@ -337,6 +363,7 @@ class DbClient {
                ..._person
             } = person;
             this.store.setRow("persons", person.id, _person);
+
             this.store.setRow("personsAlignment", person.id, alignment);
             this.store.setRow("personsMyersBriggs", person.id, myersBriggs);
             this.store.setRow(
@@ -386,12 +413,6 @@ class DbClient {
          for (const country of countries) {
             this.store.setRow("countries", country.id, country);
          }
-
-         this.store.setRow("simulations", "simulation", {
-            date: getDateString(new Date()),
-            id: "simulation",
-         });
-
       });
    }
 
@@ -589,6 +610,27 @@ class DbClient {
       };
    };
 
+   public simulations = () => {
+      const simulationIds = this.queries.getResultRowIds("simulations");
+      const simulations = simulationIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("simulations", id),
+         ),
+      );
+
+      const _simulations = valibotParse<TSimulations>({
+         schema: VSimulations,
+         data: simulations,
+      });
+
+      const numTotal = this.queries.getResultRowCount("simulations");
+
+      return {
+         numTotal,
+         simulations: _simulations,
+      };
+   };
+
    public subregion = (_input: TInputSubregion) => {
       const { id } = valibotParse<TInputSubregion>({
          schema: VInputSubregion,
@@ -691,6 +733,9 @@ const VInputCountries = object({
 type TInputCountries = Input<typeof VInputCountries>;
 const VCountries = array(VDbCountry);
 type TCountries = Input<typeof VCountries>;
+
+const VSimulations = array(VDbSimulation);
+type TSimulations = Input<typeof VSimulations>;
 
 const VInputPersons = object({
    limit: number(),

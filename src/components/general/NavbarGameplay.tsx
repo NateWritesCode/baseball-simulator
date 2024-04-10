@@ -1,9 +1,13 @@
 import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
-import { Link } from "@tanstack/react-router";
-import { SimulationDate, SimulateButton } from "../simulation";
+import { Link, useMatches } from "@tanstack/react-router";
+import { SimulateButton, SimulationDate } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 
-const Navbar = () => {
+const NavbarGameplay = () => {
+   const matches = useMatches();
+
+   console.log("matches", matches);
+
    return (
       <>
          <Flex justifyContent={"space-between"}>
@@ -21,7 +25,12 @@ const Navbar = () => {
                   <Link to="/subregions">Subregions</Link>{" "}
                </Box>
                <Box mx="2">
-                  <Link to="/countries">Countries</Link>{" "}
+                  <Link
+                     params={{ idSimulation: "" }}
+                     to="/simulation/$idSimulation/countries"
+                  >
+                     Countries
+                  </Link>{" "}
                </Box>
                <Box mx="2">
                   <Link to="/person-generator">Person Generator</Link>{" "}
@@ -44,4 +53,4 @@ const Navbar = () => {
    );
 };
 
-export default Navbar;
+export default NavbarGameplay;

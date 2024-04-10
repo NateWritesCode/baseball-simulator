@@ -15,13 +15,16 @@ import { Route as TestImport } from './routes/test'
 import { Route as SubregionsImport } from './routes/subregions'
 import { Route as PersonsImport } from './routes/persons'
 import { Route as PersonGeneratorImport } from './routes/person-generator'
-import { Route as CountriesImport } from './routes/countries'
 import { Route as CitiesImport } from './routes/cities'
+import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as SubregionIdImport } from './routes/subregion.$id'
+import { Route as SimulationIdSimulationImport } from './routes/simulation.$idSimulation'
 import { Route as PersonIdImport } from './routes/person.$id'
 import { Route as CountryIdImport } from './routes/country.$id'
 import { Route as CityIdImport } from './routes/city.$id'
+import { Route as SimulationIdSimulationCountriesImport } from './routes/simulation_.$idSimulation.countries'
+import { Route as SimulationIdCountryIdImport } from './routes/simulation.$id.country.$id'
 
 // Create/Update Routes
 
@@ -45,13 +48,13 @@ const PersonGeneratorRoute = PersonGeneratorImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const CountriesRoute = CountriesImport.update({
-  path: '/countries',
+const CitiesRoute = CitiesImport.update({
+  path: '/cities',
   getParentRoute: () => rootRoute,
 } as any)
 
-const CitiesRoute = CitiesImport.update({
-  path: '/cities',
+const AboutRoute = AboutImport.update({
+  path: '/about',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -62,6 +65,11 @@ const IndexRoute = IndexImport.update({
 
 const SubregionIdRoute = SubregionIdImport.update({
   path: '/subregion/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SimulationIdSimulationRoute = SimulationIdSimulationImport.update({
+  path: '/simulation/$idSimulation',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -80,6 +88,17 @@ const CityIdRoute = CityIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const SimulationIdSimulationCountriesRoute =
+  SimulationIdSimulationCountriesImport.update({
+    path: '/simulation/$idSimulation/countries',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const SimulationIdCountryIdRoute = SimulationIdCountryIdImport.update({
+  path: '/simulation/$id/country/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -88,12 +107,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/cities': {
-      preLoaderRoute: typeof CitiesImport
+    '/about': {
+      preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/countries': {
-      preLoaderRoute: typeof CountriesImport
+    '/cities': {
+      preLoaderRoute: typeof CitiesImport
       parentRoute: typeof rootRoute
     }
     '/person-generator': {
@@ -124,8 +143,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonIdImport
       parentRoute: typeof rootRoute
     }
+    '/simulation/$idSimulation': {
+      preLoaderRoute: typeof SimulationIdSimulationImport
+      parentRoute: typeof rootRoute
+    }
     '/subregion/$id': {
       preLoaderRoute: typeof SubregionIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/simulation/$idSimulation/countries': {
+      preLoaderRoute: typeof SimulationIdSimulationCountriesImport
+      parentRoute: typeof rootRoute
+    }
+    '/simulation/$id/country/$id': {
+      preLoaderRoute: typeof SimulationIdCountryIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -135,8 +166,8 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  AboutRoute,
   CitiesRoute,
-  CountriesRoute,
   PersonGeneratorRoute,
   PersonsRoute,
   SubregionsRoute,
@@ -144,7 +175,10 @@ export const routeTree = rootRoute.addChildren([
   CityIdRoute,
   CountryIdRoute,
   PersonIdRoute,
+  SimulationIdSimulationRoute,
   SubregionIdRoute,
+  SimulationIdSimulationCountriesRoute,
+  SimulationIdCountryIdRoute,
 ])
 
 /* prettier-ignore-end */

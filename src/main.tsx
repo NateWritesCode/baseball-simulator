@@ -1,9 +1,13 @@
+import Error404 from "@baseball-simulator/components/general/Error404";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import "./main.css";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
+   defaultNotFoundComponent: () => {
+      return <Error404 />;
+   },
    routeTree,
    defaultPreload: "intent",
 });

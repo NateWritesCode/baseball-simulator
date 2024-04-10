@@ -1,3 +1,5 @@
 export { default as ColorModePicker } from "./ColorModePicker";
-export { default as Navbar } from "./Navbar";
+export { default as ConditionalWrapper } from "./ConditionalWrapper";
+export { default as DashboardWrapper } from "./DashboardWrapper";
+export { default as NavbarGameplay } from "./NavbarGameplay";
 export { default as Pagination } from "./Pagination";
