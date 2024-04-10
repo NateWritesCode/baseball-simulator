@@ -29,7 +29,7 @@ const Test = () => {
    useEffect(() => {
       const { persons } = dbClient.persons({ limit: 10, offset: 0 });
 
-      const date = dbClient.store.getCell("planets", "planet", "date");
+      const date = dbClient.store.getCell("simulations", "simulation", "date");
 
       if (!date) {
          return;

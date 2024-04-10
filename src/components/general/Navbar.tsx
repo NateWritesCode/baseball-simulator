@@ -1,6 +1,6 @@
 import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
 import { Link } from "@tanstack/react-router";
-import { PlanetDate, SimulateButton } from "../planet";
+import { SimulationDate, SimulateButton } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 
 const Navbar = () => {
@@ -29,7 +29,7 @@ const Navbar = () => {
             </Flex>
             <Flex>
                <Box mx="2">
-                  <PlanetDate />
+                  <SimulationDate />
                </Box>
                <Box mx="2">
                   <SimulateButton />

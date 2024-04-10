@@ -117,11 +117,8 @@ class DbClient {
          id: { type: "string" },
          health: { type: "string" },
       },
-      planets: {
+      simulations: {
          date: { type: "string" },
-         id: { type: "string" },
-      },
-      simulators: {
          id: { type: "string" },
       },
       subregions: {
@@ -298,18 +295,12 @@ class DbClient {
          },
       );
 
-      this.queries.setQueryDefinition("planets", "planets", ({ select }) => {
+      this.queries.setQueryDefinition("simulations", "simulations", ({ select }) => {
          select("date");
          select("id");
       });
 
-      this.queries.setQueryDefinition(
-         "simulators",
-         "simulators",
-         ({ select }) => {
-            select("id");
-         },
-      );
+
 
       this.queries.setQueryDefinition(
          "subregions",
@@ -396,12 +387,11 @@ class DbClient {
             this.store.setRow("countries", country.id, country);
          }
 
-         this.store.setRow("planets", "planet", {
+         this.store.setRow("simulations", "simulation", {
             date: getDateString(new Date()),
-            id: "planet",
+            id: "simulation",
          });
 
-         this.store.setRow("simulators", "baseball", { id: "baseball" });
       });
    }
 

@@ -1,2 +1,2 @@
-export { default as PlanetDate } from "./PlanetDate";
+export { default as SimulationDate } from "./SimulationDate";
 export { default as SimulateButton } from "./SimulateButton";

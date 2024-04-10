@@ -4,7 +4,7 @@ export const Route = createFileRoute("/")({
    component: () => {
       return (
          <div>
-            <h1>Sports Planet</h1>
+            <h1>Baseball Simulator</h1>
          </div>
       );
    },
