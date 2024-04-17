@@ -15,8 +15,12 @@ import {
 import { number, object, optional, parse } from "valibot";
 
 const Countries = () => {
-   const { numTotal, countries } = useLoaderData({ from: "/countries" });
-   const searchParams = useSearch({ from: "/countries" });
+   const { numTotal, countries } = useLoaderData({
+      from: "/countries",
+   });
+   const searchParams = useSearch({
+      from: "/countries",
+   });
    const { limit, offset } = searchParams;
 
    return (

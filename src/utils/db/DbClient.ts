@@ -93,8 +93,8 @@ class DbClient {
          strength: { type: "number" },
       },
       personsCurrentPhysical: {
-         height: { type: "number" },
          id: { type: "string" },
+         height: { type: "number" },
          weight: { type: "number" },
       },
       personsPotentialSkillMental: {
@@ -112,8 +112,8 @@ class DbClient {
          strength: { type: "number" },
       },
       personsPotentialPhysical: {
-         height: { type: "number" },
          id: { type: "string" },
+         height: { type: "number" },
          weight: { type: "number" },
       },
       personsHealth: {
@@ -123,6 +123,7 @@ class DbClient {
       simulation: {
          date: { type: "string" },
          id: { type: "string" },
+         name: { type: "string" },
       },
       subregions: {
          id: { type: "string" },
@@ -348,6 +349,7 @@ class DbClient {
                ..._person
             } = person;
             this.store.setRow("persons", person.id, _person);
+
             this.store.setRow("personsAlignment", person.id, alignment);
             this.store.setRow("personsMyersBriggs", person.id, myersBriggs);
             this.store.setRow(

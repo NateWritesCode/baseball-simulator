@@ -1,9 +1,13 @@
 import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
-import { Link } from "@tanstack/react-router";
+import { Link, useMatches } from "@tanstack/react-router";
 import { SimulateButton, SimulationDate } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 
-const Navbar = () => {
+const NavbarGameplay = () => {
+   const matches = useMatches();
+
+   console.log("matches", matches);
+
    return (
       <>
          <Flex justifyContent={"space-between"}>
@@ -44,4 +48,4 @@ const Navbar = () => {
    );
 };
 
-export default Navbar;
+export default NavbarGameplay;

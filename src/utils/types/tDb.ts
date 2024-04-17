@@ -17,6 +17,12 @@ export const VDbSubregion = object({
    name: string(),
 });
 
+export const VDbSimulation = object({
+   date: string([VRegexDate]),
+   id: string(),
+   name: string(),
+});
+
 export const VDbCountry = object({
    id: string(),
    code: string(),

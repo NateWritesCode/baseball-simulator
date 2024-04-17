@@ -17,6 +17,7 @@ import { Route as PersonsImport } from './routes/persons'
 import { Route as PersonGeneratorImport } from './routes/person-generator'
 import { Route as CountriesImport } from './routes/countries'
 import { Route as CitiesImport } from './routes/cities'
+import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 import { Route as SubregionIdImport } from './routes/subregion.$id'
 import { Route as PersonIdImport } from './routes/person.$id'
@@ -55,6 +56,11 @@ const CitiesRoute = CitiesImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AboutRoute = AboutImport.update({
+  path: '/about',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
@@ -86,6 +92,10 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/about': {
+      preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
     '/cities': {
@@ -135,6 +145,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  AboutRoute,
   CitiesRoute,
   CountriesRoute,
   PersonGeneratorRoute,
