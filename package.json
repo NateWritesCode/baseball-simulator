@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-form": "^0.19.1",
-    "@tanstack/react-router": "^1.19.2",
+    "@tanstack/react-router": "^1.28.5",
     "@tanstack/react-store": "^0.3.1",
     "@tanstack/valibot-form-adapter": "^0.19.1",
     "@visx/visx": "^3.10.2",

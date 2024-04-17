@@ -4,23 +4,11 @@ import { generalStore } from "@baseball-simulator/services/generalStore";
 import { Divider } from "@baseball-simulator/styled-system/jsx";
 import DbClient from "@baseball-simulator/utils/db/DbClient";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useStore } from "@tanstack/react-store";
 
 export const Route = createFileRoute("/")({
    component: () => {
-      const [dbList, setDbList] = useState<IDBDatabaseInfo[] | null>(null);
-
-      useEffect(() => {
-         const callAsync = async () => {
-            const dbList = await indexedDB.databases();
-
-            console.log("dbList", dbList);
-
-            setDbList(dbList);
-         };
-         callAsync();
-      }, []);
-
+      const gameNames = useStore(generalStore, (state) => state.gameNames);
       return (
          <div>
             <div>
@@ -30,14 +18,14 @@ export const Route = createFileRoute("/")({
             <div>
                <div>Database List</div>
                <ul>
-                  {dbList?.map((db) => (
+                  {gameNames?.map((gameName) => (
                      <Button
                         onClick={async () => {
-                           if (!db.name) {
-                              throw new Error("db.name is not defined");
+                           if (!gameName) {
+                              throw new Error("gameName is not defined");
                            }
                            const dbClient = new DbClient({
-                              name: db.name,
+                              name: gameName,
                            });
 
                            await dbClient.init();
@@ -49,9 +37,9 @@ export const Route = createFileRoute("/")({
                               };
                            });
                         }}
-                        key={db.name}
+                        key={gameName}
                      >
-                        {db.name}
+                        {gameName}
                      </Button>
                   ))}
                </ul>

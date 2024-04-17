@@ -1,4 +1,7 @@
 import Error404 from "@baseball-simulator/components/general/Error404";
+import { generalStore } from "@baseball-simulator/services/generalStore";
+import DbClient from "@baseball-simulator/utils/db/DbClient";
+import { FakeClientStructure } from "@baseball-simulator/utils/fake";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import "./main.css";
@@ -25,6 +28,64 @@ if (!rootElement) {
 }
 
 if (!rootElement.innerHTML) {
-   const root = ReactDOM.createRoot(rootElement);
-   root.render(<RouterProvider router={router} />);
+   (async () => {
+      const state = generalStore.state;
+
+      const indexedDbs = await indexedDB.databases();
+      const gameNames = indexedDbs.map((db) => {
+         if (!db.name) {
+            throw new Error("db.name is not defined");
+         }
+
+         return db.name;
+      });
+
+      let dbClient: DbClient | null = null;
+
+      if (gameNames.length === 0) {
+         dbClient = new DbClient({ name: "default" });
+         await dbClient.init();
+      } else {
+         dbClient = new DbClient({ name: gameNames[0] });
+         await dbClient.init();
+      }
+
+      generalStore.setState((state) => {
+         return {
+            ...state,
+            dbClient,
+            gameNames,
+         };
+      });
+
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(<RouterProvider router={router} />);
+   })();
 }
+
+const fakeClientStructure = new FakeClientStructure({
+   geographicLimits: {
+      idSubregions: ["illinois-united-states"],
+   },
+});
+
+fakeClientStructure.createLeagues({
+   leagues: [
+      {
+         id: "my-league",
+         name: "My League",
+         divisions: [
+            {
+               id: "north-division",
+               name: "North Division",
+               compassPoint: "N",
+            },
+            {
+               id: "south-division",
+               name: "South Division",
+               compassPoint: "N",
+            },
+         ],
+      },
+   ],
+});

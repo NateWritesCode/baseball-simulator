@@ -77,7 +77,7 @@ export const Route = createFileRoute("/subregions")({
          });
       }
 
-      generalStore.state.dbClient.subregions({ limit, offset });
+      return generalStore.state.dbClient.subregions({ limit, offset });
    },
    component: Subregions,
 });

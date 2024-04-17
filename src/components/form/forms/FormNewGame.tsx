@@ -2,34 +2,22 @@ import { Button, Input } from "@baseball-simulator/components/ui";
 import { generalStore } from "@baseball-simulator/services/generalStore";
 import DbClient from "@baseball-simulator/utils/db/DbClient";
 import { useForm } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-store";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
-import { useEffect, useState } from "react";
 import { excludes, minLength, string } from "valibot";
 import { FieldInfo } from "../components";
 
 const FormNewGame = () => {
-   const [dbList, setDbList] = useState<IDBDatabaseInfo[] | null>(null);
-
-   useEffect(() => {
-      const callAsync = async () => {
-         const dbList = await indexedDB.databases();
-
-         console.log("dbList", dbList);
-
-         setDbList(dbList);
-      };
-      callAsync();
-   }, []);
+   const gameNames = useStore(generalStore, (state) => state.gameNames);
 
    const form = useForm({
       defaultValues: {
          name: "",
       },
-      onSubmit: async ({ value }) => {
-         // Do something with form data
-
+      onSubmit: async ({ value, formApi }) => {
+         const { name } = value;
          const dbClient = new DbClient({
-            name: value.name,
+            name,
          });
 
          await dbClient.init();
@@ -38,18 +26,15 @@ const FormNewGame = () => {
             return {
                ...state,
                dbClient,
+               gameNames: [...state.gameNames, name],
             };
          });
+
+         formApi.reset();
       },
       // Add a validator to support Valibot usage in Form and Field
       validatorAdapter: valibotValidator,
    });
-
-   if (!dbList) {
-      return <div>Loading...</div>;
-   }
-
-   const dbNames = dbList.map((db) => db.name);
 
    return (
       <form
@@ -65,14 +50,14 @@ const FormNewGame = () => {
                validators={{
                   onChange: string([
                      minLength(1, "Name must be at least 1 character"),
-                     ...dbNames.map((dbName) => {
-                        if (!dbName) {
-                           throw new Error("dbName is not defined");
+                     ...gameNames.map((gameName) => {
+                        if (!gameName) {
+                           throw new Error("gameName is not defined");
                         }
 
-                        return excludes<string, typeof dbName>(
-                           dbName,
-                           `Name cannot be '${dbName}'. It already exists in the database.`,
+                        return excludes<string, typeof gameName>(
+                           gameName,
+                           `Name cannot be '${gameName}'. It already exists in the database.`,
                         );
                      }),
                   ]),

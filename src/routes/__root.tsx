@@ -17,7 +17,10 @@ import {
 } from "tinybase/debug/ui-react";
 import { StoreInspector } from "tinybase/debug/ui-react-dom";
 
-const nonGameplayRoutes = ["/", "/about"];
+const nonGameplayRoutes = [
+   // "/",
+   "/about",
+];
 
 const Root = () => {
    const { dbClient, colorMode, theme } = useStore(generalStore);
@@ -28,14 +31,15 @@ const Root = () => {
    const isNotFoundRoute = match?.globalNotFound;
 
    return (
-      <TinybaseProvider store={dbClient?.store as ProviderProps["store"]}>
+      <TinybaseProvider store={dbClient.store as ProviderProps["store"]}>
          <StoreInspector position="right" open={false} />
          <div data-theme={theme} data-color-mode={colorMode}>
             <ConditionalWrapper
                children={<Outlet />}
                condition={
                   !isNotFoundRoute &&
-                  !nonGameplayRoutes.includes(router.location.pathname)
+                  !nonGameplayRoutes.includes(router.location.pathname) &&
+                  Boolean(dbClient)
                }
                wrapper={(children) => (
                   <DashboardWrapper>{children}</DashboardWrapper>

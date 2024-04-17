@@ -279,3 +279,16 @@ export const COLOR_TOKENS = [
 ] as const;
 export const VPickListColorTokens = picklist(COLOR_TOKENS);
 export type TPickListColorTokens = Input<typeof VPickListColorTokens>;
+
+export const COMPASS_POINTS = [
+   "N",
+   "NE",
+   "E",
+   "SE",
+   "S",
+   "SW",
+   "W",
+   "NW",
+] as const;
+export const VPickListCompassPoints = picklist(COMPASS_POINTS);
+export type TPickListCompassPoints = Input<typeof VPickListCompassPoints>;

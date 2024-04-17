@@ -1,23 +1,18 @@
 import DbClient from "@baseball-simulator/utils/db/DbClient";
 import { Store } from "@tanstack/react-store";
-import { type Input, instance, nullable, object, picklist } from "valibot";
+import { type Input, array, instance, object, picklist, string } from "valibot";
 
 const VStore = object({
    colorMode: picklist(["light", "dark"]),
-   dbClient: nullable(instance(DbClient)),
+   dbClient: instance(DbClient),
+   gameNames: array(string()),
    theme: picklist(["pink", "blue"]),
 });
 type TStore = Input<typeof VStore>;
 
-const dbClient = new DbClient({
-   name: "store",
-});
-
-await dbClient.init();
-
 export const generalStore = new Store<TStore>({
    colorMode: "light",
-   // dbClient: null,
-   dbClient,
+   dbClient: new DbClient({ name: "default" }),
+   gameNames: [],
    theme: "pink",
 });

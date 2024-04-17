@@ -69,7 +69,7 @@ export const Route = createFileRoute("/persons")({
          });
       }
 
-      generalStore.state.dbClient.persons({ limit, offset });
+      return generalStore.state.dbClient.persons({ limit, offset });
    },
    component: Persons,
 });

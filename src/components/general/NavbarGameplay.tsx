@@ -1,13 +1,12 @@
+import { generalStore } from "@baseball-simulator/services/generalStore";
 import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
-import { Link, useMatches } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { useStore } from "@tanstack/react-store";
 import { SimulateButton, SimulationDate } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 
 const NavbarGameplay = () => {
-   const matches = useMatches();
-
-   console.log("matches", matches);
-
+   const dbClient = useStore(generalStore, (state) => state.dbClient);
    return (
       <>
          <Flex justifyContent={"space-between"}>
@@ -32,6 +31,7 @@ const NavbarGameplay = () => {
                </Box>
             </Flex>
             <Flex>
+               <Box mx="2">{dbClient.name}</Box>
                <Box mx="2">
                   <SimulationDate />
                </Box>

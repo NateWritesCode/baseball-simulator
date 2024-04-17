@@ -7,7 +7,6 @@ const inputStyle = cva({
       borderRadius: "md",
       color: "gray.800",
       paddingX: "2",
-      cursor: "pointer",
       border: "1px solid #ddd",
    },
 });

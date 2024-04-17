@@ -36,6 +36,8 @@ class DbClient {
       genderSetting: "traditional",
    });
 
+   public name: string;
+
    public store = createStore().setTablesSchema({
       cities: {
          id: { type: "string" },
@@ -48,6 +50,13 @@ class DbClient {
          id: { type: "string" },
          code: { type: "string" },
          name: { type: "string" },
+      },
+      divisions: {
+         id: { type: "string" },
+         idLeague: { type: "string" },
+      },
+      leagues: {
+         id: { type: "string" },
       },
       persons: {
          id: { type: "string" },
@@ -131,6 +140,11 @@ class DbClient {
          abbrev: { type: "string" },
          name: { type: "string" },
       },
+      teams: {
+         id: { type: "string" },
+         idDivision: { type: "string" },
+         idLeague: { type: "string" },
+      },
    });
 
    public queries = createQueries(this.store);
@@ -145,6 +159,7 @@ class DbClient {
 
       this.persister = createIndexedDbPersister(this.store as Store, name);
       this._setQueries();
+      this.name = name;
    }
 
    public async init() {

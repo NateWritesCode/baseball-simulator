@@ -12,6 +12,7 @@ import {
    useLoaderData,
    useSearch,
 } from "@tanstack/react-router";
+import { useRow } from "tinybase/ui-react";
 import { number, object, optional, parse } from "valibot";
 
 const Countries = () => {
@@ -73,10 +74,7 @@ export const Route = createFileRoute("/countries")({
          });
       }
 
-      console.log("limit", limit);
-      console.log("offset", offset);
-
-      generalStore.state.dbClient.countries({ limit, offset });
+      return generalStore.state.dbClient.countries({ limit, offset });
    },
    component: Countries,
 });

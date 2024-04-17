@@ -6,4 +6,5 @@ export { default as namesFirstMale } from "./namesFirstMale.json";
 export { default as namesFirstMaleWeights } from "./namesFirstMaleWeights.json";
 export { default as namesLast } from "./namesLast.json";
 export { default as namesLastWeights } from "./namesLastWeights.json";
+export { default as namesTeam } from "./namesTeam.json";
 export { default as subregions } from "./subregions.json";
