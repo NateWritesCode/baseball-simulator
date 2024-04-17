@@ -1,6 +1,6 @@
 import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
 import { Link } from "@tanstack/react-router";
-import { SimulationDate, SimulateButton } from "../simulation";
+import { SimulateButton, SimulationDate } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 
 const Navbar = () => {

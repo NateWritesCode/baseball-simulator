@@ -1,5 +1,8 @@
 import type { Store } from "tinybase";
-import { createLocalPersister } from "tinybase/persisters/persister-browser";
+import {
+   type IndexedDbPersister,
+   createIndexedDbPersister,
+} from "tinybase/persisters/persister-indexed-db";
 import { createQueries, createStore } from "tinybase/with-schemas";
 import {
    type Input,
@@ -117,7 +120,7 @@ class DbClient {
          id: { type: "string" },
          health: { type: "string" },
       },
-      simulations: {
+      simulation: {
          date: { type: "string" },
          id: { type: "string" },
       },
@@ -131,9 +134,15 @@ class DbClient {
 
    public queries = createQueries(this.store);
 
-   private persister = createLocalPersister(this.store as Store, "store");
+   private persister: IndexedDbPersister;
 
-   constructor() {
+   constructor(_input: TInputConstructor) {
+      const { name } = valibotParse<TInputConstructor>({
+         schema: VInputConstructor,
+         data: _input,
+      });
+
+      this.persister = createIndexedDbPersister(this.store as Store, name);
       this._setQueries();
    }
 
@@ -295,12 +304,14 @@ class DbClient {
          },
       );
 
-      this.queries.setQueryDefinition("simulations", "simulations", ({ select }) => {
-         select("date");
-         select("id");
-      });
-
-
+      this.queries.setQueryDefinition(
+         "simulation",
+         "simulation",
+         ({ select }) => {
+            select("date");
+            select("id");
+         },
+      );
 
       this.queries.setQueryDefinition(
          "subregions",
@@ -387,11 +398,10 @@ class DbClient {
             this.store.setRow("countries", country.id, country);
          }
 
-         this.store.setRow("simulations", "simulation", {
+         this.store.setRow("simulation", "simulation", {
             date: getDateString(new Date()),
             id: "simulation",
          });
-
       });
    }
 
@@ -648,6 +658,11 @@ class DbClient {
 }
 
 export default DbClient;
+
+const VInputConstructor = object({
+   name: string(),
+});
+type TInputConstructor = Input<typeof VInputConstructor>;
 
 const VInputCities = object({
    limit: number(),

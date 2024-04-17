@@ -1,5 +1,9 @@
-import { dbClient } from "@baseball-simulator/services/db";
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { generalStore } from "@baseball-simulator/services/generalStore";
+import {
+   createFileRoute,
+   redirect,
+   useLoaderData,
+} from "@tanstack/react-router";
 
 const Country = () => {
    const { country } = useLoaderData({ from: "/country/$id" });
@@ -13,7 +17,13 @@ const Country = () => {
 
 export const Route = createFileRoute("/country/$id")({
    loader: ({ params }) => {
-      return dbClient.country({ id: params.id });
+      if (!generalStore.state.dbClient) {
+         throw redirect({
+            to: "/",
+         });
+      }
+
+      return generalStore.state.dbClient.country({ id: params.id });
    },
    component: Country,
 });

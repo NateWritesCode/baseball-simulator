@@ -1,4 +1,4 @@
-import { dbClient } from "@baseball-simulator/services/db";
+import { generalStore } from "@baseball-simulator/services/generalStore";
 import { Box, Container } from "@baseball-simulator/styled-system/jsx";
 import { SimulatorAge } from "@baseball-simulator/utils/simulator";
 import { createFileRoute } from "@tanstack/react-router";
@@ -27,9 +27,20 @@ const Test = () => {
    } | null>(null);
 
    useEffect(() => {
-      const { persons } = dbClient.persons({ limit: 10, offset: 0 });
+      if (!generalStore.state.dbClient) {
+         return;
+      }
 
-      const date = dbClient.store.getCell("simulations", "simulation", "date");
+      const { persons } = generalStore.state.dbClient.persons({
+         limit: 10,
+         offset: 0,
+      });
+
+      const date = generalStore.state.dbClient.store.getCell(
+         "simulation",
+         "simulation",
+         "date",
+      );
 
       if (!date) {
          return;

@@ -1,9 +1,18 @@
-import { dbClient } from "@baseball-simulator/services/db";
+import { generalStore } from "@baseball-simulator/services/generalStore";
 import { css } from "@baseball-simulator/styled-system/css";
-import { Box, Center, Container, Grid } from "@baseball-simulator/styled-system/jsx";
+import {
+   Box,
+   Center,
+   Container,
+   Grid,
+} from "@baseball-simulator/styled-system/jsx";
 import { getPrettyText } from "@baseball-simulator/utils/functions";
 import { ArtPerson } from "@baseball-simulator/utils/svg";
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import {
+   createFileRoute,
+   redirect,
+   useLoaderData,
+} from "@tanstack/react-router";
 
 const tableWrapper = css({
    width: "100%",
@@ -297,7 +306,13 @@ const Person = () => {
 
 export const Route = createFileRoute("/person/$id")({
    loader: ({ params }) => {
-      return dbClient.person({ id: params.id });
+      if (!generalStore.state.dbClient) {
+         throw redirect({
+            to: "/",
+         });
+      }
+
+      return generalStore.state.dbClient.person({ id: params.id });
    },
    component: Person,
 });

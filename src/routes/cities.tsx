@@ -1,5 +1,5 @@
 import Pagination from "@baseball-simulator/components/general/Pagination";
-import { dbClient } from "@baseball-simulator/services/db";
+import { generalStore } from "@baseball-simulator/services/generalStore";
 import { Container } from "@baseball-simulator/styled-system/jsx";
 import {
    DEFAULT_LIMIT,
@@ -8,6 +8,7 @@ import {
 import {
    Link,
    createFileRoute,
+   redirect,
    useLoaderData,
    useSearch,
 } from "@tanstack/react-router";
@@ -77,6 +78,14 @@ export const Route = createFileRoute("/cities")({
 
       return { limit, offset };
    },
-   loader: ({ deps: { limit, offset } }) => dbClient.cities({ limit, offset }),
+   loader: ({ deps: { limit, offset } }) => {
+      if (!generalStore.state.dbClient) {
+         throw redirect({
+            to: "/",
+         });
+      }
+
+      return generalStore.state.dbClient.cities({ limit, offset });
+   },
    component: Cities,
 });

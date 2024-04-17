@@ -1,5 +1,9 @@
-import { dbClient } from "@baseball-simulator/services/db";
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { generalStore } from "@baseball-simulator/services/generalStore";
+import {
+   createFileRoute,
+   redirect,
+   useLoaderData,
+} from "@tanstack/react-router";
 
 const Subregion = () => {
    const { subregion } = useLoaderData({ from: "/subregion/$id" });
@@ -9,7 +13,12 @@ const Subregion = () => {
 
 export const Route = createFileRoute("/subregion/$id")({
    loader: ({ params }) => {
-      return dbClient.subregion({ id: params.id });
+      if (!generalStore.state.dbClient) {
+         throw redirect({
+            to: "/",
+         });
+      }
+      return generalStore.state.dbClient.subregion({ id: params.id });
    },
    component: Subregion,
 });

@@ -1,11 +1,8 @@
-import { useCell } from "tinybase/debug/ui-react";
 
 const SimulationDate = () => {
-   const date = useCell("simulations", "simulation", "date");
 
-   console.log('date', date);
 
-   return <div>{date}</div>;
+   return <div>Simulation Date</div>;
 };
 
 export default SimulationDate;
