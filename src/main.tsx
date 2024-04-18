@@ -74,6 +74,7 @@ fakeClientStructure.createLeagues({
       {
          id: "my-league",
          name: "My League",
+         numTeams: 20,
          divisions: [
             {
                id: "north-division",
@@ -83,7 +84,17 @@ fakeClientStructure.createLeagues({
             {
                id: "south-division",
                name: "South Division",
-               compassPoint: "N",
+               compassPoint: "S",
+            },
+            {
+               id: "east-division",
+               name: "East Division",
+               compassPoint: "E",
+            },
+            {
+               id: "west-division",
+               name: "West Division",
+               compassPoint: "W",
             },
          ],
       },
