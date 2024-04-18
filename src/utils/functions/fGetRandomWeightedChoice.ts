@@ -12,10 +12,8 @@ const getRandomWeightedChoice = <T>(_input: TInput): T => {
    total = 0;
    for (let i = 0; i < data.length - 1; ++i) {
       total += data[i][1];
-      console.log("total", total);
 
       if (total >= threshold) {
-         console.log("Hi!");
          return data[i][0];
       }
    }

@@ -1,15 +1,14 @@
 import {
    type Input,
    array,
-   boolean,
    number,
    object,
    optional,
    string,
    toMinValue,
 } from "valibot";
-import cities from "../data/cities.json";
-import { getRandomWeightedChoice } from "../functions";
+import { cities, namesTeam } from "../data";
+import { getRandomHexColor, getRandomWeightedChoice } from "../functions";
 import { VPickListCompassPoints } from "../types";
 import { valibotParse } from "../valibot";
 
@@ -33,41 +32,68 @@ class FakeClientStructure {
          data: _input,
       });
 
-      return {
-         leagues: input.leagues.map((league) => {
-            const { divisions, id, name, numTeams } = league;
+      return input.leagues.map((league) => {
+         const { divisions, id, name, numTeams } = league;
 
-            const returnObj = {
-               divisions,
+         const divisionsWithCities = this._locateCities({
+            divisions,
+            numTeams,
+         });
+
+         if (divisionsWithCities) {
+            const excludeTeamNames: string[] = [];
+            const divisionsWithTeams = divisionsWithCities.map(
+               (divisionIter) => {
+                  const { cities, compassPoint, ...division } = divisionIter;
+                  return {
+                     ...division,
+                     idLeague: id,
+                     teams: cities.map((city) => {
+                        const teamNamesToChooseFrom = namesTeam.filter(
+                           (name) => excludeTeamNames.includes(name) === false,
+                        );
+
+                        const teamName =
+                           teamNamesToChooseFrom[
+                              Math.floor(
+                                 Math.random() * teamNamesToChooseFrom.length,
+                              )
+                           ];
+
+                        excludeTeamNames.push(teamName);
+
+                        const nickname = `${teamName}s`;
+                        const idCity = city.id;
+                        const idLeague = id;
+
+                        return {
+                           colorPrimary: getRandomHexColor(),
+                           colorSecondary: getRandomHexColor(),
+                           idCity,
+                           id: `${idLeague}-${nickname}`,
+                           idDivision: division.id,
+                           idLeague,
+                           nickname,
+                        };
+                     }),
+                  };
+               },
+            );
+
+            return {
+               divisions: divisionsWithTeams,
                id,
                name,
             };
-
-            if (divisions) {
-               this.locateTeams({
-                  divisions,
-                  numTeams,
-               });
-            }
-
-            // return {
-            //    ...league,
-            //    divisions: league.divisions.map((division) => {
-            //       return {
-            //          ...division,
-            //          compassPoint: division.compassPoint || "N",
-            //       };
-            //    }),
-            // };
-         }),
-      };
+         }
+      });
    };
 
-   createTeam = () => {};
+   _createTeam = () => {};
 
-   locateTeams = (_input: TInputLocateTeams) => {
-      const input = valibotParse<TInputLocateTeams>({
-         schema: VInputLocateTeams,
+   _locateCities = (_input: TInputLocateCities) => {
+      const input = valibotParse<TInputLocateCities>({
+         schema: VInputLocateCities,
          data: _input,
       });
 
@@ -129,6 +155,92 @@ class FakeClientStructure {
       }
 
       if (input.divisions) {
+         const { divisions, numTeams } = input;
+         const numMaxTeamsPerDivision = Math.ceil(numTeams / divisions.length);
+         const divisionsCompassPointHolder: {
+            [K in TDivision["compassPoint"]]: TCity[] | null;
+         } = {
+            N: null,
+            S: null,
+            E: null,
+            W: null,
+            NE: null,
+            NW: null,
+            SE: null,
+            SW: null,
+         };
+
+         const divisionsHolder: { [key: string]: TCity[] } = {};
+
+         for (const division of divisions) {
+            divisionsCompassPointHolder[division.compassPoint] =
+               this._sortCitiesByCompassPoint({
+                  cities: citiesToSort,
+                  compassPoint: division.compassPoint,
+               });
+
+            divisionsHolder[division.compassPoint] = [];
+         }
+
+         const matchCityToDivision = ({
+            divisions,
+            city,
+         }: { divisions: TDivision[]; city: TCity }): {
+            closestCompassPoint: TDivision["compassPoint"];
+         } => {
+            const id = city.id;
+            let closestCompassPoint: TDivision["compassPoint"] = "N";
+            let closestCompassPointDistance = 0;
+
+            for (const division of divisions) {
+               const numInDivision =
+                  divisionsHolder[division.compassPoint].length;
+               const { compassPoint } = division;
+
+               const compassPointCities =
+                  divisionsCompassPointHolder[compassPoint];
+
+               if (compassPointCities) {
+                  const cityIndex = compassPointCities.findIndex(
+                     (city) => city.id === id,
+                  );
+
+                  if (numInDivision < numMaxTeamsPerDivision) {
+                     if (cityIndex > closestCompassPointDistance) {
+                        closestCompassPoint = compassPoint;
+                        closestCompassPointDistance = cityIndex;
+                     }
+                  } else {
+                     return matchCityToDivision({
+                        divisions: divisions.filter(
+                           (division) => division.compassPoint !== compassPoint,
+                        ),
+                        city,
+                     });
+                  }
+               }
+            }
+
+            return {
+               closestCompassPoint,
+            };
+         };
+
+         for (const city of citiesToSort) {
+            const { closestCompassPoint } = matchCityToDivision({
+               divisions,
+               city,
+            });
+
+            divisionsHolder[closestCompassPoint].push(city);
+         }
+
+         return input.divisions.map((division) => {
+            return {
+               ...division,
+               cities: divisionsHolder[division.compassPoint],
+            };
+         });
       }
    };
 
@@ -179,7 +291,10 @@ class FakeClientStructure {
 
       const { cities, compassPoint } = input;
 
-      return cities.sort((a, b) => {
+      // will return the worst match at the front of the array
+      // therefore the northernmost city will be at [array.length - 1] index of the array
+
+      return cities.slice().sort((a, b) => {
          switch (compassPoint) {
             case "N":
                return a.latitude - b.latitude;
@@ -234,10 +349,12 @@ type TInputSortCitiesByCompassPoint = Input<
 >;
 
 const VDivision = object({
-   compassPoint: optional(VPickListCompassPoints),
+   compassPoint: VPickListCompassPoints,
    id: string(),
    name: string(),
 });
+
+type TDivision = Input<typeof VDivision>;
 
 const VDivisions = array(VDivision);
 
@@ -254,17 +371,17 @@ const VInputCreateTeam = object({
    idCity: string(),
 });
 
-const VInputLocateTeams = object({
+const VInputLocateCities = object({
    divisions: optional(VDivisions),
    geographicLimits: optional(VGeographicLimits),
    numTeams: number([toMinValue(2)]),
 });
-type TInputLocateTeams = Input<typeof VInputLocateTeams>;
+type TInputLocateCities = Input<typeof VInputLocateCities>;
 
 const VInputCreateLeagues = object({
    leagues: array(
       object({
-         divisions: optional(VDivisions),
+         divisions: VDivisions,
          id: string(),
          name: string(),
          numTeams: number([toMinValue(2)]),

@@ -1,4 +1,5 @@
 export { default as getDateString } from "./fGetDateString";
+export { default as getRandomHexColor } from "./fGetRandomHexColor";
 export { default as getRandomWeightedChoice } from "./fGetRandomWeightedChoice";
 export { default as getPrettyText } from "./fGetPrettyText";
 export { default as getRandom0or1 } from "./fGetRandom0or1";

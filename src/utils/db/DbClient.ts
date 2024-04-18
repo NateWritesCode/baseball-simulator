@@ -15,7 +15,7 @@ import {
    string,
 } from "valibot";
 import { cities, countries, subregions } from "../data";
-import { FakeClientPerson } from "../fake";
+import { FakeClientPerson, FakeClientStructure } from "../fake";
 import { getDateString, isObject } from "../functions";
 import {
    VDbCity,
@@ -34,6 +34,11 @@ import { valibotParse } from "../valibot";
 class DbClient {
    private fakeClientPerson = new FakeClientPerson({
       genderSetting: "traditional",
+   });
+   private fakeClientStructure = new FakeClientStructure({
+      geographicLimits: {
+         idSubregions: ["illinois-united-states"],
+      },
    });
 
    public name: string;
@@ -54,9 +59,11 @@ class DbClient {
       divisions: {
          id: { type: "string" },
          idLeague: { type: "string" },
+         name: { type: "string" },
       },
       leagues: {
          id: { type: "string" },
+         name: { type: "string" },
       },
       persons: {
          id: { type: "string" },
@@ -141,9 +148,13 @@ class DbClient {
          name: { type: "string" },
       },
       teams: {
+         colorPrimary: { type: "string" },
+         colorSecondary: { type: "string" },
          id: { type: "string" },
+         idCity: { type: "string" },
          idDivision: { type: "string" },
          idLeague: { type: "string" },
+         nickname: { type: "string" },
       },
    });
 
@@ -349,6 +360,38 @@ class DbClient {
          this.fakeClientPerson.fakePerson(),
       );
 
+      const leagues = this.fakeClientStructure.createLeagues({
+         leagues: [
+            {
+               id: "my-league",
+               name: "My League",
+               numTeams: 20,
+               divisions: [
+                  {
+                     id: "north-division",
+                     name: "North Division",
+                     compassPoint: "N",
+                  },
+                  {
+                     id: "south-division",
+                     name: "South Division",
+                     compassPoint: "S",
+                  },
+                  {
+                     id: "east-division",
+                     name: "East Division",
+                     compassPoint: "E",
+                  },
+                  {
+                     id: "west-division",
+                     name: "West Division",
+                     compassPoint: "W",
+                  },
+               ],
+            },
+         ],
+      });
+
       this.store.transaction(() => {
          for (const person of persons) {
             const {
@@ -413,6 +456,23 @@ class DbClient {
 
          for (const country of countries) {
             this.store.setRow("countries", country.id, country);
+         }
+
+         for (const league of leagues) {
+            if (league) {
+               const { divisions } = league;
+
+               this.store.setRow("leagues", league.id, league);
+
+               for (const division of divisions) {
+                  const { teams } = division;
+                  this.store.setRow("divisions", division.id, division);
+
+                  for (const team of teams) {
+                     this.store.setRow("teams", team.id, team);
+                  }
+               }
+            }
          }
 
          this.store.setRow("simulation", "simulation", {
