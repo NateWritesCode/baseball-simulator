@@ -1,6 +1,7 @@
 import {
    type Input,
    array,
+   merge,
    number,
    object,
    optional,
@@ -9,7 +10,7 @@ import {
 } from "valibot";
 import { cities, namesTeam } from "../data";
 import { getRandomHexColor, getRandomWeightedChoice } from "../functions";
-import { VPickListCompassPoints } from "../types";
+import { VPickListCompassPoints, VRegexDate } from "../types";
 import { valibotParse } from "../valibot";
 
 class FakeClientStructure {
@@ -26,14 +27,64 @@ class FakeClientStructure {
       }
    }
 
-   createLeagues = (_input: TInputCreateLeagues) => {
-      const input = valibotParse<TInputCreateLeagues>({
-         schema: VInputCreateLeagues,
+   createGameGroup = (_input: TInputCreateGameGroup) => {
+      const input = valibotParse<TInputCreateGameGroup>({
+         schema: VInputCreateGameGroup,
          data: _input,
       });
 
-      return input.leagues.map((league) => {
-         const { divisions, id, name, numTeams } = league;
+      const { dateEnd, dateStart, idLeague, name, teams } = input;
+
+      const id = `${idLeague}-${dateStart}-${dateEnd}`;
+
+      const standings = teams.map((team) => {
+         return {
+            id: team.id,
+            numLosses: 0,
+            numTies: 0,
+            numWins: 0,
+         };
+      });
+
+      return {
+         dateEnd,
+         dateStart,
+         id,
+         idLeague,
+         name,
+         standings,
+         teams,
+      };
+   };
+
+   createGames = (_input: TInputCreateGames) => {
+      const input = valibotParse<TInputCreateGames>({
+         schema: VInputCreateGames,
+         data: _input,
+      });
+
+      return null;
+   };
+
+   createTournament = (_input: TInputCreateTournament) => {
+      const input = valibotParse<TInputCreateTournament>({
+         schema: VInputCreateTournament,
+         data: _input,
+      });
+
+      return null;
+   };
+
+   createLeague = (_input: TInputCreateLeague) => {
+      const input = valibotParse<TInputCreateLeague>({
+         schema: VInputCreateLeague,
+         data: _input,
+      });
+
+      const teams: TTeam[] = [];
+
+      const subleagues = input.league.subleagues.map((subleague) => {
+         const { divisions, id, name, numTeams } = subleague;
 
          const divisionsWithCities = this._locateCities({
             divisions,
@@ -63,18 +114,20 @@ class FakeClientStructure {
                         excludeTeamNames.push(teamName);
 
                         const nickname = `${teamName}s`;
-                        const idCity = city.id;
                         const idLeague = id;
 
-                        return {
+                        const team = {
+                           city,
                            colorPrimary: getRandomHexColor(),
                            colorSecondary: getRandomHexColor(),
-                           idCity,
                            id: `${idLeague}-${nickname}`,
                            idDivision: division.id,
                            idLeague,
                            nickname,
                         };
+                        teams.push(team);
+
+                        return team;
                      }),
                   };
                },
@@ -87,9 +140,14 @@ class FakeClientStructure {
             };
          }
       });
-   };
 
-   _createTeam = () => {};
+      return {
+         id: input.league.id,
+         name: input.league.name,
+         subleagues,
+         teams,
+      };
+   };
 
    _locateCities = (_input: TInputLocateCities) => {
       const input = valibotParse<TInputLocateCities>({
@@ -321,6 +379,41 @@ class FakeClientStructure {
 
 export default FakeClientStructure;
 
+const VInputCreateGameGroup = object({
+   dateEnd: string([VRegexDate]),
+   dateStart: string([VRegexDate]),
+   idLeague: string(),
+   name: string(),
+   teams: array(
+      object({
+         id: string(),
+      }),
+   ),
+});
+type TInputCreateGameGroup = Input<typeof VInputCreateGameGroup>;
+const VInputCreateGames = object({
+   leagues: array(
+      object({
+         divisions: array(
+            object({
+               id: string(),
+               teams: array(
+                  object({
+                     id: string(),
+                     latitude: number(),
+                     longitude: number(),
+                  }),
+               ),
+            }),
+         ),
+         id: string(),
+      }),
+   ),
+});
+type TInputCreateGames = Input<typeof VInputCreateGames>;
+const VInputCreateTournament = object({});
+type TInputCreateTournament = Input<typeof VInputCreateTournament>;
+
 const VCity = object({
    id: string(),
    idCountry: string(),
@@ -331,6 +424,17 @@ const VCity = object({
    population: number(),
 });
 type TCity = Input<typeof VCity>;
+
+const VTeam = object({
+   city: VCity,
+   colorPrimary: string(),
+   colorSecondary: string(),
+   id: string(),
+   idDivision: string(),
+   idLeague: string(),
+   nickname: string(),
+});
+type TTeam = Input<typeof VTeam>;
 
 const VInputChooseCitiesWithPopulationFactor = object({
    cities: array(VCity),
@@ -358,18 +462,19 @@ type TDivision = Input<typeof VDivision>;
 
 const VDivisions = array(VDivision);
 
+const VSubleague = object({
+   divisions: VDivisions,
+   id: string(),
+   name: string(),
+});
+type TSubleague = Input<typeof VSubleague>;
+
 const VGeographicLimits = object({
    idCities: optional(array(string())),
    idCountries: optional(array(string())),
    idSubregions: optional(array(string())),
 });
 type TGeographicLimits = Input<typeof VGeographicLimits>;
-
-const VInputCreateTeam = object({
-   divisions: optional(VDivisions),
-   excludeNames: optional(array(string())),
-   idCity: string(),
-});
 
 const VInputLocateCities = object({
    divisions: optional(VDivisions),
@@ -378,17 +483,21 @@ const VInputLocateCities = object({
 });
 type TInputLocateCities = Input<typeof VInputLocateCities>;
 
-const VInputCreateLeagues = object({
-   leagues: array(
-      object({
-         divisions: VDivisions,
-         id: string(),
-         name: string(),
-         numTeams: number([toMinValue(2)]),
-      }),
-   ),
+const VInputCreateLeague = object({
+   league: object({
+      id: string(),
+      name: string(),
+      subleagues: array(
+         merge([
+            VSubleague,
+            object({
+               numTeams: number([toMinValue(2)]),
+            }),
+         ]),
+      ),
+   }),
 });
-type TInputCreateLeagues = Input<typeof VInputCreateLeagues>;
+type TInputCreateLeague = Input<typeof VInputCreateLeague>;
 
 const VInputConstructor = object({
    geographicLimits: optional(VGeographicLimits),

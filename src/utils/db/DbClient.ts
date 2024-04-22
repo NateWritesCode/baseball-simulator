@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import type { Store } from "tinybase";
 import {
    type IndexedDbPersister,
@@ -59,7 +60,22 @@ class DbClient {
       divisions: {
          id: { type: "string" },
          idLeague: { type: "string" },
+         idSubleague: { type: "string" },
          name: { type: "string" },
+      },
+      games: {
+         id: { type: "string" },
+         idGameGroup: { type: "string" },
+         idTeam1: { type: "string" },
+         idTeam2: { type: "string" },
+      },
+      gameGroups: {
+         dateEnd: { type: "string" },
+         dateStart: { type: "string" },
+         id: { type: "string" },
+         idLeague: { type: "string" },
+         name: { type: "string" },
+         standings: { type: "string" },
       },
       leagues: {
          id: { type: "string" },
@@ -141,6 +157,10 @@ class DbClient {
          id: { type: "string" },
          name: { type: "string" },
       },
+      subleagues: {
+         id: { type: "string" },
+         idLeague: { type: "string" },
+      },
       subregions: {
          id: { type: "string" },
          idCountry: { type: "string" },
@@ -155,6 +175,11 @@ class DbClient {
          idDivision: { type: "string" },
          idLeague: { type: "string" },
          nickname: { type: "string" },
+      },
+      tournaments: {
+         id: { type: "string" },
+         idGameGroup: { type: "string" },
+         name: { type: "string" },
       },
    });
 
@@ -360,37 +385,63 @@ class DbClient {
          this.fakeClientPerson.fakePerson(),
       );
 
-      const leagues = this.fakeClientStructure.createLeagues({
-         leagues: [
-            {
-               id: "my-league",
-               name: "My League",
-               numTeams: 20,
-               divisions: [
-                  {
-                     id: "north-division",
-                     name: "North Division",
-                     compassPoint: "N",
-                  },
-                  {
-                     id: "south-division",
-                     name: "South Division",
-                     compassPoint: "S",
-                  },
-                  {
-                     id: "east-division",
-                     name: "East Division",
-                     compassPoint: "E",
-                  },
-                  {
-                     id: "west-division",
-                     name: "West Division",
-                     compassPoint: "W",
-                  },
-               ],
-            },
-         ],
+      const league = {
+         id: "my-league",
+         name: "My League",
+      };
+
+      const { subleagues, teams } = this.fakeClientStructure.createLeague({
+         league: {
+            id: "my-league",
+            name: "My League",
+            subleagues: [
+               {
+                  divisions: [
+                     {
+                        id: "north-division",
+                        name: "North Division",
+                        compassPoint: "N",
+                     },
+                     {
+                        id: "south-division",
+                        name: "South Division",
+                        compassPoint: "S",
+                     },
+                     {
+                        id: "east-division",
+                        name: "East Division",
+                        compassPoint: "E",
+                     },
+                     {
+                        id: "west-division",
+                        name: "West Division",
+                        compassPoint: "W",
+                     },
+                  ],
+                  id: "my-subleague",
+                  name: "My Subleague",
+                  numTeams: 20,
+               },
+            ],
+         },
       });
+
+      const numGames = 162;
+
+      const dateStart = new Date();
+      const dateEnd = dayjs(dateStart)
+         .add(numGames + 20, "days")
+         .toDate();
+
+      const gameGroup = this.fakeClientStructure.createGameGroup({
+         dateEnd: getDateString(dateEnd),
+         dateStart: getDateString(dateStart),
+         idLeague: league.id,
+         name: "My Game Group",
+         teams,
+      });
+      const games = this.fakeClientStructure.createGames({});
+      const tournament = this.fakeClientStructure.createTournament({});
 
       this.store.transaction(() => {
          for (const person of persons) {
