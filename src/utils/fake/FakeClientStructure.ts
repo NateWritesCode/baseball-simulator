@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import {
    type Input,
    array,
@@ -58,12 +59,38 @@ class FakeClientStructure {
    };
 
    createGames = (_input: TInputCreateGames) => {
-      const input = valibotParse<TInputCreateGames>({
-         schema: VInputCreateGames,
-         data: _input,
-      });
+      const { dateEnd, dateStart, numGames, teams } =
+         valibotParse<TInputCreateGames>({
+            schema: VInputCreateGames,
+            data: _input,
+         });
 
-      return null;
+      const games: TGame[] = [];
+
+      let currentDate = dayjs(dateStart);
+      const endDate = dayjs(dateEnd);
+
+      for (let round = 0; round < numGames; round++) {
+         for (let i = 0; i < teams.length; i++) {
+            for (let j = i + 1; j < teams.length; j++) {
+               if (currentDate.isAfter(endDate)) {
+                  throw new Error(
+                     "The end date has been reached. Not all games could be scheduled.",
+                  );
+               }
+
+               // Team i plays at home against team j
+               games.push({
+                  idTeam1: teams[i].id,
+                  idTeam2: teams[j].id,
+                  date: currentDate.format("YYYY-MM-DD"),
+               });
+               currentDate = currentDate.add(1, "day");
+            }
+         }
+      }
+
+      return games;
    };
 
    createTournament = (_input: TInputCreateTournament) => {
@@ -379,6 +406,13 @@ class FakeClientStructure {
 
 export default FakeClientStructure;
 
+const VGame = object({
+   date: string([VRegexDate]),
+   idTeam1: string(),
+   idTeam2: string(),
+});
+type TGame = Input<typeof VGame>;
+
 const VInputCreateGameGroup = object({
    dateEnd: string([VRegexDate]),
    dateStart: string([VRegexDate]),
@@ -392,20 +426,16 @@ const VInputCreateGameGroup = object({
 });
 type TInputCreateGameGroup = Input<typeof VInputCreateGameGroup>;
 const VInputCreateGames = object({
-   leagues: array(
+   dateEnd: string([VRegexDate]),
+   dateStart: string([VRegexDate]),
+   idGameGroup: string(),
+   numGames: number([toMinValue(1)]),
+   teams: array(
       object({
-         divisions: array(
-            object({
-               id: string(),
-               teams: array(
-                  object({
-                     id: string(),
-                     latitude: number(),
-                     longitude: number(),
-                  }),
-               ),
-            }),
-         ),
+         city: object({
+            latitude: number(),
+            longitude: number(),
+         }),
          id: string(),
       }),
    ),

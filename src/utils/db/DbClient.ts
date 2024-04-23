@@ -64,6 +64,7 @@ class DbClient {
          name: { type: "string" },
       },
       games: {
+         date: { type: "string" },
          id: { type: "string" },
          idGameGroup: { type: "string" },
          idTeam1: { type: "string" },
@@ -426,12 +427,10 @@ class DbClient {
          },
       });
 
-      const numGames = 162;
+      const numGames = 100;
 
       const dateStart = new Date();
-      const dateEnd = dayjs(dateStart)
-         .add(numGames + 20, "days")
-         .toDate();
+      const dateEnd = dayjs(dateStart).add(numGames, "days").toDate();
 
       const gameGroup = this.fakeClientStructure.createGameGroup({
          dateEnd: getDateString(dateEnd),
@@ -440,7 +439,13 @@ class DbClient {
          name: "My Game Group",
          teams,
       });
-      const games = this.fakeClientStructure.createGames({});
+      const games = this.fakeClientStructure.createGames({
+         dateEnd: getDateString(dateEnd),
+         dateStart: getDateString(dateStart),
+         idGameGroup: gameGroup.id,
+         numGames,
+         teams,
+      });
       const tournament = this.fakeClientStructure.createTournament({});
 
       this.store.transaction(() => {
@@ -509,11 +514,11 @@ class DbClient {
             this.store.setRow("countries", country.id, country);
          }
 
-         for (const league of leagues) {
-            if (league) {
-               const { divisions } = league;
+         for (const subleague of subleagues) {
+            if (subleague) {
+               const { divisions } = subleague;
 
-               this.store.setRow("leagues", league.id, league);
+               this.store.setRow("subleagues", subleague.id, league);
 
                for (const division of divisions) {
                   const { teams } = division;
