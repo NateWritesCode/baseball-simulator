@@ -38,14 +38,16 @@ class FakeClientStructure {
 
       const id = `${idLeague}-${dateStart}-${dateEnd}`;
 
-      const standings = teams.map((team) => {
-         return {
-            id: team.id,
-            numLosses: 0,
-            numTies: 0,
-            numWins: 0,
-         };
-      });
+      const standings = JSON.stringify(
+         teams.map((team) => {
+            return {
+               id: team.id,
+               numLosses: 0,
+               numTies: 0,
+               numWins: 0,
+            };
+         }),
+      );
 
       return {
          dateEnd,
@@ -73,14 +75,11 @@ class FakeClientStructure {
       for (let round = 0; round < numGames; round++) {
          for (let i = 0; i < teams.length; i++) {
             for (let j = i + 1; j < teams.length; j++) {
-               if (currentDate.isAfter(endDate)) {
-                  throw new Error(
-                     "The end date has been reached. Not all games could be scheduled.",
-                  );
-               }
-
                // Team i plays at home against team j
                games.push({
+                  id: `${teams[i].id}-${teams[j].id}-${currentDate.format(
+                     "YYYY-MM-DD",
+                  )}`,
                   idTeam1: teams[i].id,
                   idTeam2: teams[j].id,
                   date: currentDate.format("YYYY-MM-DD"),
@@ -408,6 +407,7 @@ export default FakeClientStructure;
 
 const VGame = object({
    date: string([VRegexDate]),
+   id: string(),
    idTeam1: string(),
    idTeam2: string(),
 });

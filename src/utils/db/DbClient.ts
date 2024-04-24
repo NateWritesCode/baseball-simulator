@@ -177,11 +177,6 @@ class DbClient {
          idLeague: { type: "string" },
          nickname: { type: "string" },
       },
-      tournaments: {
-         id: { type: "string" },
-         idGameGroup: { type: "string" },
-         name: { type: "string" },
-      },
    });
 
    public queries = createQueries(this.store);
@@ -446,7 +441,6 @@ class DbClient {
          numGames,
          teams,
       });
-      const tournament = this.fakeClientStructure.createTournament({});
 
       this.store.transaction(() => {
          for (const person of persons) {
@@ -529,6 +523,14 @@ class DbClient {
                   }
                }
             }
+         }
+
+         this.store.setRow("leagues", league.id, league);
+
+         this.store.setRow("gameGroups", gameGroup.id, gameGroup);
+
+         for (const game of games) {
+            this.store.setRow("games", game.id, game);
          }
 
          this.store.setRow("simulation", "simulation", {
