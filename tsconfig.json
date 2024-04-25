@@ -23,11 +23,11 @@
 
       /* My changes */
       "rootDir": ".",
+      "baseUrl": ".",
       "paths": {
-         "@baseball-simulator/*": ["./src/*"]
+         "@/*": ["./src/*"]
       }
    },
-   "exclude": ["src/styled-system", "src/routeTree.gen.ts"],
-   "include": ["src", "src/utils/types/.ts"],
+   "include": ["src", "styled-system"],
    "references": [{ "path": "./tsconfig.node.json" }]
 }

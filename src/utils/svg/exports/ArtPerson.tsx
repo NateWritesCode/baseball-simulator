@@ -1,4 +1,4 @@
-// import { VPickListColorTokens } from "@baseball-simulator/utils/types";
+// import { VPickListColorTokens } from "@/utils/types";
 // import type { SVGProps } from "react";
 // import { type Input, object, picklist } from "valibot";
 

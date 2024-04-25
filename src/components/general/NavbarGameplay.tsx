@@ -1,7 +1,7 @@
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import { Box, Flex } from "@baseball-simulator/styled-system/jsx";
+import { generalStore } from "@/services/generalStore";
 import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import { Box, Flex } from "styled-system/jsx";
 import { SimulateButton, SimulationDate } from "../simulation";
 import ColorModePicker from "./ColorModePicker";
 

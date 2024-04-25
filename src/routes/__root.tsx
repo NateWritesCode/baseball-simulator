@@ -1,8 +1,5 @@
-import {
-   ConditionalWrapper,
-   DashboardWrapper,
-} from "@baseball-simulator/components/general";
-import { generalStore } from "@baseball-simulator/services/generalStore";
+import { ConditionalWrapper, DashboardWrapper } from "@/components/general";
+import { generalStore } from "@/services/generalStore";
 import { useMatches } from "@tanstack/react-router";
 import {
    Outlet,

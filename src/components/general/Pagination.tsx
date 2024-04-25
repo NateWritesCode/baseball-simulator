@@ -1,7 +1,4 @@
-import {
-   DEFAULT_LIMIT,
-   DEFAULT_OFFSET,
-} from "@baseball-simulator/utils/constants/cDb";
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from "@/utils/constants/cDb";
 import { Link } from "@tanstack/react-router";
 
 const Pagination = ({

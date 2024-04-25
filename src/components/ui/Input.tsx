@@ -1,5 +1,5 @@
-import { cva } from "@baseball-simulator/styled-system/css";
-import { styled } from "@baseball-simulator/styled-system/jsx";
+import { cva } from "styled-system/css";
+import { styled } from "styled-system/jsx";
 
 const inputStyle = cva({
    base: {

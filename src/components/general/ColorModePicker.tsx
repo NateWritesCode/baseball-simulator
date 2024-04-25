@@ -1,5 +1,5 @@
-import { Button } from "@baseball-simulator/components/ui";
-import { generalStore } from "@baseball-simulator/services/generalStore";
+import { Button } from "@/components/ui";
+import { generalStore } from "@/services/generalStore";
 import { useStore } from "@tanstack/react-store";
 
 const ColorModePicker = () => {

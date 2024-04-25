@@ -7,7 +7,7 @@ export default defineConfig({
    build: {
       chunkSizeWarningLimit: 5_000,
    },
-   plugins: [react(), TanStackRouterVite(), tsconfigPaths()],
+   plugins: [react(), TanStackRouterVite(), tsconfigPaths({ root: "./" })],
    server: {
       port: 3000,
    },

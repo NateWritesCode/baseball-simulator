@@ -1,4 +1,4 @@
-import DbClient from "@baseball-simulator/utils/db/DbClient";
+import DbClient from "@/utils/db/DbClient";
 import { Store } from "@tanstack/react-store";
 import { type Input, array, instance, object, picklist, string } from "valibot";
 

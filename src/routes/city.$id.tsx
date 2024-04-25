@@ -1,4 +1,4 @@
-import { generalStore } from "@baseball-simulator/services/generalStore";
+import { generalStore } from "@/services/generalStore";
 import {
    createFileRoute,
    redirect,

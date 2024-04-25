@@ -1,18 +1,13 @@
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import { css } from "@baseball-simulator/styled-system/css";
-import {
-   Box,
-   Center,
-   Container,
-   Grid,
-} from "@baseball-simulator/styled-system/jsx";
-import { getPrettyText } from "@baseball-simulator/utils/functions";
-import { ArtPerson } from "@baseball-simulator/utils/svg";
+import { generalStore } from "@/services/generalStore";
+import { getPrettyText } from "@/utils/functions";
+import { ArtPerson } from "@/utils/svg";
 import {
    createFileRoute,
    redirect,
    useLoaderData,
 } from "@tanstack/react-router";
+import { css } from "styled-system/css";
+import { Box, Center, Container, Grid } from "styled-system/jsx";
 
 const tableWrapper = css({
    width: "100%",

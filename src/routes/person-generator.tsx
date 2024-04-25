@@ -1,5 +1,5 @@
-import { Box } from "@baseball-simulator/styled-system/jsx";
 import { createFileRoute } from "@tanstack/react-router";
+import { Box } from "styled-system/jsx";
 
 const PersonGenerator = () => {
    return (

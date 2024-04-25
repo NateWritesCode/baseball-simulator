@@ -1,10 +1,10 @@
-import { FormNewGame } from "@baseball-simulator/components/form";
-import { Button } from "@baseball-simulator/components/ui";
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import { Divider } from "@baseball-simulator/styled-system/jsx";
-import DbClient from "@baseball-simulator/utils/db/DbClient";
+import { FormNewGame } from "@/components/form";
+import { Button } from "@/components/ui";
+import { generalStore } from "@/services/generalStore";
+import DbClient from "@/utils/db/DbClient";
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import { Divider } from "styled-system/jsx";
 
 export const Route = createFileRoute("/")({
    component: () => {

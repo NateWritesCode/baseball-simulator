@@ -1,6 +1,5 @@
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import { Box, Container } from "@baseball-simulator/styled-system/jsx";
-import { SimulatorAge } from "@baseball-simulator/utils/simulator";
+import { generalStore } from "@/services/generalStore";
+import { SimulatorAge } from "@/utils/simulator";
 import { createFileRoute } from "@tanstack/react-router";
 import {
    AnimatedAxis,
@@ -10,6 +9,7 @@ import {
    XYChart,
 } from "@visx/xychart";
 import { useEffect, useState } from "react";
+import { Box, Container } from "styled-system/jsx";
 
 const tickLabelOffset = 10;
 

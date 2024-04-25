@@ -147,6 +147,7 @@ class FakeClientStructure {
                            colorPrimary: getRandomHexColor(),
                            colorSecondary: getRandomHexColor(),
                            id: `${idLeague}-${nickname}`,
+                           idCity: city.id,
                            idDivision: division.id,
                            idLeague,
                            nickname,

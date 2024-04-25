@@ -1,7 +1,7 @@
-import Error404 from "@baseball-simulator/components/general/Error404";
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import DbClient from "@baseball-simulator/utils/db/DbClient";
-import { FakeClientStructure } from "@baseball-simulator/utils/fake";
+import Error404 from "@/components/general/Error404";
+import { generalStore } from "@/services/generalStore";
+import DbClient from "@/utils/db/DbClient";
+import { FakeClientStructure } from "@/utils/fake";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import "./main.css";

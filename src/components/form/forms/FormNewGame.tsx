@@ -1,6 +1,6 @@
-import { Button, Input } from "@baseball-simulator/components/ui";
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import DbClient from "@baseball-simulator/utils/db/DbClient";
+import { Button, Input } from "@/components/ui";
+import { generalStore } from "@/services/generalStore";
+import DbClient from "@/utils/db/DbClient";
 import { useForm } from "@tanstack/react-form";
 import { useStore } from "@tanstack/react-store";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";

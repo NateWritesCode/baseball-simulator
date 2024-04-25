@@ -1,10 +1,6 @@
-import Pagination from "@baseball-simulator/components/general/Pagination";
-import { generalStore } from "@baseball-simulator/services/generalStore";
-import { Container } from "@baseball-simulator/styled-system/jsx";
-import {
-   DEFAULT_LIMIT,
-   DEFAULT_OFFSET,
-} from "@baseball-simulator/utils/constants/cDb";
+import Pagination from "@/components/general/Pagination";
+import { generalStore } from "@/services/generalStore";
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from "@/utils/constants/cDb";
 import {
    Link,
    createFileRoute,
@@ -12,6 +8,7 @@ import {
    useLoaderData,
    useSearch,
 } from "@tanstack/react-router";
+import { Container } from "styled-system/jsx";
 import { useRow } from "tinybase/ui-react";
 import { number, object, optional, parse } from "valibot";
 
