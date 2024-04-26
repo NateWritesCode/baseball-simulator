@@ -1,4 +1,8 @@
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from "@/utils/constants/cDb";
+import {
+   Pagination as ArkPagination,
+   type PaginationRootProps,
+} from "@ark-ui/react";
 import { Link } from "@tanstack/react-router";
 
 const Pagination = ({

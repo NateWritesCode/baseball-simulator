@@ -4,7 +4,7 @@
    "jsFramework": "react",
    "importAliases": {
       "components": "@/components/ui",
-      "utils": "@/utils"
+      "utils": "@/utils/park-ui"
    },
    "useReactServerComponents": false
 }

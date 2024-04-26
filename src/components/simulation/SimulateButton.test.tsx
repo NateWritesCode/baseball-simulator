@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
+import { SimulateButton } from "@/components/simulation";
 import { render, screen } from "@testing-library/react";
-import SimulateButton from "./SimulateButton";
 
 test("renders SimulateButton component", () => {
    render(<SimulateButton />);
