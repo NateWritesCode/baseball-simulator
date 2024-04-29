@@ -1,4 +1,4 @@
-import Pagination from "@/components/general/Pagination";
+import { Pagination } from "@/components/ui";
 import { generalStore } from "@/services/generalStore";
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from "@/utils/constants/cDb";
 import {
@@ -48,10 +48,12 @@ const Cities = () => {
             );
          })}
          <Pagination
+            count={cities.length}
+            pageSize={limit}
+            siblingCount={1}
             limit={limit}
-            numTotal={numTotal}
-            offset={offset}
-            to="/cities"
+            myOffset={offset}
+            linkTo="/cities"
          />
       </Container>
    );
