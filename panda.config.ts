@@ -2,22 +2,25 @@ import { defineConfig } from "@pandacss/dev";
 
 export default defineConfig({
    preflight: true,
-   presets: [
-      "animated-pandacss",
-      "@pandacss/dev/presets",
-      "@park-ui/panda-preset",
-   ],
+   presets: [],
    include: ["./src/**/*.{js,jsx,ts,tsx}"],
    exclude: [],
    jsxFramework: "react",
    conditions: {
       light: "[data-color-mode=light] &",
       dark: "[data-color-mode=dark] &",
-      // pinkTheme: "[data-theme=pink] &",
-      // blueTheme: "[data-theme=blue] &",
    },
    outdir: "styled-system",
-   theme: {},
+   theme: {
+      tokens: {
+         colors: {
+            blue: {
+               500: { value: "#2970FF" },
+            },
+         },
+      },
+   },
+
    // theme: {
    //    semanticTokens: {
    //       colors: {

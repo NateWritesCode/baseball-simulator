@@ -1,7 +1,7 @@
 import Error404 from "@/components/general/Error404";
 import { generalStore } from "@/services/generalStore";
 import DbClient from "@/utils/db/DbClient";
-import { FakeClientStructure } from "@/utils/fake";
+import "@fontsource-variable/inter";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import "./main.css";
@@ -29,8 +29,6 @@ if (!rootElement) {
 
 if (!rootElement.innerHTML) {
    (async () => {
-      const state = generalStore.state;
-
       const indexedDbs = await indexedDB.databases();
       const gameNames = indexedDbs.map((db) => {
          if (!db.name) {

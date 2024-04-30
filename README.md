@@ -1,7 +1,3 @@
-# To add a @park-ui component
-
-`bunx @park-ui/cli add button`
-
 # Resources Used
 
 Male and female array lists
