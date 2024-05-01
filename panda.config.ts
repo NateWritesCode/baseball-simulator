@@ -1,5 +1,62 @@
 import { defineConfig } from "@pandacss/dev";
 
+const referenceFontFamily = {
+   display: "Inter, sans-serif",
+   text: "Inter, sans-serif",
+};
+
+const referenceFontWeights = {
+   regular: 400,
+   medium: 500,
+   semibold: 600,
+   bold: 700,
+};
+
+const referenceFontLineHeights = {
+   display: {
+      xs: "2rem",
+      sm: "2.375rem",
+      md: "2.75rem",
+      lg: "3.75rem",
+      xl: "4.5rem",
+      "2xl": "5.625rem",
+   },
+   text: {
+      xs: "1.125rem",
+      sm: "1.25rem",
+      md: "1.5rem",
+      lg: "1.75rem",
+      xl: "1.875rem",
+   },
+};
+
+const referenceFontSizes = {
+   display: {
+      xs: "1.5rem",
+      sm: "1.875rem",
+      md: "2.25rem",
+      lg: "3rem",
+      xl: "3.75rem",
+      "2xl": "4.5rem",
+   },
+   text: {
+      xs: "0.75rem",
+      sm: "0.875rem",
+      md: "1rem",
+      lg: "1.125rem",
+      xl: "1.25rem",
+   },
+};
+
+const referenceFontLetterSpacings = {
+   display: {
+      md: "-0.02rem",
+      lg: "-0.02rem",
+      xl: "-0.02rem",
+      "2xl": "-0.02rem",
+   },
+};
+
 export default defineConfig({
    conditions: {
       light: "[data-color-mode=light] &",
@@ -7,6 +64,7 @@ export default defineConfig({
    },
    eject: true,
    exclude: [],
+   globalVars: {},
    include: ["./src/**/*.{js,jsx,ts,tsx}"],
    outdir: "styled-system",
    // Default patterns live here: https://github.com/chakra-ui/panda/blob/main/packages/preset-base/src/patterns.ts
@@ -57,12 +115,578 @@ export default defineConfig({
    presets: [],
    strictPropertyValues: true,
    strictTokens: true,
-   
    theme: {
+      semanticTokens: {
+         colors: {
+            text: {
+               value: {},
+            },
+         },
+      },
+      textStyles: {
+         "display.2xl.bold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display["2xl"],
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.display["2xl"],
+               letterSpacing: referenceFontLetterSpacings.display["2xl"],
+            },
+         },
+         "display.lg.bold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.lg,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.display.lg,
+               letterSpacing: referenceFontLetterSpacings.display.lg,
+            },
+         },
+         "display.md.bold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.md,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.display.md,
+               letterSpacing: referenceFontLetterSpacings.display.md,
+            },
+         },
+         "display.sm.bold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.sm,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.display.sm,
+            },
+         },
+         "display.xs.bold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.xs,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.display.xs,
+            },
+         },
+         "text.xl.bold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xl,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.text.xl,
+            },
+         },
+         "text.lg.bold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.lg,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.text.lg,
+            },
+         },
+         "text.md.bold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.md,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.text.md,
+            },
+         },
+         "text.sm.bold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.sm,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.text.sm,
+            },
+         },
+         "text.xs.bold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xs,
+               fontWeight: referenceFontWeights.bold,
+               lineHeight: referenceFontLineHeights.text.xs,
+            },
+         },
+         "display.2xl.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display["2xl"],
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.display["2xl"],
+            },
+         },
+         "display.lg.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.lg,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.display.lg,
+            },
+         },
+         "display.md.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.md,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.display.md,
+            },
+         },
+         "display.sm.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.sm,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.display.sm,
+            },
+         },
+         "display.xs.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.xs,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.display.xs,
+            },
+         },
+         "text.xl.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xl,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.text.xl,
+            },
+         },
+         "text.lg.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.lg,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.text.lg,
+            },
+         },
+         "text.md.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.md,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.text.md,
+            },
+         },
+         "text.sm.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.sm,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.text.sm,
+            },
+         },
+         "text.xs.semibold": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xs,
+               fontWeight: referenceFontWeights.semibold,
+               lineHeight: referenceFontLineHeights.text.xs,
+            },
+         },
+         "display.2xl.medium": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display["2xl"],
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.display["2xl"],
+            },
+         },
+         "display.lg.medium": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.lg,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.display.lg,
+            },
+         },
+         "display.md.medium": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.md,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.display.md,
+            },
+         },
+         "display.sm.medium": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.sm,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.display.sm,
+            },
+         },
+         "display.xs.medium": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.xs,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.display.xs,
+            },
+         },
+         "text.xl.medium": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xl,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.text.xl,
+            },
+         },
+         "text.lg.medium": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.lg,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.text.lg,
+            },
+         },
+         "text.md.medium": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.md,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.text.md,
+            },
+         },
+         "text.sm.medium": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.sm,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.text.sm,
+            },
+         },
+         "text.xs.medium": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xs,
+               fontWeight: referenceFontWeights.medium,
+               lineHeight: referenceFontLineHeights.text.xs,
+            },
+         },
+         "display.2xl.regular": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display["2xl"],
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.display["2xl"],
+            },
+         },
+         "display.lg.regular": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.lg,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.display.lg,
+            },
+         },
+         "display.md.regular": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.md,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.display.md,
+            },
+         },
+         "display.sm.regular": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.sm,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.display.sm,
+            },
+         },
+         "display.xs.regular": {
+            value: {
+               fontFamily: referenceFontFamily.display,
+               fontSize: referenceFontSizes.display.xs,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.display.xs,
+            },
+         },
+         "text.xl.regular": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xl,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.text.xl,
+            },
+         },
+         "text.lg.regular": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.lg,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.text.lg,
+            },
+         },
+         "text.md.regular": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.md,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.text.md,
+            },
+         },
+         "text.sm.regular": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.sm,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.text.sm,
+            },
+         },
+         "text.xs.regular": {
+            value: {
+               fontFamily: referenceFontFamily.text,
+               fontSize: referenceFontSizes.text.xs,
+               fontWeight: referenceFontWeights.regular,
+               lineHeight: referenceFontLineHeights.text.xs,
+            },
+         },
+      },
       tokens: {
          colors: {
+            black: {
+               value: "#000000",
+            },
             blue: {
-               500: { value: "#2970FF" },
+               25: {
+                  value: "#f5faff",
+               },
+               50: {
+                  value: "#eff8ff",
+               },
+               100: {
+                  value: "#d1e9ff",
+               },
+               200: {
+                  value: "#b2ddff",
+               },
+               300: {
+                  value: "#84caff",
+               },
+               400: {
+                  value: "#53b1fd",
+               },
+               500: {
+                  value: "#2e90fa",
+               },
+               600: {
+                  value: "#1570ef",
+               },
+               700: {
+                  value: "#175cd3",
+               },
+               800: {
+                  value: "#1849a9",
+               },
+               900: {
+                  value: "#194185",
+               },
+               950: {
+                  value: "#102a56",
+               },
+            },
+            gray: {
+               dark: {
+                  25: {
+                     value: "#fafafa",
+                  },
+                  50: {
+                     value: "#f5f5f6",
+                  },
+                  100: {
+                     value: "#f0f1f1",
+                  },
+                  200: {
+                     value: "#ececed",
+                  },
+                  300: {
+                     value: "#cecfd2",
+                  },
+                  400: {
+                     value: "#94969c",
+                  },
+                  500: {
+                     value: "#85888e",
+                  },
+                  600: {
+                     value: "#61646c",
+                  },
+                  700: {
+                     value: "#333741",
+                  },
+                  800: {
+                     value: "#1f242f",
+                  },
+                  900: {
+                     value: "#161b26",
+                  },
+                  950: {
+                     value: "#0c111d",
+                  },
+               },
+               light: {
+                  25: {
+                     value: "#fcfcfd",
+                  },
+                  50: {
+                     value: "#f9fafb",
+                  },
+                  100: {
+                     value: "#f2f4f7",
+                  },
+                  200: {
+                     value: "#eaecf0",
+                  },
+                  300: {
+                     value: "#d0d5dd",
+                  },
+                  400: {
+                     value: "#98a2b3",
+                  },
+                  500: {
+                     value: "#667085",
+                  },
+                  600: {
+                     value: "#475467",
+                  },
+                  700: {
+                     value: "#344054",
+                  },
+                  800: {
+                     value: "#182230",
+                  },
+                  900: {
+                     value: "#101828",
+                  },
+                  950: {
+                     value: "#0C111D",
+                  },
+               },
+            },
+            white: {
+               value: "#ffffff",
+            },
+         },
+         fonts: {
+            display: {
+               value: referenceFontFamily.display,
+            },
+            text: {
+               value: referenceFontFamily.text,
+            },
+         },
+         fontSizes: {
+            display: {
+               xs: {
+                  value: referenceFontSizes.display.xs,
+               },
+               sm: {
+                  value: referenceFontSizes.display.sm,
+               },
+               md: {
+                  value: referenceFontSizes.display.md,
+               },
+               lg: {
+                  value: referenceFontSizes.display.lg,
+               },
+               xl: {
+                  value: referenceFontSizes.display.xl,
+               },
+               "2xl": {
+                  value: referenceFontSizes.display["2xl"],
+               },
+            },
+            text: {
+               xs: {
+                  value: referenceFontSizes.text.xs,
+               },
+               sm: {
+                  value: referenceFontSizes.text.sm,
+               },
+               md: {
+                  value: referenceFontSizes.text.md,
+               },
+               lg: {
+                  value: referenceFontSizes.text.lg,
+               },
+               xl: {
+                  value: referenceFontSizes.text.xl,
+               },
+            },
+         },
+         fontWeights: {
+            regular: {
+               value: referenceFontWeights.regular,
+            },
+            medium: {
+               value: referenceFontWeights.medium,
+            },
+            semibold: {
+               value: referenceFontWeights.semibold,
+            },
+            bold: {
+               value: referenceFontWeights.bold,
+            },
+         },
+         letterSpacings: {
+            display: {
+               md: {
+                  value: referenceFontLetterSpacings.display.md,
+               },
+               lg: {
+                  value: referenceFontLetterSpacings.display.lg,
+               },
+               xl: {
+                  value: referenceFontLetterSpacings.display.xl,
+               },
+               "2xl": {
+                  value: referenceFontLetterSpacings.display["2xl"],
+               },
+            },
+         },
+         lineHeights: {
+            display: {
+               xs: {
+                  value: referenceFontLineHeights.display.xs,
+               },
+               sm: {
+                  value: referenceFontLineHeights.display.sm,
+               },
+               md: {
+                  value: referenceFontLineHeights.display.md,
+               },
+               lg: {
+                  value: referenceFontLineHeights.display.lg,
+               },
+               xl: {
+                  value: referenceFontLineHeights.display.xl,
+               },
+               "2xl": {
+                  value: referenceFontLineHeights.display["2xl"],
+               },
+            },
+            text: {
+               xs: {
+                  value: referenceFontLineHeights.text.xs,
+               },
+               sm: {
+                  value: referenceFontLineHeights.text.sm,
+               },
+               md: {
+                  value: referenceFontLineHeights.text.md,
+               },
+               lg: {
+                  value: referenceFontLineHeights.text.lg,
+               },
+               xl: {
+                  value: referenceFontLineHeights.text.xl,
+               },
             },
          },
          radii: {

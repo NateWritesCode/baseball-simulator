@@ -20,31 +20,34 @@ const nonGameplayRoutes = [
 ];
 
 const Root = () => {
-   const { dbClient, colorMode, theme } = useStore(generalStore);
-   const router = useRouterState();
-   const matches = useMatches();
-   const match = matches?.[0] || null;
+   // const { dbClient, colorMode, theme } = useStore(generalStore);
+   // const router = useRouterState();
+   // const matches = useMatches();
+   // const match = matches?.[0] || null;
 
-   const isNotFoundRoute = match?.globalNotFound;
+   // const isNotFoundRoute = match?.globalNotFound;
 
    return (
-      <TinybaseProvider store={dbClient.store as ProviderProps["store"]}>
-         <StoreInspector position="right" open={false} />
-         <div data-theme={theme} data-color-mode={colorMode}>
-            <ConditionalWrapper
-               children={<Outlet />}
-               condition={
-                  !isNotFoundRoute &&
-                  !nonGameplayRoutes.includes(router.location.pathname) &&
-                  Boolean(dbClient)
-               }
-               wrapper={(children) => (
-                  <DashboardWrapper>{children}</DashboardWrapper>
-               )}
-            />
-            <TanStackRouterDevtools />
-         </div>
-      </TinybaseProvider>
+      <>
+         <Outlet />
+      </>
+      // <TinybaseProvider store={dbClient.store as ProviderProps["store"]}>
+      //    <StoreInspector position="right" open={false} />
+      //    <div data-theme={theme} data-color-mode={colorMode}>
+      //       <ConditionalWrapper
+      //          children={<Outlet />}
+      //          condition={
+      //             !isNotFoundRoute &&
+      //             !nonGameplayRoutes.includes(router.location.pathname) &&
+      //             Boolean(dbClient)
+      //          }
+      //          wrapper={(children) => (
+      //             <DashboardWrapper>{children}</DashboardWrapper>
+      //          )}
+      //       />
+      //       <TanStackRouterDevtools />
+      //    </div>
+      // </TinybaseProvider>
    );
 };
 
