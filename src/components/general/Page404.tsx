@@ -4,7 +4,7 @@ import { box } from "styled-system/patterns";
 
 const Error404 = () => {
    return (
-      <Box m="4">
+      <Box bg="red">
          <p>Not found!</p>
       </Box>
    );
