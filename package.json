@@ -29,6 +29,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.6.3",
     "@happy-dom/global-registrator": "^14.3.9",
+    "@pandacss/dev": "^0.38.0",
     "@pandacss/studio": "^0.38.0",
     "@svgr/cli": "^8.1.0",
     "@tanstack/router-devtools": "^1.19.2",

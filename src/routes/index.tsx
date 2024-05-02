@@ -6,6 +6,7 @@
 // import { useStore } from "@tanstack/react-store";
 // // import { Divider } from "styled-system/jsx";
 
+import { Page404 } from "@/components/general";
 import { createFileRoute } from "@tanstack/react-router";
 import { css } from "styled-system/css";
 
@@ -60,13 +61,7 @@ import { css } from "styled-system/css";
 const Index = () => {
    return (
       <>
-         <p
-            className={css({
-               textStyle: "display.2xl.bold",
-            })}
-         >
-            Display 2xl
-         </p>
+         <Page404 />
       </>
    );
 };
