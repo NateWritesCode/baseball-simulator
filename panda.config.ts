@@ -64,7 +64,6 @@ export default defineConfig({
    },
    eject: true,
    exclude: [],
-   globalVars: {},
    include: ["./src/**/*.{js,jsx,ts,tsx}"],
    outdir: "styled-system",
    // Default patterns live here: https://github.com/chakra-ui/panda/blob/main/packages/preset-base/src/patterns.ts
@@ -123,6 +122,670 @@ export default defineConfig({
       },
       semanticTokens: {
          colors: {
+            "alpha-white-10": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.1)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.1)",
+               },
+            },
+            "alpha-white-20": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.2)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.2)",
+               },
+            },
+            "alpha-white-30": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.3)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.3)",
+               },
+            },
+            "alpha-white-40": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.4)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.4)",
+               },
+            },
+            "alpha-white-50": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.5)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.5)",
+               },
+            },
+            "alpha-white-60": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.6)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.6)",
+               },
+            },
+            "alpha-white-70": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.7)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.7)",
+               },
+            },
+            "alpha-white-80": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.8)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.8)",
+               },
+            },
+            "alpha-white-90": {
+               dark: {
+                  value: "rgba(12, 17, 29, 0.9)",
+               },
+               light: {
+                  value: "rgba(255, 255, 255, 0.9)",
+               },
+            },
+            "alpha-white-100": {
+               dark: {
+                  value: "{colors.gray.dark.950}",
+               },
+               light: {
+                  value: "{colors.white}",
+               },
+            },
+            "alpha-black-10": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.1)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.1)",
+               },
+            },
+            "alpha-black-20": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.2)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.2)",
+               },
+            },
+            "alpha-black-30": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.3)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.3)",
+               },
+            },
+            "alpha-black-40": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.4)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.4)",
+               },
+            },
+            "alpha-black-50": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.5)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.5)",
+               },
+            },
+            "alpha-black-60": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.6)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.6)",
+               },
+            },
+            "alpha-black-70": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.7)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.7)",
+               },
+            },
+            "alpha-black-80": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.8)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.8)",
+               },
+            },
+            "alpha-black-90": {
+               dark: {
+                  value: "rgba(255, 255, 255, 0.9)",
+               },
+               light: {
+                  value: "rgba(0, 0, 0, 0.9)",
+               },
+            },
+            "alpha-black-100": {
+               dark: {
+                  value: "{colors.white}",
+               },
+               light: {
+                  value: "{colors.black}",
+               },
+            },
+            "bg-active": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "bg-brand-primary": {
+               dark: {
+                  value: "{colors.brand.500}",
+               },
+               light: {
+                  value: "{colors.brand.50}",
+               },
+            },
+            "bg-brand-primary_alt": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.brand.50}",
+               },
+            },
+            "bg-brand-secondary": {
+               dark: {
+                  value: "{colors.brand.600}",
+               },
+               light: {
+                  value: "{colors.brand.100}",
+               },
+            },
+            "bg-brand-solid": {
+               dark: {
+                  value: "{colors.brand.600}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "bg-brand-solid_hover": {
+               dark: {
+                  value: "{colors.brand.500}",
+               },
+               light: {
+                  value: "{colors.brand.700}",
+               },
+            },
+            "bg-brand-section": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.brand.800}",
+               },
+            },
+            "bg-brand-section_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.950}",
+               },
+               light: {
+                  value: "{colors.brand.700}",
+               },
+            },
+            "bg-disabled": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.100}",
+               },
+            },
+            "bg-disabled_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "bg-error-primary": {
+               dark: {
+                  value: "{colors.error.500}",
+               },
+               light: {
+                  value: "{colors.error.50}",
+               },
+            },
+            "bg-error-secondary": {
+               dark: {
+                  value: "{colors.error.600}",
+               },
+               light: {
+                  value: "{colors.error.100}",
+               },
+            },
+            "bg-error-solid": {
+               dark: {
+                  value: "{colors.error.600}",
+               },
+               light: {
+                  value: "{colors.error.600}",
+               },
+            },
+            "bg-overlay": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.950}",
+               },
+            },
+            "bg-primary": {
+               dark: {
+                  value: "{colors.gray.dark.950}",
+               },
+               light: {
+                  value: "{colors.white}",
+               },
+            },
+            "bg-primary_alt": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.white}",
+               },
+            },
+            "bg-primary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "bg-primary-solid": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.gray.light.950}",
+               },
+            },
+            "bg-secondary": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "bg-secondary_alt": {
+               dark: {
+                  value: "{colors.gray.dark.950}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "bg-secondary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.100}",
+               },
+            },
+            "bg-secondary_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.gray.light.25}",
+               },
+            },
+            "bg-secondary-solid": {
+               dark: {
+                  value: "{colors.gray.dark.600}",
+               },
+               light: {
+                  value: "{colors.gray.light.600}",
+               },
+            },
+            "bg-success-primary": {
+               dark: {
+                  value: "{colors.success.500}",
+               },
+               light: {
+                  value: "{colors.success.50}",
+               },
+            },
+            "bg-success-secondary": {
+               dark: {
+                  value: "{colors.success.600}",
+               },
+               light: {
+                  value: "{colors.success.100}",
+               },
+            },
+            "bg-success-solid": {
+               dark: {
+                  value: "{colors.success.600}",
+               },
+               light: {
+                  value: "{colors.success.600}",
+               },
+            },
+            "bg-tertiary": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.100}",
+               },
+            },
+            "bg-quarternary": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.200}",
+               },
+            },
+            "bg-warning-primary": {
+               dark: {
+                  value: "{colors.warning.500}",
+               },
+               light: {
+                  value: "{colors.warning.50}",
+               },
+            },
+            "bg-warning-secondary": {
+               dark: {
+                  value: "{colors.warning.600}",
+               },
+               light: {
+                  value: "{colors.warning.100}",
+               },
+            },
+            "bg-warning-solid": {
+               dark: {
+                  value: "{colors.warning.600}",
+               },
+               light: {
+                  value: "{colors.warning.600}",
+               },
+            },
+            "border-brand": {
+               dark: {
+                  value: "{colors.brand.400}",
+               },
+               light: {
+                  value: "{colors.brand.300}",
+               },
+            },
+            "border-brand-solid": {
+               dark: {
+                  value: "{colors.brand.600}",
+               },
+               light: {
+                  value: "{colors.brand.500}",
+               },
+            },
+            "border-brand-solid_alt": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "border-disabled": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "border-disabled_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.200}",
+               },
+            },
+            "border-error": {
+               dark: {
+                  value: "{colors.error.400}",
+               },
+               light: {
+                  value: "{colors.error.300}",
+               },
+            },
+            "border-error-solid": {
+               dark: {
+                  value: "{colors.error.500}",
+               },
+               light: {
+                  value: "{colors.error.600}",
+               },
+            },
+            "border-primary": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "border-secondary": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.200}",
+               },
+            },
+            "border-tertiary": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.100}",
+               },
+            },
+            "fg-brand-primary": {
+               dark: {
+                  value: "{colors.brand.500}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "fg-brand-primary_alt": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "fg-brand-secondary": {
+               dark: {
+                  value: "{colors.brand.500}",
+               },
+               light: {
+                  value: "{colors.brand.500}",
+               },
+            },
+            "fg-disabled": {
+               dark: {
+                  value: "{colors.gray.dark.500}",
+               },
+               light: {
+                  value: "{colors.gray.light.400}",
+               },
+            },
+            "fg-disabled_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.600}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "fg-error-primary": {
+               dark: {
+                  value: "{colors.error.500}",
+               },
+               light: {
+                  value: "{colors.error.600}",
+               },
+            },
+            "fg-error-secondary": {
+               dark: {
+                  value: "{colors.error.400}",
+               },
+               light: {
+                  value: "{colors.error.500}",
+               },
+            },
+            "fg-primary": {
+               dark: {
+                  value: "{colors.white}",
+               },
+               light: {
+                  value: "{colors.gray.light.900}",
+               },
+            },
+            "fg-secondary": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.700}",
+               },
+            },
+            "fg-secondary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.200}",
+               },
+               light: {
+                  value: "{colors.gray.light.800}",
+               },
+            },
+            "fg-tertiary": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.600}",
+               },
+            },
+            "fg-tertiary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.700}",
+               },
+            },
+            "fg-quaternary": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "fg-quaternary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.600}",
+               },
+            },
+            "fg-quinary": {
+               dark: {
+                  value: "{colors.gray.dark.500}",
+               },
+               light: {
+                  value: "{colors.gray.light.400}",
+               },
+            },
+            "fg-quinary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "fg-senary": {
+               dark: {
+                  value: "{colors.gray.dark.600}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "fg-warning-primary": {
+               dark: {
+                  value: "{colors.warning.500}",
+               },
+               light: {
+                  value: "{colors.warning.600}",
+               },
+            },
+            "fg-warning-secondary": {
+               dark: {
+                  value: "{colors.warning.400}",
+               },
+               light: {
+                  value: "{colors.warning.500}",
+               },
+            },
+            "fg-success-primary": {
+               dark: {
+                  value: "{colors.success.500}",
+               },
+               light: {
+                  value: "{colors.success.600}",
+               },
+            },
+            "fg-success-secondary": {
+               dark: {
+                  value: "{colors.success.400}",
+               },
+               light: {
+                  value: "{colors.success.500}",
+               },
+            },
+            "fg-white": {
+               dark: {
+                  value: "{colors.white}",
+               },
+               light: {
+                  value: "{colors.white}",
+               },
+            },
             "text-brand-primary": {
                dark: {
                   value: "{colors.gray.dark.50}",
@@ -285,6 +948,950 @@ export default defineConfig({
             },
             "text-white": {
                value: "{colors.white}",
+            },
+            "utility-brand-50": {
+               dark: {
+                  value: "{colors.brand.950}",
+               },
+               light: {
+                  value: "{colors.brand.50}",
+               },
+            },
+            "utility-brand-50_alt": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.brand.50}",
+               },
+            },
+            "utility-brand-100": {
+               dark: {
+                  value: "{colors.brand.900}",
+               },
+               light: {
+                  value: "{colors.brand.100}",
+               },
+            },
+            "utility-brand-100_alt": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.brand.100}",
+               },
+            },
+            "utility-brand-200": {
+               dark: {
+                  value: "{colors.brand.800}",
+               },
+               light: {
+                  value: "{colors.brand.200}",
+               },
+            },
+            "utility-brand-200_alt": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.brand.200}",
+               },
+            },
+            "utility-brand-300": {
+               dark: {
+                  value: "{colors.brand.700}",
+               },
+               light: {
+                  value: "{colors.brand.300}",
+               },
+            },
+            "utility-brand-300_alt": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.brand.300}",
+               },
+            },
+            "utility-brand-400": {
+               dark: {
+                  value: "{colors.brand.600}",
+               },
+               light: {
+                  value: "{colors.brand.400}",
+               },
+            },
+            "utility-brand-400_alt": {
+               dark: {
+                  value: "{colors.gray.dark.600}",
+               },
+               light: {
+                  value: "{colors.brand.400}",
+               },
+            },
+            "utility-brand-500": {
+               dark: {
+                  value: "{colors.brand.500}",
+               },
+               light: {
+                  value: "{colors.brand.500}",
+               },
+            },
+            "utility-brand-500_alt": {
+               dark: {
+                  value: "{colors.gray.dark.500}",
+               },
+               light: {
+                  value: "{colors.brand.500}",
+               },
+            },
+            "utility-brand-600": {
+               dark: {
+                  value: "{colors.brand.400}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "utility-brand-600_alt": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "utility-brand-700": {
+               dark: {
+                  value: "{colors.brand.300}",
+               },
+               light: {
+                  value: "{colors.brand.700}",
+               },
+            },
+            "utility-brand-700_alt": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.brand.700}",
+               },
+            },
+            "utility-brand-800": {
+               dark: {
+                  value: "{colors.brand.200}",
+               },
+               light: {
+                  value: "{colors.brand.800}",
+               },
+            },
+            "utility-brand-800_alt": {
+               dark: {
+                  value: "{colors.gray.dark.200}",
+               },
+               light: {
+                  value: "{colors.brand.800}",
+               },
+            },
+            "utility-brand-900": {
+               dark: {
+                  value: "{colors.brand.100}",
+               },
+               light: {
+                  value: "{colors.brand.900}",
+               },
+            },
+            "utility-brand-900_alt": {
+               dark: {
+                  value: "{colors.gray.dark.100}",
+               },
+               light: {
+                  value: "{colors.brand.900}",
+               },
+            },
+            "utility-gray-50": {
+               dark: {
+                  value: "{colors.gray.dark.900}",
+               },
+               light: {
+                  value: "{colors.gray.light.50}",
+               },
+            },
+            "utility-gray-100": {
+               dark: {
+                  value: "{colors.gray.dark.800}",
+               },
+               light: {
+                  value: "{colors.gray.light.100}",
+               },
+            },
+            "utility-gray-200": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.200}",
+               },
+            },
+            "utility-gray-300": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "utility-gray-400": {
+               dark: {
+                  value: "{colors.gray.dark.600}",
+               },
+               light: {
+                  value: "{colors.gray.light.400}",
+               },
+            },
+            "utility-gray-500": {
+               dark: {
+                  value: "{colors.gray.dark.500}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "utility-gray-600": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.600}",
+               },
+            },
+            "utility-gray-700": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.700}",
+               },
+            },
+            "utility-gray-800": {
+               dark: {
+                  value: "{colors.gray.dark.200}",
+               },
+               light: {
+                  value: "{colors.gray.light.800}",
+               },
+            },
+            "utility-gray-900": {
+               dark: {
+                  value: "{colors.gray.dark.100}",
+               },
+               light: {
+                  value: "{colors.gray.light.900}",
+               },
+            },
+            "utility-error-50": {
+               dark: {
+                  value: "{colors.error.950}",
+               },
+               light: {
+                  value: "{colors.error.50}",
+               },
+            },
+            "utility-error-100": {
+               dark: {
+                  value: "{colors.error.900}",
+               },
+               light: {
+                  value: "{colors.error.100}",
+               },
+            },
+            "utility-error-200": {
+               dark: {
+                  value: "{colors.error.800}",
+               },
+               light: {
+                  value: "{colors.error.200}",
+               },
+            },
+            "utility-error-300": {
+               dark: {
+                  value: "{colors.error.700}",
+               },
+               light: {
+                  value: "{colors.error.300}",
+               },
+            },
+            "utility-error-400": {
+               dark: {
+                  value: "{colors.error.600}",
+               },
+               light: {
+                  value: "{colors.error.400}",
+               },
+            },
+            "utility-error-500": {
+               dark: {
+                  value: "{colors.error.500}",
+               },
+               light: {
+                  value: "{colors.error.500}",
+               },
+            },
+            "utility-error-600": {
+               dark: {
+                  value: "{colors.error.400}",
+               },
+               light: {
+                  value: "{colors.error.600}",
+               },
+            },
+            "utility-error-700": {
+               dark: {
+                  value: "{colors.error.300}",
+               },
+               light: {
+                  value: "{colors.error.700}",
+               },
+            },
+            "utility-warning-50": {
+               dark: {
+                  value: "{colors.warning.950}",
+               },
+               light: {
+                  value: "{colors.warning.50}",
+               },
+            },
+            "utility-warning-100": {
+               dark: {
+                  value: "{colors.warning.900}",
+               },
+               light: {
+                  value: "{colors.warning.100}",
+               },
+            },
+            "utility-warning-200": {
+               dark: {
+                  value: "{colors.warning.800}",
+               },
+               light: {
+                  value: "{colors.warning.200}",
+               },
+            },
+            "utility-warning-300": {
+               dark: {
+                  value: "{colors.warning.700}",
+               },
+               light: {
+                  value: "{colors.warning.300}",
+               },
+            },
+            "utility-warning-400": {
+               dark: {
+                  value: "{colors.warning.600}",
+               },
+               light: {
+                  value: "{colors.warning.400}",
+               },
+            },
+            "utility-warning-500": {
+               dark: {
+                  value: "{colors.warning.500}",
+               },
+               light: {
+                  value: "{colors.warning.500}",
+               },
+            },
+            "utility-warning-600": {
+               dark: {
+                  value: "{colors.warning.400}",
+               },
+               light: {
+                  value: "{colors.warning.600}",
+               },
+            },
+            "utility-warning-700": {
+               dark: {
+                  value: "{colors.warning.300}",
+               },
+               light: {
+                  value: "{colors.warning.700}",
+               },
+            },
+            "utility-success-50": {
+               dark: {
+                  value: "{colors.success.950}",
+               },
+               light: {
+                  value: "{colors.success.50}",
+               },
+            },
+            "utility-success-100": {
+               dark: {
+                  value: "{colors.success.900}",
+               },
+               light: {
+                  value: "{colors.success.100}",
+               },
+            },
+            "utility-success-200": {
+               dark: {
+                  value: "{colors.success.800}",
+               },
+               light: {
+                  value: "{colors.success.200}",
+               },
+            },
+            "utility-success-300": {
+               dark: {
+                  value: "{colors.success.700}",
+               },
+               light: {
+                  value: "{colors.success.300}",
+               },
+            },
+            "utility-success-400": {
+               dark: {
+                  value: "{colors.success.600}",
+               },
+               light: {
+                  value: "{colors.success.400}",
+               },
+            },
+            "utility-success-500": {
+               dark: {
+                  value: "{colors.success.500}",
+               },
+               light: {
+                  value: "{colors.success.500}",
+               },
+            },
+            "utility-success-600": {
+               dark: {
+                  value: "{colors.success.400}",
+               },
+               light: {
+                  value: "{colors.success.600}",
+               },
+            },
+            "utility-success-700": {
+               dark: {
+                  value: "{colors.success.300}",
+               },
+               light: {
+                  value: "{colors.success.700}",
+               },
+            },
+            "utility-blue-light-50": {
+               dark: {
+                  value: "{colors.blue-light.950}",
+               },
+               light: {
+                  value: "{colors.blue-light.50}",
+               },
+            },
+            "utility-blue-light-100": {
+               dark: {
+                  value: "{colors.blue-light.900}",
+               },
+               light: {
+                  value: "{colors.blue-light.100}",
+               },
+            },
+            "utility-blue-light-200": {
+               dark: {
+                  value: "{colors.blue-light.800}",
+               },
+               light: {
+                  value: "{colors.blue-light.200}",
+               },
+            },
+            "utility-blue-light-300": {
+               dark: {
+                  value: "{colors.blue-light.700}",
+               },
+               light: {
+                  value: "{colors.blue-light.300}",
+               },
+            },
+            "utility-blue-light-400": {
+               dark: {
+                  value: "{colors.blue-light.600}",
+               },
+               light: {
+                  value: "{colors.blue-light.400}",
+               },
+            },
+            "utility-blue-light-500": {
+               dark: {
+                  value: "{colors.blue-light.500}",
+               },
+               light: {
+                  value: "{colors.blue-light.500}",
+               },
+            },
+            "utility-blue-light-600": {
+               dark: {
+                  value: "{colors.blue-light.400}",
+               },
+               light: {
+                  value: "{colors.blue-light.600}",
+               },
+            },
+            "utility-blue-light-700": {
+               dark: {
+                  value: "{colors.blue-light.300}",
+               },
+               light: {
+                  value: "{colors.blue-light.700}",
+               },
+            },
+            "utility-blue-50": {
+               dark: {
+                  value: "{colors.blue.950}",
+               },
+               light: {
+                  value: "{colors.blue.50}",
+               },
+            },
+            "utility-blue-100": {
+               dark: {
+                  value: "{colors.blue.900}",
+               },
+               light: {
+                  value: "{colors.blue.100}",
+               },
+            },
+            "utility-blue-200": {
+               dark: {
+                  value: "{colors.blue.800}",
+               },
+               light: {
+                  value: "{colors.blue.200}",
+               },
+            },
+            "utility-blue-300": {
+               dark: {
+                  value: "{colors.blue.700}",
+               },
+               light: {
+                  value: "{colors.blue.300}",
+               },
+            },
+            "utility-blue-400": {
+               dark: {
+                  value: "{colors.blue.600}",
+               },
+               light: {
+                  value: "{colors.blue.400}",
+               },
+            },
+            "utility-blue-500": {
+               dark: {
+                  value: "{colors.blue.500}",
+               },
+               light: {
+                  value: "{colors.blue.500}",
+               },
+            },
+            "utility-blue-600": {
+               dark: {
+                  value: "{colors.blue.400}",
+               },
+               light: {
+                  value: "{colors.blue.600}",
+               },
+            },
+            "utility-blue-700": {
+               dark: {
+                  value: "{colors.blue.300}",
+               },
+               light: {
+                  value: "{colors.blue.700}",
+               },
+            },
+            "utility-blue-dark-50": {
+               dark: {
+                  value: "{colors.blue-dark.950}",
+               },
+               light: {
+                  value: "{colors.blue-dark.50}",
+               },
+            },
+            "utility-blue-dark-100": {
+               dark: {
+                  value: "{colors.blue-dark.900}",
+               },
+               light: {
+                  value: "{colors.blue-dark.100}",
+               },
+            },
+            "utility-blue-dark-200": {
+               dark: {
+                  value: "{colors.blue-dark.800}",
+               },
+               light: {
+                  value: "{colors.blue-dark.200}",
+               },
+            },
+            "utility-blue-dark-300": {
+               dark: {
+                  value: "{colors.blue-dark.700}",
+               },
+               light: {
+                  value: "{colors.blue-dark.300}",
+               },
+            },
+            "utility-blue-dark-400": {
+               dark: {
+                  value: "{colors.blue-dark.600}",
+               },
+               light: {
+                  value: "{colors.blue-dark.400}",
+               },
+            },
+            "utility-blue-dark-500": {
+               dark: {
+                  value: "{colors.blue-dark.500}",
+               },
+               light: {
+                  value: "{colors.blue-dark.500}",
+               },
+            },
+            "utility-blue-dark-600": {
+               dark: {
+                  value: "{colors.blue-dark.400}",
+               },
+               light: {
+                  value: "{colors.blue-dark.600}",
+               },
+            },
+            "utility-blue-dark-700": {
+               dark: {
+                  value: "{colors.blue-dark.300}",
+               },
+               light: {
+                  value: "{colors.blue-dark.700}",
+               },
+            },
+            "utility-indigo-50": {
+               dark: {
+                  value: "{colors.indigo.950}",
+               },
+               light: {
+                  value: "{colors.indigo.50}",
+               },
+            },
+            "utility-indigo-100": {
+               dark: {
+                  value: "{colors.indigo.900}",
+               },
+               light: {
+                  value: "{colors.indigo.100}",
+               },
+            },
+            "utility-indigo-200": {
+               dark: {
+                  value: "{colors.indigo.800}",
+               },
+               light: {
+                  value: "{colors.indigo.200}",
+               },
+            },
+            "utility-indigo-300": {
+               dark: {
+                  value: "{colors.indigo.700}",
+               },
+               light: {
+                  value: "{colors.indigo.300}",
+               },
+            },
+            "utility-indigo-400": {
+               dark: {
+                  value: "{colors.indigo.600}",
+               },
+               light: {
+                  value: "{colors.indigo.400}",
+               },
+            },
+            "utility-indigo-500": {
+               dark: {
+                  value: "{colors.indigo.500}",
+               },
+               light: {
+                  value: "{colors.indigo.500}",
+               },
+            },
+            "utility-indigo-600": {
+               dark: {
+                  value: "{colors.indigo.400}",
+               },
+               light: {
+                  value: "{colors.indigo.600}",
+               },
+            },
+            "utility-indigo-700": {
+               dark: {
+                  value: "{colors.indigo.300}",
+               },
+               light: {
+                  value: "{colors.indigo.700}",
+               },
+            },
+            "utility-fuchsia-50": {
+               dark: {
+                  value: "{colors.fuchsia.950}",
+               },
+               light: {
+                  value: "{colors.fuchsia.50}",
+               },
+            },
+            "utility-fuchsia-100": {
+               dark: {
+                  value: "{colors.fuchsia.900}",
+               },
+               light: {
+                  value: "{colors.fuchsia.100}",
+               },
+            },
+            "utility-fuchsia-200": {
+               dark: {
+                  value: "{colors.fuchsia.800}",
+               },
+               light: {
+                  value: "{colors.fuchsia.200}",
+               },
+            },
+            "utility-fuchsia-300": {
+               dark: {
+                  value: "{colors.fuchsia.700}",
+               },
+               light: {
+                  value: "{colors.fuchsia.300}",
+               },
+            },
+            "utility-fuchsia-400": {
+               dark: {
+                  value: "{colors.fuchsia.600}",
+               },
+               light: {
+                  value: "{colors.fuchsia.400}",
+               },
+            },
+            "utility-fuchsia-500": {
+               dark: {
+                  value: "{colors.fuchsia.500}",
+               },
+               light: {
+                  value: "{colors.fuchsia.500}",
+               },
+            },
+            "utility-fuchsia-600": {
+               dark: {
+                  value: "{colors.fuchsia.400}",
+               },
+               light: {
+                  value: "{colors.fuchsia.600}",
+               },
+            },
+            "utility-fuchsia-700": {
+               dark: {
+                  value: "{colors.fuchsia.300}",
+               },
+               light: {
+                  value: "{colors.fuchsia.700}",
+               },
+            },
+            "utility-pink-50": {
+               dark: {
+                  value: "{colors.pink.950}",
+               },
+               light: {
+                  value: "{colors.pink.50}",
+               },
+            },
+            "utility-pink-100": {
+               dark: {
+                  value: "{colors.pink.900}",
+               },
+               light: {
+                  value: "{colors.pink.100}",
+               },
+            },
+            "utility-pink-200": {
+               dark: {
+                  value: "{colors.pink.800}",
+               },
+               light: {
+                  value: "{colors.pink.200}",
+               },
+            },
+            "utility-pink-300": {
+               dark: {
+                  value: "{colors.pink.700}",
+               },
+               light: {
+                  value: "{colors.pink.300}",
+               },
+            },
+            "utility-pink-400": {
+               dark: {
+                  value: "{colors.pink.600}",
+               },
+               light: {
+                  value: "{colors.pink.400}",
+               },
+            },
+            "utility-pink-500": {
+               dark: {
+                  value: "{colors.pink.500}",
+               },
+               light: {
+                  value: "{colors.pink.500}",
+               },
+            },
+            "utility-pink-600": {
+               dark: {
+                  value: "{colors.pink.400}",
+               },
+               light: {
+                  value: "{colors.pink.600}",
+               },
+            },
+            "utility-pink-700": {
+               dark: {
+                  value: "{colors.pink.300}",
+               },
+               light: {
+                  value: "{colors.pink.700}",
+               },
+            },
+            "utility-orange-dark-50": {
+               dark: {
+                  value: "{colors.orange-dark.950}",
+               },
+               light: {
+                  value: "{colors.orange-dark.50}",
+               },
+            },
+            "utility-orange-dark-100": {
+               dark: {
+                  value: "{colors.orange-dark.900}",
+               },
+               light: {
+                  value: "{colors.orange-dark.100}",
+               },
+            },
+            "utility-orange-dark-200": {
+               dark: {
+                  value: "{colors.orange-dark.800}",
+               },
+               light: {
+                  value: "{colors.orange-dark.200}",
+               },
+            },
+            "utility-orange-dark-300": {
+               dark: {
+                  value: "{colors.orange-dark.700}",
+               },
+               light: {
+                  value: "{colors.orange-dark.300}",
+               },
+            },
+            "utility-orange-dark-400": {
+               dark: {
+                  value: "{colors.orange-dark.600}",
+               },
+               light: {
+                  value: "{colors.orange-dark.400}",
+               },
+            },
+            "utility-orange-dark-500": {
+               dark: {
+                  value: "{colors.orange-dark.500}",
+               },
+               light: {
+                  value: "{colors.orange-dark.500}",
+               },
+            },
+            "utility-orange-dark-600": {
+               dark: {
+                  value: "{colors.orange-dark.400}",
+               },
+               light: {
+                  value: "{colors.orange-dark.600}",
+               },
+            },
+            "utility-orange-dark-700": {
+               dark: {
+                  value: "{colors.orange-dark.300}",
+               },
+               light: {
+                  value: "{colors.orange-dark.700}",
+               },
+            },
+            "utility-orange-50": {
+               dark: {
+                  value: "{colors.orange.950}",
+               },
+               light: {
+                  value: "{colors.orange.50}",
+               },
+            },
+            "utility-orange-100": {
+               dark: {
+                  value: "{colors.orange.900}",
+               },
+               light: {
+                  value: "{colors.orange.100}",
+               },
+            },
+            "utility-orange-200": {
+               dark: {
+                  value: "{colors.orange.800}",
+               },
+               light: {
+                  value: "{colors.orange.200}",
+               },
+            },
+            "utility-orange-300": {
+               dark: {
+                  value: "{colors.orange.700}",
+               },
+               light: {
+                  value: "{colors.orange.300}",
+               },
+            },
+            "utility-orange-400": {
+               dark: {
+                  value: "{colors.orange.600}",
+               },
+               light: {
+                  value: "{colors.orange.400}",
+               },
+            },
+            "utility-orange-500": {
+               dark: {
+                  value: "{colors.orange.500}",
+               },
+               light: {
+                  value: "{colors.orange.500}",
+               },
+            },
+            "utility-orange-600": {
+               dark: {
+                  value: "{colors.orange.400}",
+               },
+               light: {
+                  value: "{colors.orange.600}",
+               },
+            },
+            "utility-orange-700": {
+               dark: {
+                  value: "{colors.orange.300}",
+               },
+               light: {
+                  value: "{colors.orange.700}",
+               },
             },
          },
       },
@@ -656,6 +2263,82 @@ export default defineConfig({
                   value: "#102a56",
                },
             },
+            "blue-dark": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "blue-light": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
             brand: {
                25: { value: "#FCFAFF" },
                50: { value: "#F9F5FF" },
@@ -669,6 +2352,44 @@ export default defineConfig({
                800: { value: "#53389E" },
                900: { value: "#42307D" },
                950: { value: "#2C1C5F" },
+            },
+            cyan: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
             },
             error: {
                25: {
@@ -706,6 +2427,44 @@ export default defineConfig({
                },
                950: {
                   value: "#55160C",
+               },
+            },
+            fuchsia: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
                },
             },
             gray: {
@@ -786,6 +2545,614 @@ export default defineConfig({
                   },
                },
             },
+            "gray-blue": {
+               25: {
+                  value: "#FCFCFD",
+               },
+               50: {
+                  value: "#F8F9FC",
+               },
+               100: {
+                  value: "#EAECF5",
+               },
+               200: {
+                  value: "#D5D9EB",
+               },
+               300: {
+                  value: "#B3B8DB",
+               },
+               400: {
+                  value: "#717BBC",
+               },
+               500: {
+                  value: "#4E5BA6",
+               },
+               600: {
+                  value: "#3E4784",
+               },
+               700: {
+                  value: "#363F72",
+               },
+               800: {
+                  value: "#293056",
+               },
+               900: {
+                  value: "#101323",
+               },
+               950: {
+                  value: "#0D0F1C",
+               },
+            },
+            "gray-cool": {
+               25: {
+                  value: "#FCFCFD",
+               },
+               50: {
+                  value: "#F9F9FB",
+               },
+               100: {
+                  value: "#EFF1F5",
+               },
+               200: {
+                  value: "#DCDFEA",
+               },
+               300: {
+                  value: "#B9C0D4",
+               },
+               400: {
+                  value: "#7D89B0",
+               },
+               500: {
+                  value: "#5D6B98",
+               },
+               600: {
+                  value: "#4A5578",
+               },
+               700: {
+                  value: "#404968",
+               },
+               800: {
+                  value: "#30374F",
+               },
+               900: {
+                  value: "#111322",
+               },
+               950: {
+                  value: "#0E101B",
+               },
+            },
+            "gray-modern": {
+               25: {
+                  value: "#FCFCFD",
+               },
+               50: {
+                  value: "#F8FAFC",
+               },
+               100: {
+                  value: "#EEF2F6",
+               },
+               200: {
+                  value: "#E3E8EF",
+               },
+               300: {
+                  value: "#CDD5DF",
+               },
+               400: {
+                  value: "#9AA4B2",
+               },
+               500: {
+                  value: "#697586",
+               },
+               600: {
+                  value: "#4B5565",
+               },
+               700: {
+                  value: "#364152",
+               },
+               800: {
+                  value: "#202939",
+               },
+               900: {
+                  value: "#121926",
+               },
+               950: {
+                  value: "#0D121C",
+               },
+            },
+            "gray-neutral": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "gray-iron": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "gray-true": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "gray-warm": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            green: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "green-light": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            indigo: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            moss: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            orange: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            "orange-dark": {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            pink: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            purple: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
+            rose: {
+               25: {
+                  value: "",
+               },
+               50: {
+                  value: "",
+               },
+               100: {
+                  value: "",
+               },
+               200: {
+                  value: "",
+               },
+               300: {
+                  value: "",
+               },
+               400: {
+                  value: "",
+               },
+               500: {
+                  value: "",
+               },
+               600: {
+                  value: "",
+               },
+               700: {
+                  value: "",
+               },
+               800: {
+                  value: "",
+               },
+               900: {
+                  value: "",
+               },
+               950: {
+                  value: "",
+               },
+            },
             success: {
                25: {
                   value: "#F6FEF9",
@@ -824,6 +3191,8 @@ export default defineConfig({
                   value: "#053321",
                },
             },
+            teal: {},
+            violet: {},
             warning: {
                25: {
                   value: "#FFFCF5",
@@ -865,6 +3234,7 @@ export default defineConfig({
             white: {
                value: "#ffffff",
             },
+            yellow: {},
          },
          fonts: {
             display: {
@@ -925,6 +3295,221 @@ export default defineConfig({
             },
             bold: {
                value: referenceFontWeights.bold,
+            },
+         },
+         gradients: {
+            brand: {
+               1: {
+                  value: "conic-gradient(from 259deg at 50% 50%, #7F56D9 0deg, rgba(127, 86, 217, 0.00) 360deg)",
+               },
+               2: {
+                  value: "linear-gradient(90deg, #7F56D9 0%, #9E77ED 100%)",
+               },
+               3: {
+                  value: "linear-gradient(45deg, #6941C6 0%, #7F56D9 100%)",
+               },
+               4: {
+                  value: "linear-gradient(45deg, #53389E 0%, #7F56D9 100%)",
+               },
+               5: {
+                  value: "linear-gradient(63deg, #53389E 16.72%, #7F56D9 83.39%)",
+               },
+               6: {
+                  value: "linear-gradient(27deg, #53389E 8.33%, #6941C6 91.67%)",
+               },
+               7: {
+                  value: "linear-gradient(45deg, #42307D 0%, #7F56D9 100%)",
+               },
+            },
+            "color-linear": {
+               1: { value: "" },
+               2: { value: "" },
+               3: { value: "" },
+               4: { value: "" },
+               5: { value: "" },
+               6: { value: "" },
+               7: { value: "" },
+               8: { value: "" },
+               9: { value: "" },
+               10: { value: "" },
+               11: { value: "" },
+               12: { value: "" },
+               13: { value: "" },
+               14: { value: "" },
+               15: { value: "" },
+               16: { value: "" },
+               17: { value: "" },
+               18: { value: "" },
+               19: { value: "" },
+               20: { value: "" },
+               21: { value: "" },
+               22: { value: "" },
+               23: { value: "" },
+               24: { value: "" },
+               25: { value: "" },
+               26: { value: "" },
+               27: { value: "" },
+               28: { value: "" },
+               29: { value: "" },
+               30: { value: "" },
+               31: { value: "" },
+               32: { value: "" },
+               33: { value: "" },
+               34: { value: "" },
+               35: { value: "" },
+               36: { value: "" },
+               37: { value: "" },
+               38: { value: "" },
+               39: { value: "" },
+               40: { value: "" },
+               41: { value: "" },
+               42: { value: "" },
+               43: { value: "" },
+               44: { value: "" },
+               45: { value: "" },
+               46: { value: "" },
+               47: { value: "" },
+               48: { value: "" },
+               49: { value: "" },
+               50: { value: "" },
+               51: { value: "" },
+               52: { value: "" },
+               53: { value: "" },
+               54: { value: "" },
+               55: { value: "" },
+               56: { value: "" },
+               57: { value: "" },
+               58: { value: "" },
+               59: { value: "" },
+               60: { value: "" },
+               61: { value: "" },
+               62: { value: "" },
+               63: { value: "" },
+               64: { value: "" },
+               65: { value: "" },
+               66: { value: "" },
+               67: { value: "" },
+               68: { value: "" },
+               69: { value: "" },
+               70: { value: "" },
+               71: { value: "" },
+               72: { value: "" },
+               73: { value: "" },
+               74: { value: "" },
+               75: { value: "" },
+               76: { value: "" },
+               77: { value: "" },
+               78: { value: "" },
+               79: { value: "" },
+               80: { value: "" },
+               81: { value: "" },
+               82: { value: "" },
+               83: { value: "" },
+               84: { value: "" },
+               85: { value: "" },
+               86: { value: "" },
+               87: { value: "" },
+               88: { value: "" },
+               89: { value: "" },
+               90: { value: "" },
+               91: { value: "" },
+            },
+            gray: {
+               1: {
+                  value: "conic-gradient(from 259deg at 50% 50%, #475467 0deg, rgba(71, 84, 103, 0.00) 360deg)",
+               },
+               2: {
+                  value: "linear-gradient(90deg, #475467 0%, #667085 100%)",
+               },
+               3: {
+                  value: "linear-gradient(45deg, #344054 0%, #475467 100%)",
+               },
+               4: {
+                  value: "linear-gradient(45deg, #182230 0%, #475467 100%)",
+               },
+               5: {
+                  value: "linear-gradient(63deg, #182230 16.72%, #475467 83.39%)",
+               },
+               6: {
+                  value: "linear-gradient(27deg, #182230 8.33%, #344054 91.67%)",
+               },
+               7: {
+                  value: "linear-gradient(45deg, #101828 0%, #475467 100%)",
+               },
+            },
+            "gray-neutral-linear": {
+               1: { value: "linear-gradient(180deg, #FFF 0%, #F3F5F7 100%)" },
+               2: {
+                  value: "linear-gradient(180deg, #F9FAFB 0%, #EDF0F3 100%)",
+               },
+               3: {
+                  value: "linear-gradient(180deg, #F9FAFB 0%, #E7EBEF 100%)",
+               },
+               4: {
+                  value: "linear-gradient(180deg, #F3F5F7 0%, #E0E5EB 100%)",
+               },
+               5: {
+                  value: "linear-gradient(180deg, #EDF0F3 0%, #D4DBE2 100%)",
+               },
+               6: {
+                  value: "linear-gradient(180deg, #E7EBEF 0%, #C8D1DA 100%)",
+               },
+               7: {
+                  value: "linear-gradient(180deg, #E0E5EB 0%, #B6C2CE 100%)",
+               },
+            },
+            "gray-true-linear": {
+               1: {
+                  value: "linear-gradient(180deg, #FFF 0%, #F5F5F5 100%)",
+               },
+               2: {
+                  value: "linear-gradient(180deg, #FAFAFA 0%, #F0F0F0 100%)",
+               },
+               3: {
+                  value: "linear-gradient(180deg, #FAFAFA 0%, #EBEBEB 100%)",
+               },
+               4: {
+                  value: "linear-gradient(180deg, #F5F5F5 0%, #E5E5E5 100%)",
+               },
+               5: {
+                  value: "linear-gradient(180deg, #F0F0F0 0%, #DBDBDB 100%)",
+               },
+               6: {
+                  value: "linear-gradient(180deg, #EBEBEB 0%, #D1D1D1 100%)",
+               },
+               7: {
+                  value: "linear-gradient(180deg, #E5E5E5 0%, #C2C2C2 100%)",
+               },
+            },
+            mesh: {
+               1: { value: "" },
+               2: { value: "" },
+               3: { value: "" },
+               4: { value: "" },
+               5: { value: "" },
+               6: { value: "" },
+               7: { value: "" },
+               8: { value: "" },
+               9: { value: "" },
+               10: { value: "" },
+               11: { value: "" },
+               12: { value: "" },
+               13: { value: "" },
+               14: { value: "" },
+               15: { value: "" },
+               16: { value: "" },
+               17: { value: "" },
+               18: { value: "" },
+               19: { value: "" },
+               20: { value: "" },
+               21: { value: "" },
+               22: { value: "" },
+               23: { value: "" },
+               24: { value: "" },
+               25: { value: "" },
+               26: { value: "" },
+               27: { value: "" },
+               28: { value: "" },
             },
          },
          letterSpacings: {
@@ -997,6 +3582,34 @@ export default defineConfig({
          },
 
          shadows: {
+            "ring-brand": {
+               value: "0px 0px 0px 4px rgba(158, 119, 237, 0.24)",
+            },
+            "ring-brand-shadow-xs": {
+               value: "0px 1px 2px 0px rgba(16, 24, 40, 0.05), 0px 0px 0px 4px rgba(158, 119, 237, 0.24)",
+            },
+            "ring-brand-shadow-sm": {
+               value: "0px 1px 3px 0px rgba(16, 24, 40, 0.10), 0px 1px 2px 0px rgba(16, 24, 40, 0.06), 0px 0px 0px 4px rgba(158, 119, 237, 0.24)",
+            },
+            "ring-error": {
+               value: "0px 0px 0px 4px rgba(240, 68, 56, 0.24)",
+            },
+            "ring-gray": {
+               value: "0px 0px 0px 4px rgba(152, 162, 179, 0.14);",
+            },
+            "ring-gray-secondary": {
+               value: "0px 0px 0px 4px rgba(152, 162, 179, 0.20)",
+            },
+            "ring-gray-shadow-xs": {
+               value: "0px 1px 2px 0px rgba(16, 24, 40, 0.05), 0px 0px 0px 4px rgba(152, 162, 179, 0.14)",
+            },
+            "ring-gray-shadow-sm": {
+               value: "0px 1px 3px 0px rgba(16, 24, 40, 0.10), 0px 1px 2px 0px rgba(16, 24, 40, 0.06), 0px 0px 0px 4px rgba(152, 162, 179, 0.14)",
+            },
+            "ring-error-shadow-xs": {
+               value: "0px 1px 2px 0px rgba(16, 24, 40, 0.05), 0px 0px 0px 4px rgba(240, 68, 56, 0.24) ",
+            },
+
             // box-shadow coordinates as follows [horizontal, vertical, blur, spread, color]
             // Figma design uses hex code for gray.900 and converting to rgba, if you change gray.900, update the rgba value
             "shadow-xs": {
@@ -1020,6 +3633,31 @@ export default defineConfig({
             "shadow-3xl": {
                value: "0px 32px 64px -12px rgba(16, 24, 40, 0.14)",
             },
+         },
+         sizes: {
+            "container-padding-mobile": {
+               value: "1rem",
+            },
+            "container-padding-desktop": {
+               value: "2rem",
+            },
+            "container-max-width-desktop": {
+               value: "80rem",
+            },
+            "paragraph-max-width": {
+               value: "45rem",
+            },
+            "width-xxs": { value: "20rem" },
+            "width-xs": { value: "24rem" },
+            "width-sm": { value: "30rem" },
+            "width-md": { value: "35rem" },
+            "width-lg": { value: "40rem" },
+            "width-xl": { value: "48rem" },
+            "width-2xl": { value: "64rem" },
+            "width-3xl": { value: "80rem" },
+            "width-4xl": { value: "90rem" },
+            "width-5xl": { value: "100rem" },
+            "width-6xl": { value: "120rem" },
          },
          spacing: {
             "0": { value: "0rem" },
@@ -1104,23 +3742,4 @@ export default defineConfig({
          },
       },
    },
-
-   // theme: {
-   //    semanticTokens: {
-   //       colors: {
-   //          text: {
-   //             value: {
-   //                _pinkTheme: {
-   //                   base: "{colors.pink.500}",
-   //                   _dark: "{colors.pink.300}",
-   //                },
-   //                _blueTheme: {
-   //                   base: "{colors.blue.500}",
-   //                   _dark: "{colors.blue.300}",
-   //                },
-   //             },
-   //          },
-   //       },
-   //    },
-   // },
 });
