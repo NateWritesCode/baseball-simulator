@@ -12,6 +12,11 @@
          "command": "bunx vite"
       },
       {
+         "label": "panda studio",
+         "type": "shell",
+         "command": "bunx panda studio"
+      },
+      {
          "label": "preview",
          "type": "shell",
          "command": "bunx vite preview"

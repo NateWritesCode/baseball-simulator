@@ -116,10 +116,175 @@ export default defineConfig({
    strictPropertyValues: true,
    strictTokens: true,
    theme: {
+      breakpoints: {
+         desktop: "1280px",
+         mobile: "375px",
+         tablet: "768px",
+      },
       semanticTokens: {
          colors: {
-            text: {
-               value: {},
+            "text-brand-primary": {
+               dark: {
+                  value: "{colors.gray.dark.50}",
+               },
+               light: {
+                  value: "{colors.brand.900}",
+               },
+            },
+            "text-brand-secondary": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.brand.700}",
+               },
+            },
+            "text-brand-tertiary": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "text-brand-tertiary_alt": {
+               dark: {
+                  value: "{colors.gray.dark.50}",
+               },
+               light: {
+                  value: "{colors.brand.600}",
+               },
+            },
+            "text-disabled": {
+               dark: {
+                  value: "{colors.gray.dark.500}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "text-error-primary": {
+               dark: {
+                  value: "{colors.error.400}",
+               },
+               light: {
+                  value: "{colors.error.600}",
+               },
+            },
+            "text-placeholder": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "text-placeholder_subtle": {
+               dark: {
+                  value: "{colors.gray.dark.700}",
+               },
+               light: {
+                  value: "{colors.gray.light.300}",
+               },
+            },
+            "text-primary": {
+               dark: {
+                  value: "{colors.gray.dark.50}",
+               },
+               light: {
+                  value: "{colors.gray.light.900}",
+               },
+            },
+            "text-primary_on-brand": {
+               dark: {
+                  value: "{colors.gray.dark.50}",
+               },
+               light: {
+                  value: "{colors.white}",
+               },
+            },
+            "text-secondary": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.700}",
+               },
+            },
+            "text-secondary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.200}",
+               },
+               light: {
+                  value: "{colors.gray.light.800}",
+               },
+            },
+            "text-secondary_on-brand": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.brand.200}",
+               },
+            },
+            "text-success-primary": {
+               dark: {
+                  value: "{colors.success.400}",
+               },
+               light: {
+                  value: "{colors.success.600}",
+               },
+            },
+            "text-tertiary": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.600}",
+               },
+            },
+            "text-tertiary_hover": {
+               dark: {
+                  value: "{colors.gray.dark.300}",
+               },
+               light: {
+                  value: "{colors.gray.light.700}",
+               },
+            },
+            "text-tertiary_on-brand": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.brand.200}",
+               },
+            },
+            "text-quaternary": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.gray.light.500}",
+               },
+            },
+            "text-quaternary_on-brand": {
+               dark: {
+                  value: "{colors.gray.dark.400}",
+               },
+               light: {
+                  value: "{colors.brand.300}",
+               },
+            },
+            "text-warning-primary": {
+               dark: {
+                  value: "{colors.warning.400}",
+               },
+               light: {
+                  value: "{colors.warning.600}",
+               },
+            },
+            "text-white": {
+               value: "{colors.white}",
             },
          },
       },
@@ -491,6 +656,58 @@ export default defineConfig({
                   value: "#102a56",
                },
             },
+            brand: {
+               25: { value: "#FCFAFF" },
+               50: { value: "#F9F5FF" },
+               100: { value: "#F4EBFF" },
+               200: { value: "#E9D7FE" },
+               300: { value: "#D6BBFB" },
+               400: { value: "#B692F6" },
+               500: { value: "#9E77ED" },
+               600: { value: "#7F56D9" },
+               700: { value: "#6941C6" },
+               800: { value: "#53389E" },
+               900: { value: "#42307D" },
+               950: { value: "#2C1C5F" },
+            },
+            error: {
+               25: {
+                  value: "#FFFBFA",
+               },
+               50: {
+                  value: "#FEF3F2",
+               },
+               100: {
+                  value: "#FEE4E2",
+               },
+               200: {
+                  value: "#FECDCA",
+               },
+               300: {
+                  value: "#FDA29B",
+               },
+               400: {
+                  value: "#F97066",
+               },
+               500: {
+                  value: "#F04438",
+               },
+               600: {
+                  value: "#D92D20",
+               },
+               700: {
+                  value: "#B42318",
+               },
+               800: {
+                  value: "#912018",
+               },
+               900: {
+                  value: "#7A271A",
+               },
+               950: {
+                  value: "#55160C",
+               },
+            },
             gray: {
                dark: {
                   25: {
@@ -567,6 +784,82 @@ export default defineConfig({
                   950: {
                      value: "#0C111D",
                   },
+               },
+            },
+            success: {
+               25: {
+                  value: "#F6FEF9",
+               },
+               50: {
+                  value: "#ECFDF3",
+               },
+               100: {
+                  value: "#DCFAE6",
+               },
+               200: {
+                  value: "#A9EFC5",
+               },
+               300: {
+                  value: "#75E0A7",
+               },
+               400: {
+                  value: "#47CD89",
+               },
+               500: {
+                  value: "#17B26A",
+               },
+               600: {
+                  value: "#079455",
+               },
+               700: {
+                  value: "#067647",
+               },
+               800: {
+                  value: "#085D3A",
+               },
+               900: {
+                  value: "#074D31",
+               },
+               950: {
+                  value: "#053321",
+               },
+            },
+            warning: {
+               25: {
+                  value: "#FFFCF5",
+               },
+               50: {
+                  value: "#FFFAEB",
+               },
+               100: {
+                  value: "#FEF0C7",
+               },
+               200: {
+                  value: "#FEDF89",
+               },
+               300: {
+                  value: "#FEC84B",
+               },
+               400: {
+                  value: "#FDB022",
+               },
+               500: {
+                  value: "#F79009",
+               },
+               600: {
+                  value: "#DC6803",
+               },
+               700: {
+                  value: "#B54708",
+               },
+               800: {
+                  value: "#93370D",
+               },
+               900: {
+                  value: "#7A2E0E",
+               },
+               950: {
+                  value: "#4E1D09",
                },
             },
             white: {
@@ -701,6 +994,32 @@ export default defineConfig({
             "radius-3xl": { value: "1.25rem" },
             "radius-4xl": { value: "1.5rem" },
             "radius-full": { value: "9999px " },
+         },
+
+         shadows: {
+            // box-shadow coordinates as follows [horizontal, vertical, blur, spread, color]
+            // Figma design uses hex code for gray.900 and converting to rgba, if you change gray.900, update the rgba value
+            "shadow-xs": {
+               value: "0px 1px 2px 0px rgba(16, 24, 40, 0.06), 0px 1px 3px 0px rgba(16, 24, 40, 0.1)",
+            },
+            "shadow-sm": {
+               value: "0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.1)",
+            },
+            "shadow-md": {
+               value: "0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.1)",
+            },
+            "shadow-lg": {
+               value: "0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)",
+            },
+            "shadow-xl": {
+               value: "0px 8px 8px -4px rgba(16, 24, 40, 0.03), 0px 20px 24px -4px rgba(16, 24, 40, 0.08)",
+            },
+            "shadow-2xl": {
+               value: "0px 24px 48px -12px rgba(16, 24, 40, 0.18)",
+            },
+            "shadow-3xl": {
+               value: "0px 32px 64px -12px rgba(16, 24, 40, 0.14)",
+            },
          },
          spacing: {
             "0": { value: "0rem" },
