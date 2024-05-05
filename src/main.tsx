@@ -1,10 +1,10 @@
+import "./main.css";
 import { Page404 } from "@/components/general";
 // import { generalStore } from "@/services/generalStore";
 // import DbClient from "@/utils/db/DbClient";
 import "@fontsource-variable/inter";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
-import "./main.css";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
@@ -28,7 +28,7 @@ if (!rootElement) {
 }
 
 if (!rootElement.innerHTML) {
-   (async () => {
+   (() => {
       // const indexedDbs = await indexedDB.databases();
       // const gameNames = indexedDbs.map((db) => {
       //    if (!db.name) {

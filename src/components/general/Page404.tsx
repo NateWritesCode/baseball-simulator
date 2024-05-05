@@ -1,11 +1,13 @@
-import { css } from "styled-system/css";
 import { Box } from "styled-system/jsx";
-import { box } from "styled-system/patterns";
+import { Button } from "../ui";
 
 const Error404 = () => {
    return (
-      <Box bg="red">
-         <p>Not found!</p>
+      <Box p="10">
+         <div>Hello worldz</div>
+         <Button hierarchy="primary" size="sm">
+            Button CTA
+         </Button>
       </Box>
    );
 };

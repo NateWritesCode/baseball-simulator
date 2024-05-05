@@ -1,4 +1,8 @@
-import { ConditionalWrapper, DashboardWrapper } from "@/components/general";
+import {
+   ConditionalWrapper,
+   DashboardWrapper,
+   Page404,
+} from "@/components/general";
 import { generalStore } from "@/services/generalStore";
 import { useMatches } from "@tanstack/react-router";
 import {
@@ -53,4 +57,5 @@ const Root = () => {
 
 export const Route = createRootRoute({
    component: () => <Root />,
+   errorComponent: () => <Page404 />,
 });

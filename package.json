@@ -7,8 +7,7 @@
     "build": "bunx tsc && vite build",
     "dev": "vite",
     "preview": "vite preview",
-    "prepare": "panda codegen",
-    "panda": "panda codegen"
+    "prepare": "panda codegen"
   },
   "dependencies": {
     "@ark-ui/react": "^2.2.3",
@@ -29,8 +28,8 @@
   "devDependencies": {
     "@biomejs/biome": "^1.6.3",
     "@happy-dom/global-registrator": "^14.3.9",
-    "@pandacss/dev": "^0.38.0",
-    "@pandacss/studio": "^0.38.0",
+    "@pandacss/dev": "^0.39.0",
+    "@pandacss/studio": "^0.39.0",
     "@svgr/cli": "^8.1.0",
     "@tanstack/router-devtools": "^1.19.2",
     "@tanstack/router-vite-plugin": "^1.19.3",
