@@ -14,7 +14,7 @@ const Placeholder = () => {
       >
          <path
             d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-            stroke="white"
+            stroke="currentColor"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -26,24 +26,54 @@ const Placeholder = () => {
 const button = cva({
    base: {
       alignItems: "center",
+      appearance: "none",
       borderRadius: "radius-md",
       boxShadow: "shadow-xs",
+      colorPalette: "brand",
       cursor: "pointer",
       display: "inline-flex",
       justifyContent: "center",
-      _disabled: {},
-      _focus: {},
+      minWidth: "[0]",
+      outline: "none",
+      userSelect: "none",
+      verticalAlign: "middle",
+      whiteSpace: "nowrap",
+      _disabled: {
+         cursor: "not-allowed",
+         pointerEvents: "none",
+      },
+   },
+   defaultVariants: {
+      hierarchy: "primary",
+      size: "sm",
    },
    variants: {
       hierarchy: {
          "link-gray": {},
          "link-color": {},
          primary: {
-            background: "brand.600",
-            borderColor: "brand.600",
+            bg: "colorPalette.600",
+            borderColor: "colorPalette.600",
             borderStyle: "solid",
             borderWidth: "1px",
             color: "white",
+            _disabled: {
+               bg: "gray.light.100",
+               borderColor: "gray.light.200",
+               color: "gray.light.400",
+               _hover: {
+                  bg: "gray.light.100",
+                  borderColor: "gray.light.200",
+                  color: "gray.light.400",
+               },
+            },
+            _focus: {
+               boxShadow: "ring-brand-shadow-xs",
+            },
+            _hover: {
+               bg: "colorPalette.700",
+               borderColor: "colorPalette.700",
+            },
          },
          "secondary-color": {},
          "secondary-gray": {},
@@ -57,10 +87,30 @@ const button = cva({
             py: "spacing-lg",
             textStyle: "text.sm.semibold",
          },
-         md: {},
-         lg: {},
-         xl: {},
-         "2xl": {},
+         md: {
+            gap: "spacing-xs",
+            px: "[10px]",
+            py: "[14px]",
+            textStyle: "text.sm.semibold",
+         },
+         lg: {
+            gap: "spacing-sm",
+            px: "[10px]",
+            py: "spacing-xl",
+            textStyle: "text.md.semibold",
+         },
+         xl: {
+            gap: "spacing-sm",
+            px: "spacing-lg",
+            py: "[18px]",
+            textStyle: "text.md.semibold",
+         },
+         "2xl": {
+            gap: "[10px]",
+            px: "spacing-xl",
+            py: "[22px]",
+            textStyle: "text.lg.semibold",
+         },
       },
    },
 });
@@ -88,14 +138,3 @@ const Button = (props: ButtonProps) => {
 };
 
 export default Button;
-
-// interface IProps extends TType {
-//    leftIcon?: React.ReactNode;
-//    rightIcon?: React.ReactNode;
-// }
-
-// const MyButton: IProps = (props) => {
-//    return <>{props.leftIcon}{props.children}</>;
-// };
-
-// export default MyButton;
