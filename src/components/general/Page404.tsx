@@ -5,7 +5,7 @@ const Error404 = () => {
    return (
       <Box p="10">
          <div>Hello worldz</div>
-         <Button hierarchy="primary" size="sm">
+         <Button hierarchy="primary" iconLeading iconTrailing size="sm">
             Button CTA
          </Button>
       </Box>

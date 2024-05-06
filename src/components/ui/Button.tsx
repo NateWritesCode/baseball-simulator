@@ -3,11 +3,32 @@ import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 import { StyledComponent } from "styled-system/jsx";
 
+const Placeholder = () => {
+   return (
+      <svg
+         xmlns="http://www.w3.org/2000/svg"
+         width="24"
+         height="24"
+         viewBox="0 0 24 24"
+         fill="none"
+      >
+         <path
+            d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+         />
+      </svg>
+   );
+};
+
 const button = cva({
    base: {
       alignItems: "center",
       borderRadius: "radius-md",
       boxShadow: "shadow-xs",
+      cursor: "pointer",
       display: "inline-flex",
       justifyContent: "center",
       _disabled: {},
@@ -18,7 +39,7 @@ const button = cva({
          "link-gray": {},
          "link-color": {},
          primary: {
-            bg: "brand.600",
+            background: "brand.600",
             borderColor: "brand.600",
             borderStyle: "solid",
             borderWidth: "1px",
@@ -51,12 +72,19 @@ const StyledButton = styled("button", button, {
 type TType = typeof StyledButton;
 
 interface ButtonProps extends ComponentProps<TType> {
-   leftIcon?: ReactNode;
-   rightIcon?: ReactNode;
+   iconLeading?: boolean;
+   iconTrailing?: boolean;
 }
 
 const Button = (props: ButtonProps) => {
-   return <StyledButton>{props.children}</StyledButton>;
+   const { children, iconLeading, iconTrailing, ...rest } = props;
+   return (
+      <StyledButton {...rest}>
+         {iconLeading && <Placeholder />}
+         {props.children}
+         {iconTrailing && <Placeholder />}
+      </StyledButton>
+   );
 };
 
 export default Button;
