@@ -28,6 +28,7 @@ const button = cva({
       alignItems: "center",
       appearance: "none",
       borderRadius: "radius-md",
+      // boxShadow: "[0px 1px 16px 0px var(--colors-color-palette-950)]",
       boxShadow: "shadow-xs",
       colorPalette: "brand",
       cursor: "pointer",
@@ -68,7 +69,8 @@ const button = cva({
                },
             },
             _focus: {
-               boxShadow: "ring-brand-shadow-xs",
+               boxShadow:
+                  "[0px 1px 2px 0px color-mix(in srgb, var(--colors-gray-light-900) 5%, transparent), 0px 0px 0px 4px color-mix(in srgb, var(--colors-color-palette-500) 24%, transparent)]",
             },
             _hover: {
                bg: "colorPalette.700",

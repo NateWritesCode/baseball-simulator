@@ -1,4 +1,4 @@
-import { defineConfig } from "@pandacss/dev";
+import { type Config, defineConfig } from "@pandacss/dev";
 
 const referenceFontFamily = {
    display: "Inter Variable, sans-serif",
@@ -57,7 +57,7 @@ const referenceFontLetterSpacings = {
    },
 };
 
-export default defineConfig({
+const config: Config = {
    // clean: true,
    conditions: {
       light: "[data-color-mode=light] &",
@@ -3993,4 +3993,6 @@ export default defineConfig({
          },
       },
    },
-});
+};
+
+export default defineConfig(config);
