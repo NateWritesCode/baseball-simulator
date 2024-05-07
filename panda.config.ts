@@ -70,13 +70,36 @@ const config: Config = {
    outdir: "styled-system",
    preflight: true, // should enable pandacss reset?
    presets: ["@pandacss/preset-base"],
+   staticCss: {
+      css: [
+         {
+            properties: {
+               colorPalette: [
+                  "black",
+                  "blue",
+                  "blue-dark",
+                  "blue-light",
+                  "brand",
+                  "cyan",
+                  "error",
+                  "fuchsia",
+                  "gray-blue",
+                  "gray-cool",
+                  "gray.dark",
+                  "gray.light",
+                  "pink",
+               ],
+            },
+         },
+      ],
+   },
    strictPropertyValues: true,
    strictTokens: true,
    theme: {
       breakpoints: {
-         desktop: "1280px",
          mobile: "375px",
          tablet: "768px",
+         desktop: "1280px",
       },
       semanticTokens: {
          colors: {
@@ -1864,6 +1887,15 @@ const config: Config = {
                   letterSpacing: referenceFontLetterSpacings.display["2xl"],
                },
             },
+            "display.xl.bold": {
+               value: {
+                  fontFamily: referenceFontFamily.display,
+                  fontSize: referenceFontSizes.display.xl,
+                  fontWeight: referenceFontWeights.bold,
+                  lineHeight: referenceFontLineHeights.display.xl,
+                  letterSpacing: referenceFontLetterSpacings.display.xl,
+               },
+            },
             "display.lg.bold": {
                value: {
                   fontFamily: referenceFontFamily.display,
@@ -1946,6 +1978,14 @@ const config: Config = {
                   lineHeight: referenceFontLineHeights.display["2xl"],
                },
             },
+            "display.xl.semibold": {
+               value: {
+                  fontFamily: referenceFontFamily.display,
+                  fontSize: referenceFontSizes.display.xl,
+                  fontWeight: referenceFontWeights.semibold,
+                  lineHeight: referenceFontLineHeights.display.xl,
+               },
+            },
             "display.lg.semibold": {
                value: {
                   fontFamily: referenceFontFamily.display,
@@ -2026,6 +2066,14 @@ const config: Config = {
                   lineHeight: referenceFontLineHeights.display["2xl"],
                },
             },
+            "display.xl.medium": {
+               value: {
+                  fontFamily: referenceFontFamily.display,
+                  fontSize: referenceFontSizes.display.xl,
+                  fontWeight: referenceFontWeights.medium,
+                  lineHeight: referenceFontLineHeights.display.xl,
+               },
+            },
             "display.lg.medium": {
                value: {
                   fontFamily: referenceFontFamily.display,
@@ -2104,6 +2152,14 @@ const config: Config = {
                   fontSize: referenceFontSizes.display["2xl"],
                   fontWeight: referenceFontWeights.regular,
                   lineHeight: referenceFontLineHeights.display["2xl"],
+               },
+            },
+            "display.xl.regular": {
+               value: {
+                  fontFamily: referenceFontFamily.display,
+                  fontSize: referenceFontSizes.display.xl,
+                  fontWeight: referenceFontWeights.regular,
+                  lineHeight: referenceFontLineHeights.display.xl,
                },
             },
             "display.lg.regular": {
