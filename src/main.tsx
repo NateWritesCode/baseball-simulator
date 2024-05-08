@@ -1,18 +1,20 @@
 import "./main.css";
-import { Page404 } from "@/components/general";
+// import { Page404 } from "@/components/general";
 // import { generalStore } from "@/services/generalStore";
 // import DbClient from "@/utils/db/DbClient";
 import "@fontsource-variable/inter";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { StrictMode, Suspense } from "react";
 import ReactDOM from "react-dom/client";
+import { Page404 } from "./components/general";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
+   defaultPreload: "intent",
    defaultNotFoundComponent: () => {
       return <Page404 />;
    },
    routeTree,
-   defaultPreload: "intent",
 });
 
 declare module "@tanstack/react-router" {
@@ -57,6 +59,13 @@ if (!rootElement.innerHTML) {
       // });
 
       const root = ReactDOM.createRoot(rootElement);
-      root.render(<RouterProvider router={router} />);
+
+      root.render(
+         <StrictMode>
+            <Suspense fallback={<> </>}>
+               <RouterProvider router={router} />
+            </Suspense>
+         </StrictMode>,
+      );
    })();
 }

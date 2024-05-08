@@ -93,13 +93,15 @@ const config: Config = {
          },
       ],
    },
-   strictPropertyValues: true,
-   strictTokens: true,
+   strictPropertyValues: false,
+   strictTokens: false,
    theme: {
       breakpoints: {
-         mobile: "375px",
-         tablet: "768px",
-         desktop: "1280px",
+         sm: "640px",
+         md: "768px",
+         lg: "1024px",
+         xl: "1280px",
+         "2xl": "1536px",
       },
       semanticTokens: {
          colors: {
@@ -3942,13 +3944,13 @@ const config: Config = {
             },
          },
          sizes: {
-            "container-padding-mobile": {
+            "container-padding-sm": {
                value: "1rem",
             },
-            "container-padding-desktop": {
+            "container-padding-xl": {
                value: "2rem",
             },
-            "container-max-width-desktop": {
+            "container-max-width-xl": {
                value: "80rem",
             },
             "paragraph-max-width": {
@@ -3980,14 +3982,14 @@ const config: Config = {
             "3": { value: "0.75rem" },
             "spacing-lg": { value: "0.75rem" },
             "4": { value: "1rem" },
-            "container-padding-mobile": { value: "1rem" },
+            "container-padding-sm": { value: "1rem" },
             "spacing-xl": { value: "1rem" },
             "5": { value: "1.25rem" },
             "spacing-2xl": { value: "1.25rem" },
             "6": { value: "1.5rem" },
             "spacing-3xl": { value: "1.5rem" },
             "8": { value: "2rem" },
-            "container-padding-desktop": { value: "2rem" },
+            "container-padding-xl": { value: "2rem" },
             "spacing-4xl": { value: "2rem" },
             "10": { value: "2.5rem" },
             "spacing-5xl": { value: "2.5rem" },
@@ -4034,7 +4036,7 @@ const config: Config = {
             "spacing-22xl": { value: "64rem" },
             "width-2xl": { value: "64rem" },
             "320": { value: "80rem" },
-            "container-max-width-desktop": { value: "80rem" },
+            "container-max-width-xl": { value: "80rem" },
             "spacing-23xl": { value: "80rem" },
             "width-3xl": { value: "80rem" },
             "360": { value: "90rem" },
