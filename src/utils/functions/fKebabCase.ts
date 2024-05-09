@@ -7,5 +7,6 @@ export default (_s: string) => {
    return s
       .replace(/([a-z])([A-Z])/g, "$1-$2")
       .replace(/[\s_]+/g, "-")
+      .replace(/[^a-zA-Z0-9-]+/g, "") // Replace non-alphanumeric characters with nothing
       .toLowerCase();
 };

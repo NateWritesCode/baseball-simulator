@@ -22,8 +22,10 @@ import dayjs from "dayjs";
 import invariant from "tiny-invariant";
 import { parse } from "valibot";
 
-const PATH_INPUT = "data/ootp/input";
-const PATH_OUTPUT = "data/ootp/output";
+const cwd = import.meta.dir;
+
+const PATH_INPUT = `${cwd}/input/2011`;
+const PATH_OUTPUT = `${cwd}/output/2011`;
 
 createFolderPathIfNeeded(PATH_OUTPUT);
 
@@ -312,7 +314,7 @@ const parseParks = async () => {
       const turf = Number(park[87]);
       const isHomeTeamDugoutAtFirstBase = Boolean(park[92]);
 
-      const row = parse(VRowOotpPark, {
+      const _row = {
          avg,
          avgL,
          avgR,
@@ -402,7 +404,9 @@ const parseParks = async () => {
          wallHeights6,
          wind,
          windDirection,
-      });
+      };
+
+      const row = parse(VRowOotpPark, _row);
 
       parks.push(row);
    }
@@ -494,7 +498,7 @@ const parsePlayers = async () => {
       // if (!id) continue;
 
       // TODO: Figure out what to do with ID
-      const id = bbRefId;
+      const id = kebabCase(bbRefId);
 
       const ootpId = player[0];
       const teamId =
