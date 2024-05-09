@@ -28,6 +28,6 @@
          "@/*": ["./src/*"]
       }
    },
-   "include": ["src", "styled-system"],
+   "include": ["data/**/*", "src", "styled-system"],
    "references": [{ "path": "./tsconfig.node.json" }]
 }

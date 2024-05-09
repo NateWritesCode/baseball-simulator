@@ -1,3 +1,4 @@
+export { default as createFolderPathIfNeeded } from "./fCreateFolderPathIfNeeded";
 export { default as getDateString } from "./fGetDateString";
 export { default as getRandomHexColor } from "./fGetRandomHexColor";
 export { default as getRandomWeightedChoice } from "./fGetRandomWeightedChoice";

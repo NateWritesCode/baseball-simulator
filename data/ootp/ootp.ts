@@ -1,42 +1,31 @@
+import assert from "node:assert";
+import { POSITION_MAPPING } from "@/utils/constants";
+import { createFolderPathIfNeeded, kebabCase } from "@/utils/functions";
 import {
-   PATH_INPUT_ROOT,
-   PATH_OUTPUT_ROOT,
-   POSITION_MAPPING,
    type TRowOotpDivision,
    type TRowOotpGame,
+   type TRowOotpLeague,
    type TRowOotpPark,
+   type TRowOotpPlayer,
    type TRowOotpSubLeague,
    type TRowOotpTeam,
-   ZRowOotpDivision,
-   ZRowOotpGame,
-   ZRowOotpPark,
-   ZRowOotpSubLeague,
-   ZRowOotpTeam,
-} from "@bbfun/utils";
-import { createFolderPathIfNeeded } from "@bbfun/utils";
-import { PersonHistoricalIdHelper } from "@bbfun/utils";
+   VRowOotpDivision,
+   VRowOotpGame,
+   VRowOotpLeague,
+   VRowOotpPark,
+   VRowOotpPlayer,
+   VRowOotpSubLeague,
+   VRowOotpTeam,
+} from "@/utils/types";
 import CSV from "csv-string";
-
-import assert from "assert";
-import {
-   type TRowOotpLeague,
-   type TRowOotpPlayer,
-   ZRowOotpLeague,
-   ZRowOotpPlayer,
-} from "@bbfun/utils";
 import dayjs from "dayjs";
-import { kebabCase } from "lodash";
 import invariant from "tiny-invariant";
+import { parse } from "valibot";
 
-const rootPath = import.meta.dir.split("utils")[0];
-
-const PATH_INPUT = `${PATH_INPUT_ROOT}/data/ootp/2011`;
-const PATH_OUTPUT = `${PATH_OUTPUT_ROOT}/data/ootp/2011`;
+const PATH_INPUT = "data/ootp/input";
+const PATH_OUTPUT = "data/ootp/output";
 
 createFolderPathIfNeeded(PATH_OUTPUT);
-
-const personHistoricalIdHelper = new PersonHistoricalIdHelper();
-await personHistoricalIdHelper.init();
 
 const divisionsCsv = `${PATH_INPUT}/divisions.csv`;
 const divisionsText = await Bun.file(divisionsCsv).text();
@@ -118,7 +107,7 @@ const parseGames = async () => {
          time,
       };
 
-      const row = ZRowOotpGame.parse(parseObj);
+      const row = parse(VRowOotpGame, parseObj);
 
       games.push(row);
    }
@@ -138,7 +127,7 @@ const parseLeagues = async () => {
       const id = slug;
       const ootpId = league[0];
 
-      const row = ZRowOotpLeague.parse({
+      const row = parse(VRowOotpLeague, {
          abbrev,
          id,
          name,
@@ -171,7 +160,7 @@ const parseSubLeagues = async () => {
       const ootpId = subLeague[1];
 
       const id = `${leagueId}-${slug}`;
-      const row = ZRowOotpSubLeague.parse({
+      const row = parse(VRowOotpSubLeague, {
          abbrev,
          id,
          leagueId,
@@ -208,7 +197,7 @@ const parseDivisions = async () => {
       const ootpId = division[2];
       const id = `${subLeagueId}-${slug}`;
 
-      const row = ZRowOotpDivision.parse({
+      const row = parse(VRowOotpDivision, {
          id,
          leagueId,
          name,
@@ -323,7 +312,7 @@ const parseParks = async () => {
       const turf = Number(park[87]);
       const isHomeTeamDugoutAtFirstBase = Boolean(park[92]);
 
-      const row = ZRowOotpPark.parse({
+      const row = parse(VRowOotpPark, {
          avg,
          avgL,
          avgR,
@@ -458,7 +447,7 @@ const parseTeams = async () => {
       const jerseyPinStripeColor = team[24];
       const historicalId = team[26];
 
-      const row = ZRowOotpTeam.parse({
+      const row = parse(VRowOotpTeam, {
          abbrev,
          backgroundColor,
          divisionId,
@@ -501,8 +490,11 @@ const parsePlayers = async () => {
       // Get necessary data from players.csv
       const bbRefId = player[34];
 
-      const id = personHistoricalIdHelper.getPersonIdFromBbRefId(bbRefId);
-      if (!id) continue;
+      // const id = personHistoricalIdHelper.getPersonIdFromBbRefId(bbRefId);
+      // if (!id) continue;
+
+      // TODO: Figure out what to do with ID
+      const id = bbRefId;
 
       const ootpId = player[0];
       const teamId =
@@ -510,7 +502,7 @@ const parsePlayers = async () => {
       const firstName = player[5];
       const lastName = player[6];
       const nickname = player[7] || null;
-      const dateOfBirth = dayjs(player[9]).format("YYYY-MM-DD");
+      const birthdate = dayjs(player[9]).format("YYYY-MM-DD");
 
       invariant(teamId, `No team found for player ${id}`);
 
@@ -618,7 +610,7 @@ const parsePlayers = async () => {
 
       const parseObj: TRowOotpPlayer = {
          bbRefId,
-         dateOfBirth,
+         birthdate,
          firstName,
          id,
          lastName,
@@ -754,7 +746,7 @@ const parsePlayers = async () => {
          },
       };
 
-      const row = ZRowOotpPlayer.parse(parseObj);
+      const row = parse(VRowOotpPlayer, parseObj);
 
       players.push(row);
    }
