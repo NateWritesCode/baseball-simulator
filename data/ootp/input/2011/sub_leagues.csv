@@ -1,0 +1,3 @@
+league_id,sub_league_id,name,abbr,gender,designated_hitter
+100,0,"AL","AL",0,1
+100,1,"NL","NL",0,0
