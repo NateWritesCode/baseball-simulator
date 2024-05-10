@@ -91,21 +91,21 @@ const parseGames = async () => {
    for (const [iterGame, game] of gamesRows.entries()) {
       console.info(`Processing game ${iterGame + 1} of ${gamesRows.length}`);
 
-      const ootpId = game[0];
-      const leagueId = leagues.find((league) => league.ootpId === game[1])?.id;
-      const teamIdHome = teams.find((team) => team.ootpId === game[2])?.id;
-      const teamIdAway = teams.find((team) => team.ootpId === game[3])?.id;
+      const idOotp = game[0];
+      const idLeague = leagues.find((league) => league.idOotp === game[1])?.id;
+      const idTeamHome = teams.find((team) => team.idOotp === game[2])?.id;
+      const idTeamAway = teams.find((team) => team.idOotp === game[3])?.id;
       const date = dayjs(game[5]).format("YYYY-MM-DD");
       const time = Number(game[6]);
-      const id = `${date}-${time}-${leagueId}-${teamIdHome}-${teamIdAway}`;
+      const id = `${date}-${time}-${idLeague}-${idTeamHome}-${idTeamAway}`;
 
       const parseObj = {
          date,
          id,
-         leagueId,
-         ootpId,
-         teamIdAway,
-         teamIdHome,
+         idLeague,
+         idOotp,
+         idTeamAway,
+         idTeamHome,
          time,
       };
 
@@ -127,13 +127,13 @@ const parseLeagues = async () => {
       const name = league[1];
       const slug = kebabCase(name);
       const id = slug;
-      const ootpId = league[0];
+      const idOotp = league[0];
 
       const row = parse(VRowOotpLeague, {
          abbrev,
          id,
          name,
-         ootpId,
+         idOotp,
          slug,
       });
 
@@ -155,19 +155,19 @@ const parseSubLeagues = async () => {
       const abbrev = subLeague[3];
       const name = subLeague[2];
       const slug = kebabCase(name);
-      const ootpLeagueId = subLeague[0];
-      const leagueId = leagues.find(
-         (league) => league.ootpId === ootpLeagueId,
+      const idOotpLeague = subLeague[0];
+      const idLeague = leagues.find(
+         (league) => league.idOotp === idOotpLeague,
       )?.id;
-      const ootpId = subLeague[1];
+      const idOotp = subLeague[1];
 
-      const id = `${leagueId}-${slug}`;
+      const id = `${idLeague}-${slug}`;
       const row = parse(VRowOotpSubLeague, {
          abbrev,
          id,
-         leagueId,
+         idLeague,
          name,
-         ootpId,
+         idOotp,
          slug: id,
       });
 
@@ -187,25 +187,25 @@ const parseDivisions = async () => {
       );
 
       const name = division[3];
-      const ootpLeagueId = division[0];
-      const ootpSubLeagueId = division[1];
-      const leagueId = leagues.find(
-         (league) => league.ootpId === ootpLeagueId,
+      const idOotpLeague = division[0];
+      const idOotpSubLeague = division[1];
+      const idLeague = leagues.find(
+         (league) => league.idOotp === idOotpLeague,
       )?.id;
-      const subLeagueId = subLeagues.find(
-         (subLeague) => subLeague.ootpId === ootpSubLeagueId,
+      const idSubLeague = subLeagues.find(
+         (subLeague) => subLeague.idOotp === idOotpSubLeague,
       )?.id;
       const slug = kebabCase(name);
-      const ootpId = division[2];
-      const id = `${subLeagueId}-${slug}`;
+      const idOotp = division[2];
+      const id = `${idSubLeague}-${slug}`;
 
       const row = parse(VRowOotpDivision, {
          id,
-         leagueId,
+         idLeague,
          name,
-         ootpId,
+         idOotp,
          slug: id,
-         subLeagueId,
+         idSubLeague,
       });
 
       divisions.push(row);
@@ -223,7 +223,7 @@ const parseParks = async () => {
          `Processing subLeague ${iterPark + 1} of ${parksRows.length}`,
       );
 
-      const ootpId = park[0];
+      const idOotp = park[0];
 
       const dimensionsX = Number(park[1]);
       const dimensionsY = Number(park[2]);
@@ -346,7 +346,7 @@ const parseParks = async () => {
          id,
          isHomeTeamDugoutAtFirstBase,
          name,
-         ootpId,
+         idOotp,
          positionsX0,
          positionsX1,
          positionsX2,
@@ -418,28 +418,28 @@ const parseTeams = async () => {
    for (const [iterTeam, team] of teamsRows.entries()) {
       console.info(`Processing team ${iterTeam + 1} of ${teamsRows.length}`);
 
-      const ootpId = team[0];
+      const idOotp = team[0];
       const name = team[1];
       const abbrev = team[2];
       const nickname = team[3];
       const id = kebabCase(`${name}-${nickname}`);
       const slug = id;
 
-      const ootpParkId = team[6];
-      const ootpLeagueId = team[7];
-      const ootpSubLeagueId = team[8];
-      const ootpDivisionId = team[9];
+      const idOotpPark = team[6];
+      const idOotpLeague = team[7];
+      const idOotpSubLeague = team[8];
+      const idOotpDivision = team[9];
 
-      const leagueId = leagues.find(
-         (league) => league.ootpId === ootpLeagueId,
+      const idLeague = leagues.find(
+         (league) => league.idOotp === idOotpLeague,
       )?.id;
-      const subLeagueId = subLeagues.find(
-         (subLeague) => subLeague.ootpId === ootpSubLeagueId,
+      const idSubLeague = subLeagues.find(
+         (subLeague) => subLeague.idOotp === idOotpSubLeague,
       )?.id;
-      const divisionId = divisions.find(
-         (division) => division.ootpId === ootpDivisionId,
+      const idDivision = divisions.find(
+         (division) => division.idOotp === idOotpDivision,
       )?.id;
-      const parkId = parks.find((park) => park.ootpId === ootpParkId)?.id;
+      const idPark = parks.find((park) => park.idOotp === idOotpPark)?.id;
 
       const backgroundColor = team[17];
       const textColor = team[18];
@@ -449,27 +449,27 @@ const parseTeams = async () => {
       const jerseyAwayColor = team[22];
       const jerseySecondaryColor = team[23];
       const jerseyPinStripeColor = team[24];
-      const historicalId = team[26];
+      const idHistorical = team[26];
 
       const row = parse(VRowOotpTeam, {
          abbrev,
          backgroundColor,
-         divisionId,
+         idDivision,
          hatMainColor,
          hatVisorColor,
-         historicalId,
+         idHistorical,
          id,
          jerseyAwayColor,
          jerseyMainColor,
          jerseyPinStripeColor,
          jerseySecondaryColor,
-         leagueId,
+         idLeague,
          name,
          nickname,
-         ootpId,
-         parkId,
+         idOotp,
+         idPark,
          slug,
-         subLeagueId,
+         idSubLeague,
          textColor,
       });
 
@@ -500,15 +500,15 @@ const parsePlayers = async () => {
       // TODO: Figure out what to do with ID
       const id = kebabCase(bbRefId);
 
-      const ootpId = player[0];
-      const teamId =
-         teams.find((team) => team.ootpId === player[1])?.id || null;
+      const idOotp = player[0];
+      const idTeam =
+         teams.find((team) => team.idOotp === player[1])?.id || null;
       const firstName = player[5];
       const lastName = player[6];
       const nickname = player[7] || null;
       const birthdate = dayjs(player[9]).format("YYYY-MM-DD");
 
-      invariant(teamId, `No team found for player ${id}`);
+      invariant(idTeam, `No team found for player ${id}`);
 
       const position =
          POSITION_MAPPING[player[3] as keyof typeof POSITION_MAPPING];
@@ -539,6 +539,13 @@ const parsePlayers = async () => {
       const battingREye = Number(batterRatings[14]);
       const battingRAvoidKs = Number(batterRatings[15]);
       const battingRPower = Number(batterRatings[17]);
+
+      // Batting Potential
+      const battingPotentialContact = Number(batterRatings[26]);
+      const battingPotentialGap = Number(batterRatings[27]);
+      const battingPotentialEye = Number(batterRatings[28]);
+      const battingPotentialAvoidKs = Number(batterRatings[29]);
+      const battingPotentialPower = Number(batterRatings[31]);
 
       // Get necessary data from players_pitching.csv
       const pitcherRatings = playersPitchingRows[iterPlayer];
@@ -578,6 +585,27 @@ const parsePlayers = async () => {
       const pitchingLMovement = Number(pitcherRatings[19]);
       const pitchingLBalk = Number(pitcherRatings[20]);
       const pitchingLWildPitch = Number(pitcherRatings[22]);
+
+      // Pitching potential
+
+      const pitchingPotentialStuff = Number(pitcherRatings[23]);
+      const pitchingPotentialControl = Number(pitcherRatings[24]);
+      const pitchingPotentialMovement = Number(pitcherRatings[25]);
+      const pitchingPotentialBalk = Number(pitcherRatings[26]);
+      const pitchingPotentialWildPitch = Number(pitcherRatings[28]);
+
+      const pitchingPotentialFastball = Number(pitcherRatings[41]);
+      const pitchingPotentialSlider = Number(pitcherRatings[42]);
+      const pitchingPotentialCurveball = Number(pitcherRatings[43]);
+      const pitchingPotentialScrewball = Number(pitcherRatings[44]);
+      const pitchingPotentialForkball = Number(pitcherRatings[45]);
+      const pitchingPotentialChangeup = Number(pitcherRatings[46]);
+      const pitchingPotentialSinker = Number(pitcherRatings[47]);
+      const pitchingPotentialSplitter = Number(pitcherRatings[48]);
+      const pitchingPotentialKnuckleball = Number(pitcherRatings[49]);
+      const pitchingPotentialCutter = Number(pitcherRatings[50]);
+      const pitchingPotentialCirclechange = Number(pitcherRatings[51]);
+      const pitchingPotentialKnucklecurve = Number(pitcherRatings[52]);
 
       // Get necessary data from players_fielding.csv
 
@@ -619,10 +647,40 @@ const parsePlayers = async () => {
          id,
          lastName,
          nickname,
-         ootpId,
+         idOotp,
          position,
          slug: id,
-         teamId,
+         idTeam,
+         potential: {
+            batting: {
+               avoidKs: battingPotentialAvoidKs,
+               contact: battingPotentialContact,
+               eye: battingPotentialEye,
+               gap: battingPotentialGap,
+               power: battingPotentialPower,
+            },
+            pitching: {
+               balk: pitchingPotentialBalk,
+               control: pitchingPotentialControl,
+               movement: pitchingPotentialMovement,
+               pitches: {
+                  changeup: pitchingPotentialChangeup,
+                  circlechange: pitchingPotentialCirclechange,
+                  cutter: pitchingPotentialCutter,
+                  curveball: pitchingPotentialCurveball,
+                  fastball: pitchingPotentialFastball,
+                  forkball: pitchingPotentialForkball,
+                  knuckleball: pitchingPotentialKnuckleball,
+                  knucklecurve: pitchingPotentialKnucklecurve,
+                  screwball: pitchingPotentialScrewball,
+                  sinker: pitchingPotentialSinker,
+                  slider: pitchingPotentialSlider,
+                  splitter: pitchingPotentialSplitter,
+               },
+               stuff: pitchingPotentialStuff,
+               wildPitch: pitchingPotentialWildPitch,
+            },
+         },
          ratings: {
             batting: {
                avoidKs,
