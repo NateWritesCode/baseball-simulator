@@ -25,7 +25,8 @@
       "rootDir": ".",
       "baseUrl": ".",
       "paths": {
-         "@/*": ["./src/*"]
+         "@/*": ["./src/*"],
+         "data": ["./data/ootp/output/2011"]
       }
    },
    "include": ["data/**/*", "src", "styled-system"],

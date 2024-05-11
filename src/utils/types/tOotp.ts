@@ -47,6 +47,14 @@ const VRowOotpPlayerRatingsBatting = object({
    splits: VRowOotpPlayerRatingsBattingSplits,
 });
 
+const VRowOotpPlayerPotentialBatting = object({
+   avoidKs: number(),
+   contact: number(),
+   gap: number(),
+   eye: number(),
+   power: number(),
+});
+
 const VRowOotpPlayerRatingsPitchingSplitsValues = object({
    balk: number(),
    control: number(),
@@ -71,6 +79,15 @@ const VRowOotpPlayerRatingsPitching = object({
    velocity: number(),
    wildPitch: number(),
    splits: VRowOotpPlayerRatingsPitchingSplits,
+});
+
+const VRowOotpPlayerPotentialPitching = object({
+   balk: number(),
+   control: number(),
+   movement: number(),
+   pitches: VRowOotpPlayerRatingsPitches,
+   stuff: number(),
+   wildPitch: number(),
 });
 
 const VRowOotpPlayerRatingsRunning = object({
@@ -128,6 +145,11 @@ const VRowOotpPlayerRatings = object({
    running: VRowOotpPlayerRatingsRunning,
 });
 
+const VRowOotpPlayerPotential = object({
+   batting: VRowOotpPlayerPotentialBatting,
+   pitching: VRowOotpPlayerPotentialPitching,
+});
+
 export const VRowOotpPlayer = object({
    bbRefId: string(),
    birthdate: string([VRegexDate]),
@@ -135,11 +157,12 @@ export const VRowOotpPlayer = object({
    id: string([VRegexSlug]),
    lastName: string(),
    nickname: nullable(string()),
-   ootpId: string(),
+   idOotp: string(),
    position: VPickListGamePositions,
+   potential: VRowOotpPlayerPotential,
    ratings: VRowOotpPlayerRatings,
    slug: string([VRegexSlug]),
-   teamId: nullable(string([VRegexSlug])),
+   idTeam: nullable(string([VRegexSlug])),
 });
 export type TRowOotpPlayer = Input<typeof VRowOotpPlayer>;
 
@@ -147,7 +170,7 @@ export const VRowOotpLeague = object({
    abbrev: string(),
    id: string([VRegexSlug]),
    name: string(),
-   ootpId: string(),
+   idOotp: string(),
    slug: string([VRegexSlug]),
 });
 export type TRowOotpLeague = Input<typeof VRowOotpLeague>;
@@ -155,20 +178,20 @@ export type TRowOotpLeague = Input<typeof VRowOotpLeague>;
 export const VRowOotpSubLeague = object({
    abbrev: string(),
    id: string([VRegexSlug]),
-   leagueId: string([VRegexSlug]),
+   idLeague: string([VRegexSlug]),
    name: string(),
-   ootpId: string(),
+   idOotp: string(),
    slug: string([VRegexSlug]),
 });
 export type TRowOotpSubLeague = Input<typeof VRowOotpSubLeague>;
 
 export const VRowOotpDivision = object({
    id: string([VRegexSlug]),
-   leagueId: string([VRegexSlug]),
+   idLeague: string([VRegexSlug]),
    name: string(),
-   ootpId: string(),
+   idOotp: string(),
    slug: string([VRegexSlug]),
-   subLeagueId: string([VRegexSlug]),
+   idSubLeague: string([VRegexSlug]),
 });
 export type TRowOotpDivision = Input<typeof VRowOotpDivision>;
 
@@ -204,7 +227,7 @@ export const VRowOotpPark = object({
    id: string([VRegexSlug]),
    isHomeTeamDugoutAtFirstBase: boolean(),
    name: string(),
-   ootpId: string([VRegexSlug]),
+   idOotp: string([VRegexSlug]),
    positionsX0: number(),
    positionsX1: number(),
    positionsX2: number(),
@@ -268,22 +291,22 @@ export type TRowOotpPark = Input<typeof VRowOotpPark>;
 export const VRowOotpTeam = object({
    abbrev: string(),
    backgroundColor: string([VRegexHexColor]),
-   divisionId: string([VRegexSlug]),
+   idDivision: string([VRegexSlug]),
    hatMainColor: string([VRegexHexColor]),
    hatVisorColor: string([VRegexHexColor]),
-   historicalId: string(),
+   idHistorical: string(),
    id: string([VRegexSlug]),
    jerseyAwayColor: string([VRegexHexColor]),
    jerseyMainColor: string([VRegexHexColor]),
    jerseyPinStripeColor: string([VRegexHexColor]),
    jerseySecondaryColor: string([VRegexHexColor]),
-   leagueId: string([VRegexSlug]),
+   idLeague: string([VRegexSlug]),
    name: string(),
    nickname: string(),
-   ootpId: string(),
-   parkId: nullable(string([VRegexSlug])),
+   idOotp: string(),
+   idPark: nullable(string([VRegexSlug])),
    slug: string([VRegexSlug]),
-   subLeagueId: string([VRegexSlug]),
+   idSubLeague: string([VRegexSlug]),
    textColor: string([VRegexHexColor]),
 });
 export type TRowOotpTeam = Input<typeof VRowOotpTeam>;
@@ -291,10 +314,10 @@ export type TRowOotpTeam = Input<typeof VRowOotpTeam>;
 export const VRowOotpGame = object({
    date: string([VRegexDate]),
    id: string([VRegexSlug]),
-   leagueId: string([VRegexSlug]),
-   teamIdAway: string([VRegexSlug]),
-   teamIdHome: string([VRegexSlug]),
-   ootpId: string(),
+   idLeague: string([VRegexSlug]),
+   idTeamAway: string([VRegexSlug]),
+   idTeamHome: string([VRegexSlug]),
+   idOotp: string(),
    time: number([maxValue(2359)]),
 });
 
