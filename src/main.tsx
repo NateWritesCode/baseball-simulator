@@ -1,7 +1,6 @@
 import "./main.css";
-// import { Page404 } from "@/components/general";
-// import { generalStore } from "@/services/generalStore";
-// import DbClient from "@/utils/db/DbClient";
+import { generalStore } from "@/services/generalStore";
+import DbClient from "@/utils/db/DbClient";
 import "@fontsource-variable/inter";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode, Suspense } from "react";
@@ -30,33 +29,33 @@ if (!rootElement) {
 }
 
 if (!rootElement.innerHTML) {
-   (() => {
-      // const indexedDbs = await indexedDB.databases();
-      // const gameNames = indexedDbs.map((db) => {
-      //    if (!db.name) {
-      //       throw new Error("db.name is not defined");
-      //    }
+   (async () => {
+      const indexedDbs = await indexedDB.databases();
+      const gameNames = indexedDbs.map((db) => {
+         if (!db.name) {
+            throw new Error("db.name is not defined");
+         }
 
-      //    return db.name;
-      // });
+         return db.name;
+      });
 
-      // let dbClient: DbClient | null = null;
+      let dbClient: DbClient | null = null;
 
-      // if (gameNames.length === 0) {
-      //    dbClient = new DbClient({ name: "default" });
-      //    await dbClient.init();
-      // } else {
-      //    dbClient = new DbClient({ name: gameNames[0] });
-      //    await dbClient.init();
-      // }
+      if (gameNames.length === 0) {
+         dbClient = new DbClient({ name: "default" });
+         await dbClient.init();
+      } else {
+         dbClient = new DbClient({ name: gameNames[0] });
+         await dbClient.init();
+      }
 
-      // generalStore.setState((state) => {
-      //    return {
-      //       ...state,
-      //       dbClient,
-      //       gameNames,
-      //    };
-      // });
+      generalStore.setState((state) => {
+         return {
+            ...state,
+            dbClient,
+            gameNames,
+         };
+      });
 
       const root = ReactDOM.createRoot(rootElement);
 

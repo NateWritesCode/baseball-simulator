@@ -1,0 +1,1272 @@
+[
+   {
+      "idBbRef": "murphdo01",
+      "birthdate": "1983-03-10",
+      "firstName": "Donnie",
+      "id": "murphdo01",
+      "lastName": "Murphy",
+      "nickname": null,
+      "idOotp": "1",
+      "position": "3b",
+      "potential": {
+         "batting": {
+            "avoidKs": 58,
+            "contact": 59,
+            "gap": 144,
+            "eye": 84,
+            "power": 125
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 58,
+            "contact": 59,
+            "eye": 56,
+            "gap": 144,
+            "power": 112,
+            "splits": {
+               "l": {
+                  "avoidKs": 65,
+                  "contact": 66,
+                  "gap": 164,
+                  "eye": 65,
+                  "power": 125
+               },
+               "r": {
+                  "avoidKs": 57,
+                  "contact": 58,
+                  "gap": 137,
+                  "eye": 53,
+                  "power": 107
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 107,
+               "doublePlay": 76,
+               "error": 112,
+               "range": 73
+            },
+            "outfield": { "arm": 12, "error": 11, "range": 16 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 169, "rating": 52 },
+               "3b": { "experience": 200, "rating": 64 },
+               "ss": { "experience": 200, "rating": 1 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 21,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 98, "speed": 37, "stealing": 115 }
+      },
+      "slug": "murphdo01",
+      "idTeam": "florida-marlins"
+   },
+   {
+      "idBbRef": "rohliry01",
+      "birthdate": "1983-10-07",
+      "firstName": "Ryan",
+      "id": "rohliry01",
+      "lastName": "Rohlinger",
+      "nickname": null,
+      "idOotp": "2",
+      "position": "ss",
+      "potential": {
+         "batting": {
+            "avoidKs": 55,
+            "contact": 30,
+            "gap": 71,
+            "eye": 64,
+            "power": 56
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 32,
+            "contact": 18,
+            "eye": 48,
+            "gap": 42,
+            "power": 47,
+            "splits": {
+               "l": {
+                  "avoidKs": 32,
+                  "contact": 18,
+                  "gap": 44,
+                  "eye": 49,
+                  "power": 47
+               },
+               "r": {
+                  "avoidKs": 32,
+                  "contact": 18,
+                  "gap": 40,
+                  "eye": 48,
+                  "power": 47
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 125,
+               "doublePlay": 129,
+               "error": 124,
+               "range": 123
+            },
+            "outfield": { "arm": 16, "error": 10, "range": 7 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 152, "rating": 86 },
+               "ss": { "experience": 200, "rating": 93 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 18,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 10, "speed": 6, "stealing": 11 }
+      },
+      "slug": "rohliry01",
+      "idTeam": "san-francisco-giants"
+   },
+   {
+      "idBbRef": "velazgi01",
+      "birthdate": "1979-10-17",
+      "firstName": "Gil",
+      "id": "velazgi01",
+      "lastName": "Velazquez",
+      "nickname": null,
+      "idOotp": "3",
+      "position": "3b",
+      "potential": {
+         "batting": {
+            "avoidKs": 73,
+            "contact": 64,
+            "gap": 46,
+            "eye": 48,
+            "power": 56
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 73,
+            "contact": 64,
+            "eye": 48,
+            "gap": 46,
+            "power": 56,
+            "splits": {
+               "l": {
+                  "avoidKs": 73,
+                  "contact": 65,
+                  "gap": 48,
+                  "eye": 49,
+                  "power": 56
+               },
+               "r": {
+                  "avoidKs": 73,
+                  "contact": 64,
+                  "gap": 44,
+                  "eye": 48,
+                  "power": 56
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 105,
+               "doublePlay": 76,
+               "error": 114,
+               "range": 71
+            },
+            "outfield": { "arm": 10, "error": 18, "range": 17 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 178, "rating": 53 },
+               "3b": { "experience": 200, "rating": 62 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 45,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 25, "speed": 6, "stealing": 11 }
+      },
+      "slug": "velazgi01",
+      "idTeam": "los-angeles-angels"
+   },
+   {
+      "idBbRef": "nickemi01",
+      "birthdate": "1983-02-13",
+      "firstName": "Mike",
+      "id": "nickemi01",
+      "lastName": "Nickeas",
+      "nickname": null,
+      "idOotp": "4",
+      "position": "c",
+      "potential": {
+         "batting": {
+            "avoidKs": 73,
+            "contact": 40,
+            "gap": 42,
+            "eye": 82,
+            "power": 66
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 73,
+            "contact": 38,
+            "eye": 82,
+            "gap": 22,
+            "power": 66,
+            "splits": {
+               "l": {
+                  "avoidKs": 82,
+                  "contact": 41,
+                  "gap": 24,
+                  "eye": 91,
+                  "power": 65
+               },
+               "r": {
+                  "avoidKs": 71,
+                  "contact": 37,
+                  "gap": 21,
+                  "eye": 79,
+                  "power": 66
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 56, "arm": 108 },
+            "infield": { "arm": 17, "doublePlay": 20, "error": 15, "range": 3 },
+            "outfield": { "arm": 17, "error": 19, "range": 17 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 200, "rating": 44 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 0, "rating": 0 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 3,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 125, "speed": 69, "stealing": 60 }
+      },
+      "slug": "nickemi01",
+      "idTeam": "new-york-mets"
+   },
+   {
+      "idBbRef": "headje01",
+      "birthdate": "1982-11-15",
+      "firstName": "Jerad",
+      "id": "headje01",
+      "lastName": "Head",
+      "nickname": null,
+      "idOotp": "5",
+      "position": "lf",
+      "potential": {
+         "batting": {
+            "avoidKs": 48,
+            "contact": 16,
+            "gap": 55,
+            "eye": 33,
+            "power": 46
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 48,
+            "contact": 16,
+            "eye": 30,
+            "gap": 55,
+            "power": 43,
+            "splits": {
+               "l": {
+                  "avoidKs": 48,
+                  "contact": 16,
+                  "gap": 56,
+                  "eye": 30,
+                  "power": 43
+               },
+               "r": {
+                  "avoidKs": 48,
+                  "contact": 16,
+                  "gap": 55,
+                  "eye": 30,
+                  "power": 43
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": { "arm": 20, "doublePlay": 6, "error": 4, "range": 11 },
+            "outfield": { "arm": 109, "error": 112, "range": 59 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 0, "rating": 0 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 200, "rating": 66 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 21,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 44,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 10, "speed": 20, "stealing": 31 }
+      },
+      "slug": "headje01",
+      "idTeam": "cleveland-guardians"
+   },
+   {
+      "idBbRef": "allenbr01",
+      "birthdate": "1986-02-12",
+      "firstName": "Brandon",
+      "id": "allenbr01",
+      "lastName": "Allen",
+      "nickname": null,
+      "idOotp": "6",
+      "position": "1b",
+      "potential": {
+         "batting": {
+            "avoidKs": 24,
+            "contact": 52,
+            "gap": 113,
+            "eye": 119,
+            "power": 118
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 24,
+            "contact": 52,
+            "eye": 114,
+            "gap": 112,
+            "power": 117,
+            "splits": {
+               "l": {
+                  "avoidKs": 24,
+                  "contact": 44,
+                  "gap": 88,
+                  "eye": 106,
+                  "power": 103
+               },
+               "r": {
+                  "avoidKs": 24,
+                  "contact": 55,
+                  "gap": 120,
+                  "eye": 116,
+                  "power": 122
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 53,
+               "doublePlay": 65,
+               "error": 55,
+               "range": 39
+            },
+            "outfield": { "arm": 110, "error": 114, "range": 74 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 200, "rating": 80 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 0, "rating": 0 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 200, "rating": 84 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 42,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 63, "speed": 43, "stealing": 172 }
+      },
+      "slug": "allenbr01",
+      "idTeam": "arizona-diamondbacks"
+   },
+   {
+      "idBbRef": "valaich01",
+      "birthdate": "1985-08-14",
+      "firstName": "Chris",
+      "id": "valaich01",
+      "lastName": "Valaika",
+      "nickname": null,
+      "idOotp": "7",
+      "position": "2b",
+      "potential": {
+         "batting": {
+            "avoidKs": 74,
+            "contact": 76,
+            "gap": 83,
+            "eye": 63,
+            "power": 85
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 74,
+            "contact": 65,
+            "eye": 63,
+            "gap": 83,
+            "power": 66,
+            "splits": {
+               "l": {
+                  "avoidKs": 74,
+                  "contact": 69,
+                  "gap": 96,
+                  "eye": 57,
+                  "power": 70
+               },
+               "r": {
+                  "avoidKs": 74,
+                  "contact": 64,
+                  "gap": 79,
+                  "eye": 65,
+                  "power": 65
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 81,
+               "doublePlay": 121,
+               "error": 115,
+               "range": 72
+            },
+            "outfield": { "arm": 18, "error": 1, "range": 20 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 200, "rating": 76 },
+               "3b": { "experience": 200, "rating": 52 },
+               "ss": { "experience": 200, "rating": 1 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 4,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 58, "speed": 9, "stealing": 11 }
+      },
+      "slug": "valaich01",
+      "idTeam": "cincinnati-reds"
+   },
+   {
+      "idBbRef": "betemwi01",
+      "birthdate": "1981-11-02",
+      "firstName": "Wilson",
+      "id": "betemwi01",
+      "lastName": "Betemit",
+      "nickname": null,
+      "idOotp": "8",
+      "position": "3b",
+      "potential": {
+         "batting": {
+            "avoidKs": 53,
+            "contact": 120,
+            "gap": 142,
+            "eye": 105,
+            "power": 120
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 48,
+            "contact": 120,
+            "eye": 104,
+            "gap": 142,
+            "power": 115,
+            "splits": {
+               "l": {
+                  "avoidKs": 43,
+                  "contact": 100,
+                  "gap": 112,
+                  "eye": 103,
+                  "power": 101
+               },
+               "r": {
+                  "avoidKs": 49,
+                  "contact": 127,
+                  "gap": 153,
+                  "eye": 104,
+                  "power": 119
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": {
+               "arm": 115,
+               "doublePlay": 74,
+               "error": 84,
+               "range": 82
+            },
+            "outfield": { "arm": 15, "error": 3, "range": 8 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 92, "rating": 67 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 200, "rating": 66 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 39,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 59, "speed": 31, "stealing": 140 }
+      },
+      "slug": "betemwi01",
+      "idTeam": "kansas-city-royals"
+   },
+   {
+      "idBbRef": "custja01",
+      "birthdate": "1979-01-07",
+      "firstName": "Jack",
+      "id": "custja01",
+      "lastName": "Cust",
+      "nickname": null,
+      "idOotp": "9",
+      "position": "lf",
+      "potential": {
+         "batting": {
+            "avoidKs": 25,
+            "contact": 79,
+            "gap": 121,
+            "eye": 204,
+            "power": 99
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 24,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 3,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 25,
+            "contact": 79,
+            "eye": 204,
+            "gap": 121,
+            "power": 99,
+            "splits": {
+               "l": {
+                  "avoidKs": 26,
+                  "contact": 81,
+                  "gap": 96,
+                  "eye": 173,
+                  "power": 88
+               },
+               "r": {
+                  "avoidKs": 25,
+                  "contact": 81,
+                  "gap": 129,
+                  "eye": 215,
+                  "power": 102
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": { "arm": 5, "doublePlay": 13, "error": 18, "range": 13 },
+            "outfield": { "arm": 110, "error": 114, "range": 74 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 0, "rating": 0 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 200, "rating": 84 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 0, "rating": 0 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 19,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 24,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 3,
+            "velocity": 4,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 44,
+                  "stuff": 3,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 3,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 10, "speed": 20, "stealing": 21 }
+      },
+      "slug": "custja01",
+      "idTeam": "seattle-mariners"
+   },
+   {
+      "idBbRef": "drewj.01",
+      "birthdate": "1975-11-20",
+      "firstName": "J.D.",
+      "id": "drewj01",
+      "lastName": "Drew",
+      "nickname": null,
+      "idOotp": "10",
+      "position": "rf",
+      "potential": {
+         "batting": {
+            "avoidKs": 79,
+            "contact": 75,
+            "gap": 61,
+            "eye": 134,
+            "power": 115
+         },
+         "pitching": {
+            "balk": 0,
+            "control": 1,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stuff": 2,
+            "wildPitch": 0
+         }
+      },
+      "ratings": {
+         "batting": {
+            "avoidKs": 79,
+            "contact": 75,
+            "eye": 134,
+            "gap": 61,
+            "power": 115,
+            "splits": {
+               "l": {
+                  "avoidKs": 67,
+                  "contact": 64,
+                  "gap": 46,
+                  "eye": 132,
+                  "power": 101
+               },
+               "r": {
+                  "avoidKs": 83,
+                  "contact": 79,
+                  "gap": 66,
+                  "eye": 134,
+                  "power": 119
+               }
+            }
+         },
+         "fielding": {
+            "catcher": { "ability": 0, "arm": 0 },
+            "infield": { "arm": 10, "doublePlay": 16, "error": 17, "range": 4 },
+            "outfield": { "arm": 96, "error": 122, "range": 96 },
+            "position": {
+               "p": { "experience": 0, "rating": 0 },
+               "c": { "experience": 0, "rating": 0 },
+               "1b": { "experience": 0, "rating": 0 },
+               "2b": { "experience": 0, "rating": 0 },
+               "3b": { "experience": 0, "rating": 0 },
+               "ss": { "experience": 0, "rating": 0 },
+               "lf": { "experience": 0, "rating": 0 },
+               "cf": { "experience": 0, "rating": 0 },
+               "rf": { "experience": 200, "rating": 86 }
+            }
+         },
+         "pitching": {
+            "balk": 10,
+            "control": 1,
+            "hold": 6,
+            "movement": 45,
+            "pitches": {
+               "changeup": 0,
+               "circlechange": 0,
+               "cutter": 0,
+               "curveball": 0,
+               "fastball": 18,
+               "forkball": 0,
+               "knuckleball": 0,
+               "knucklecurve": 0,
+               "screwball": 0,
+               "sinker": 0,
+               "slider": 0,
+               "splitter": 0
+            },
+            "stamina": 0,
+            "stuff": 2,
+            "velocity": 3,
+            "wildPitch": 30,
+            "splits": {
+               "l": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 43,
+                  "stuff": 2,
+                  "wildPitch": 30
+               },
+               "r": {
+                  "balk": 10,
+                  "control": 1,
+                  "movement": 46,
+                  "stuff": 2,
+                  "wildPitch": 30
+               }
+            }
+         },
+         "running": { "baserunning": 52, "speed": 28, "stealing": 21 }
+      },
+      "slug": "drewj01",
+      "idTeam": "boston-red-sox"
+   }
+]

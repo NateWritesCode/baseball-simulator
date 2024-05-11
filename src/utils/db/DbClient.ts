@@ -1,47 +1,71 @@
-import players from "data";
-import dayjs from "dayjs";
 import type { Store } from "tinybase";
 import {
    type IndexedDbPersister,
    createIndexedDbPersister,
 } from "tinybase/persisters/persister-indexed-db";
 import { createQueries, createStore } from "tinybase/with-schemas";
+import { string } from "valibot";
 import {
-   type Input,
-   array,
-   merge,
-   number,
-   object,
-   omit,
-   pick,
-   string,
-} from "valibot";
-import { cities, countries, subregions } from "../data";
+   cities,
+   countries,
+   divisions,
+   games,
+   leagues,
+   parks,
+   players,
+   subLeagues,
+   subregions,
+   teams,
+} from "../data";
 import { FakeClientPerson, FakeClientStructure } from "../fake";
-import { getDateString, isObject } from "../functions";
+import { isObject } from "../functions";
 import {
-   VDbCity,
-   VDbCountry,
-   VDbPerson,
-   VDbPersonAlignment,
-   VDbPersonFull,
-   VDbPersonMyersBriggs,
-   VDbPersonPhysical,
-   VDbPersonSkillMental,
-   VDbPersonSkillPhysical,
-   VDbSubregion,
-} from "../types";
+   type TCities,
+   type TCity,
+   type TCountries,
+   type TCountry,
+   type TInputCities,
+   type TInputCity,
+   type TInputConstructor,
+   type TInputCountries,
+   type TInputCountry,
+   type TInputPerson,
+   type TInputPersons,
+   type TInputSubregion,
+   type TInputSubregions,
+   type TPerson,
+   type TPersons,
+   type TSubregion,
+   type TSubregions,
+   VCities,
+   VCity,
+   VCountries,
+   VCountry,
+   VInputCities,
+   VInputCity,
+   VInputConstructor,
+   VInputCountries,
+   VInputCountry,
+   VInputPerson,
+   VInputPersons,
+   VInputSubregion,
+   VInputSubregions,
+   VPerson,
+   VPersons,
+   VSubregion,
+   VSubregions,
+} from "../types/tDbClient";
 import { valibotParse } from "../valibot";
 
 class DbClient {
    private fakeClientPerson = new FakeClientPerson({
       genderSetting: "traditional",
    });
-   private fakeClientStructure = new FakeClientStructure({
-      geographicLimits: {
-         idSubregions: ["illinois-united-states"],
-      },
-   });
+   // private fakeClientStructure = new FakeClientStructure({
+   //    geographicLimits: {
+   //       idSubregions: ["illinois-united-states"],
+   //    },
+   // });
 
    public name: string;
 
@@ -119,7 +143,7 @@ class DbClient {
          hrR: { type: "number" },
          id: { type: "string" },
          isHomeTeamDugoutAtFirstBase: { type: "boolean" },
-         name: string(),
+         name: { type: "string" },
          idOotp: { type: "string" },
          positionsX0: { type: "number" },
          positionsX1: { type: "number" },
@@ -198,7 +222,7 @@ class DbClient {
          neutralOrder: { type: "number" },
       },
       personsBaseball: {
-         bbRefId: { type: "string" },
+         idBbRef: { type: "string" },
          idTeam: { type: "string" },
          id: { type: "string" },
          position: { type: "string" },
@@ -638,76 +662,48 @@ class DbClient {
             join("countries", "idCountry").as("country");
          },
       );
+
+      this.queries.setQueryDefinition("teams", "teams", ({ select, join }) => {
+         select("abbrev");
+         select("backgroundColor");
+         select("hatMainColor");
+         select("hatVisorColor");
+         select("idHistorical");
+         select("jerseyAwayColor");
+         select("jerseyMainColor");
+         select("jerseyPinStripeColor");
+         select("jerseySecondaryColor");
+         select("id");
+         select("name");
+         select("nickname");
+         select("slug");
+         select("textColor");
+         select("divisions", "id").as("division.id");
+         select("divisions", "name").as("division.name");
+         select("divisions", "slug").as("division.slug");
+         select("leagues", "id").as("league.id");
+         select("leagues", "name").as("league.name");
+         select("leagues", "slug").as("league.slug");
+         select("parks", "id").as("park.id");
+         select("parks", "name").as("park.name");
+         select("subleagues", "id").as("subleague.id");
+         select("subleagues", "name").as("subleague.name");
+         select("subleagues", "slug").as("subleague.slug");
+         join("divisions", "idDivision").as("division");
+         join("leagues", "idLeague").as("league");
+         join("parks", "idPark").as("park");
+         join("subleagues", "idSubLeague").as("subleague");
+      });
    }
 
    private _seed() {
-      const persons = Array.from({ length: 1_000 }, () =>
+      const persons = Array.from({ length: players.length }, () =>
          this.fakeClientPerson.fakePerson(),
       );
 
-      const league = {
-         id: "my-league",
-         name: "My League",
-      };
-
-      const { subleagues, teams } = this.fakeClientStructure.createLeague({
-         league: {
-            id: "my-league",
-            name: "My League",
-            subleagues: [
-               {
-                  divisions: [
-                     {
-                        id: "north-division",
-                        name: "North Division",
-                        compassPoint: "N",
-                     },
-                     {
-                        id: "south-division",
-                        name: "South Division",
-                        compassPoint: "S",
-                     },
-                     {
-                        id: "east-division",
-                        name: "East Division",
-                        compassPoint: "E",
-                     },
-                     {
-                        id: "west-division",
-                        name: "West Division",
-                        compassPoint: "W",
-                     },
-                  ],
-                  id: "my-subleague",
-                  name: "My Subleague",
-                  numTeams: 20,
-               },
-            ],
-         },
-      });
-
-      const numGames = 100;
-
-      const dateStart = new Date();
-      const dateEnd = dayjs(dateStart).add(numGames, "days").toDate();
-
-      const gameGroup = this.fakeClientStructure.createGameGroup({
-         dateEnd: getDateString(dateEnd),
-         dateStart: getDateString(dateStart),
-         idLeague: league.id,
-         name: "My Game Group",
-         teams,
-      });
-      const games = this.fakeClientStructure.createGames({
-         dateEnd: getDateString(dateEnd),
-         dateStart: getDateString(dateStart),
-         idGameGroup: gameGroup.id,
-         numGames,
-         teams,
-      });
-
       this.store.transaction(() => {
-         for (const person of persons) {
+         for (const [i, _person] of persons.entries()) {
+            const player = players[i];
             const {
                alignment,
                myersBriggs,
@@ -718,8 +714,264 @@ class DbClient {
                potentialSkillMental,
                potentialSkillPhysical,
                health,
-               ..._person
-            } = person;
+            } = _person;
+
+            const person = {
+               id: player.id,
+               idBirthplace: _person.idBirthplace,
+               firstName: player.firstName,
+               genderCis: "m",
+               genderIdentity: "m",
+               lastName: player.lastName,
+            };
+
+            this.store.setRow("personsBaseball", person.id, {
+               idBbRef: player.idBbRef,
+               id: person.id,
+               idTeam: player.idTeam,
+               position: player.position,
+            });
+
+            this.store.setRow("personsBaseballRatingsBatting", person.id, {
+               avoidKs: player.ratings.batting.avoidKs,
+               contact: player.ratings.batting.contact,
+               eye: player.ratings.batting.eye,
+               gap: player.ratings.batting.gap,
+               id: person.id,
+               power: player.ratings.batting.power,
+            });
+
+            this.store.setRow("personsBaseballPotentialBatting", person.id, {
+               avoidKs: player.potential.batting.avoidKs,
+               contact: player.potential.batting.contact,
+               eye: player.potential.batting.eye,
+               gap: player.potential.batting.gap,
+               id: person.id,
+               power: player.potential.batting.power,
+            });
+
+            this.store.setRow(
+               "personsBaseballRatingsBattingSplitsL",
+               person.id,
+               {
+                  avoidKs: player.ratings.batting.splits.l.avoidKs,
+                  contact: player.ratings.batting.splits.l.contact,
+                  eye: player.ratings.batting.splits.l.eye,
+                  gap: player.ratings.batting.splits.l.gap,
+                  id: person.id,
+                  power: player.ratings.batting.splits.l.power,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsBattingSplitsR",
+               person.id,
+               {
+                  avoidKs: player.ratings.batting.splits.r.avoidKs,
+                  contact: player.ratings.batting.splits.r.contact,
+                  eye: player.ratings.batting.splits.r.eye,
+                  gap: player.ratings.batting.splits.r.gap,
+                  id: person.id,
+                  power: player.ratings.batting.splits.r.power,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingCatcher",
+               person.id,
+               {
+                  ability: player.ratings.fielding.catcher.ability,
+                  arm: player.ratings.fielding.catcher.arm,
+                  id: person.id,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingInfield",
+               person.id,
+               {
+                  arm: player.ratings.fielding.infield.arm,
+                  doublePlay: player.ratings.fielding.infield.doublePlay,
+                  error: player.ratings.fielding.infield.error,
+                  id: person.id,
+                  range: player.ratings.fielding.infield.range,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingOutfield",
+               person.id,
+               {
+                  arm: player.ratings.fielding.outfield.arm,
+                  error: player.ratings.fielding.outfield.error,
+                  id: person.id,
+                  range: player.ratings.fielding.outfield.range,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionP",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.p.experience,
+                  rating: player.ratings.fielding.position.p.rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionC",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.c.experience,
+                  rating: player.ratings.fielding.position.c.rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPosition1b",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position["1b"].experience,
+                  rating: player.ratings.fielding.position["1b"].rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPosition2b",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position["2b"].experience,
+                  rating: player.ratings.fielding.position["2b"].rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPosition3b",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position["3b"].experience,
+                  rating: player.ratings.fielding.position["3b"].rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionSs",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.ss.experience,
+                  rating: player.ratings.fielding.position.ss.rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionLf",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.lf.experience,
+                  rating: player.ratings.fielding.position.lf.rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionCf",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.cf.experience,
+                  rating: player.ratings.fielding.position.cf.rating,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsFieldingPositionRf",
+               person.id,
+               {
+                  experience: player.ratings.fielding.position.rf.experience,
+                  rating: player.ratings.fielding.position.rf.rating,
+               },
+            );
+
+            this.store.setRow("personsBaseballRatingsPitching", person.id, {
+               balk: player.ratings.pitching.balk,
+               control: player.ratings.pitching.control,
+               hold: player.ratings.pitching.hold,
+               id: person.id,
+               movement: player.ratings.pitching.movement,
+               stamina: player.ratings.pitching.stamina,
+               stuff: player.ratings.pitching.stuff,
+               velocity: player.ratings.pitching.velocity,
+               wildPitch: player.ratings.pitching.wildPitch,
+            });
+
+            this.store.setRow(
+               "personsBaseballRatingsPitchingSplitsL",
+               person.id,
+               {
+                  balk: player.ratings.pitching.splits.l.balk,
+                  control: player.ratings.pitching.splits.l.control,
+                  id: person.id,
+                  movement: player.ratings.pitching.splits.l.movement,
+                  stuff: player.ratings.pitching.splits.l.stuff,
+                  wildPitch: player.ratings.pitching.splits.l.wildPitch,
+               },
+            );
+
+            this.store.setRow(
+               "personsBaseballRatingsPitchingSplitsR",
+               person.id,
+               {
+                  balk: player.ratings.pitching.splits.r.balk,
+                  control: player.ratings.pitching.splits.r.control,
+                  id: person.id,
+                  movement: player.ratings.pitching.splits.r.movement,
+                  stuff: player.ratings.pitching.splits.r.stuff,
+                  wildPitch: player.ratings.pitching.splits.r.wildPitch,
+               },
+            );
+
+            this.store.setRow("personsBaseballRatingsPitches", person.id, {
+               changeup: player.ratings.pitching.pitches.changeup,
+               circlechange: player.ratings.pitching.pitches.circlechange,
+               cutter: player.ratings.pitching.pitches.cutter,
+               curveball: player.ratings.pitching.pitches.curveball,
+               fastball: player.ratings.pitching.pitches.fastball,
+               forkball: player.ratings.pitching.pitches.forkball,
+               knuckleball: player.ratings.pitching.pitches.knuckleball,
+               knucklecurve: player.ratings.pitching.pitches.knucklecurve,
+               id: person.id,
+            });
+
+            this.store.setRow("personsBaseballPotentialPitching", person.id, {
+               balk: player.potential.pitching.balk,
+               control: player.potential.pitching.control,
+               id: person.id,
+               movement: player.potential.pitching.movement,
+               stuff: player.potential.pitching.stuff,
+               wildPitch: player.potential.pitching.wildPitch,
+            });
+
+            this.store.setRow(
+               "personsBaseballPotentialPitchingPitches",
+               person.id,
+               {
+                  changeup: player.potential.pitching.pitches.changeup,
+                  circlechange: player.potential.pitching.pitches.circlechange,
+                  cutter: player.potential.pitching.pitches.cutter,
+                  curveball: player.potential.pitching.pitches.curveball,
+                  fastball: player.potential.pitching.pitches.fastball,
+                  forkball: player.potential.pitching.pitches.forkball,
+                  knuckleball: player.potential.pitching.pitches.knuckleball,
+                  knucklecurve: player.potential.pitching.pitches.knucklecurve,
+                  id: person.id,
+               },
+            );
+
+            if (player.nickname) {
+               this.store.setRow("personsNicknames", person.id, {
+                  idPerson: person.id,
+                  nickname: player.nickname,
+               });
+            }
+
             this.store.setRow("persons", person.id, _person);
 
             this.store.setRow("personsAlignment", person.id, alignment);
@@ -772,33 +1024,56 @@ class DbClient {
             this.store.setRow("countries", country.id, country);
          }
 
-         for (const subleague of subleagues) {
-            if (subleague) {
-               const { divisions } = subleague;
-
-               this.store.setRow("subleagues", subleague.id, league);
-
-               for (const division of divisions) {
-                  const { teams } = division;
-                  this.store.setRow("divisions", division.id, division);
-
-                  for (const team of teams) {
-                     this.store.setRow("teams", team.id, team);
-                  }
-               }
-            }
-         }
-
-         this.store.setRow("leagues", league.id, league);
+         const gameGroup = {
+            dateEnd: "2011-09-28",
+            dateStart: "2011-03-31",
+            id: "major-league-baseball-regular-season-2011",
+            idLeague: "major-league-baseball",
+            name: "Major League Baseball Regular Season 2011",
+            standings: JSON.stringify(
+               teams.reduce(
+                  (acc, team) => {
+                     acc[team.id] = {
+                        id: team.id,
+                        losses: 0,
+                        wins: 0,
+                     };
+                     return acc;
+                  },
+                  {} as Record<
+                     string,
+                     { id: string; losses: number; wins: number }
+                  >,
+               ),
+            ),
+         };
 
          this.store.setRow("gameGroups", gameGroup.id, gameGroup);
 
          for (const game of games) {
+            // @ts-ignore TODO: fix this
+            game.idGameGroup = gameGroup.id;
             this.store.setRow("games", game.id, game);
          }
 
+         for (const park of parks) {
+            this.store.setRow("parks", park.id, park);
+         }
+
+         for (const league of leagues) {
+            this.store.setRow("leagues", league.id, league);
+         }
+
+         for (const subleague of subLeagues) {
+            this.store.setRow("subleagues", subleague.id, subleague);
+         }
+
+         for (const division of divisions) {
+            this.store.setRow("divisions", division.id, division);
+         }
+
          this.store.setRow("simulation", "simulation", {
-            date: getDateString(new Date()),
+            date: "2011-03-31",
             id: "simulation",
          });
       });
@@ -945,6 +1220,23 @@ class DbClient {
       };
    };
 
+   navTeams = () => {
+      const leagueId = "major-league-baseball";
+
+      const teamIds = this.queries.getResultRowIds("teams");
+
+      const _teams = teamIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("teams", id),
+         ),
+      );
+
+      const teams = valibotParse<TNavTeams>({
+         schema: VNavTeams,
+         data: _teams,
+      });
+   };
+
    public person = (_input: TInputPerson) => {
       const { id } = valibotParse<TInputPerson>({
          schema: VInputPerson,
@@ -1057,113 +1349,3 @@ class DbClient {
 }
 
 export default DbClient;
-
-const VInputConstructor = object({
-   name: string(),
-});
-type TInputConstructor = Input<typeof VInputConstructor>;
-
-const VInputCities = object({
-   limit: number(),
-   offset: number(),
-});
-type TInputCities = Input<typeof VInputCities>;
-const VCitiesObj = merge([
-   pick(VDbCity, ["id", "name", "population"]),
-   object({
-      country: VDbCountry,
-      subregion: omit(VDbSubregion, ["idCountry"]),
-   }),
-]);
-const VCities = array(VCitiesObj);
-type TCities = Input<typeof VCities>;
-
-const VInputCity = object({
-   id: string(),
-});
-type TInputCity = Input<typeof VInputCity>;
-const VCity = merge([
-   pick(VDbCity, ["id", "name", "population"]),
-   object({
-      country: VDbCountry,
-      subregion: omit(VDbSubregion, ["idCountry"]),
-   }),
-]);
-type TCity = Input<typeof VCity>;
-
-const VInputCountry = object({
-   id: string(),
-});
-type TInputCountry = Input<typeof VInputCountry>;
-const VCountry = VDbCountry;
-type TCountry = Input<typeof VCountry>;
-
-const VInputCountries = object({
-   limit: number(),
-   offset: number(),
-});
-type TInputCountries = Input<typeof VInputCountries>;
-const VCountries = array(VDbCountry);
-type TCountries = Input<typeof VCountries>;
-
-const VInputPersons = object({
-   limit: number(),
-   offset: number(),
-});
-type TInputPersons = Input<typeof VInputPersons>;
-const VPersonsObj = VDbPersonFull;
-const VPersons = array(VPersonsObj);
-type TPersons = Input<typeof VPersons>;
-
-const VInputPerson = object({
-   id: string(),
-});
-type TInputPerson = Input<typeof VInputPerson>;
-const VPerson = merge([
-   pick(VDbPerson, [
-      "id",
-      "birthdate",
-      "firstName",
-      "genderCis",
-      "genderIdentity",
-      "lastName",
-   ]),
-   object({
-      alignment: omit(VDbPersonAlignment, ["id"]),
-      birthplace: omit(VDbCity, ["idCountry", "idSubregion"]),
-      currentSkillMental: omit(VDbPersonSkillMental, ["id"]),
-      currentSkillPhysical: omit(VDbPersonSkillPhysical, ["id"]),
-      currentPhysical: omit(VDbPersonPhysical, ["id"]),
-      potentialSkillMental: omit(VDbPersonSkillMental, ["id"]),
-      potentialSkillPhysical: omit(VDbPersonSkillPhysical, ["id"]),
-
-      myersBriggs: omit(VDbPersonMyersBriggs, ["id"]),
-   }),
-]);
-type TPerson = Input<typeof VPerson>;
-
-const VInputSubregion = object({
-   id: string(),
-});
-type TInputSubregion = Input<typeof VInputSubregion>;
-const VSubregion = merge([
-   pick(VDbSubregion, ["id", "abbrev", "name"]),
-   object({
-      country: VDbCountry,
-   }),
-]);
-type TSubregion = Input<typeof VSubregion>;
-
-const VInputSubregions = object({
-   limit: number(),
-   offset: number(),
-});
-type TInputSubregions = Input<typeof VInputSubregions>;
-const VSubregionsObj = merge([
-   pick(VDbSubregion, ["id", "abbrev", "name"]),
-   object({
-      country: VDbCountry,
-   }),
-]);
-const VSubregions = array(VSubregionsObj);
-type TSubregions = Input<typeof VSubregions>;

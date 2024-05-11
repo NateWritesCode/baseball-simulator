@@ -102,6 +102,42 @@ class FakeClientStructure {
    };
 
    createLeague = (_input: TInputCreateLeague) => {
+      // const { subleagues, teams } = this.fakeClientStructure.createLeague({
+      //    league: {
+      //       id: "my-league",
+      //       name: "My League",
+      //       subleagues: [
+      //          {
+      //             divisions: [
+      //                {
+      //                   id: "north-division",
+      //                   name: "North Division",
+      //                   compassPoint: "N",
+      //                },
+      //                {
+      //                   id: "south-division",
+      //                   name: "South Division",
+      //                   compassPoint: "S",
+      //                },
+      //                {
+      //                   id: "east-division",
+      //                   name: "East Division",
+      //                   compassPoint: "E",
+      //                },
+      //                {
+      //                   id: "west-division",
+      //                   name: "West Division",
+      //                   compassPoint: "W",
+      //                },
+      //             ],
+      //             id: "my-subleague",
+      //             name: "My Subleague",
+      //             numTeams: 20,
+      //          },
+      //       ],
+      //    },
+      // });
+
       const input = valibotParse<TInputCreateLeague>({
          schema: VInputCreateLeague,
          data: _input,

@@ -85,7 +85,7 @@ class FakeClient {
          });
       })();
 
-      const id = kebabCase(`${firstName} ${lastName}`);
+      // const id = kebabCase(`${firstName} ${lastName}`);
       const myersBriggs = this._myersBriggs({ genderCis });
       const alignment = this._alignment();
       const currentPhysical = this._currentPhysical();
@@ -106,7 +106,7 @@ class FakeClient {
          genderCis,
          genderIdentity,
          health,
-         id,
+         // id,
          idBirthplace,
          lastName,
          myersBriggs,

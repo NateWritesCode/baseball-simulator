@@ -1,5 +1,12 @@
 export { default as cities } from "./cities.json";
 export { default as countries } from "./countries.json";
+export { default as divisions } from "./divisions.json";
+export { default as games } from "./games.json";
+export { default as leagues } from "./leagues.json";
+export { default as parks } from "./parks.json";
+export { default as players } from "./players.json";
+export { default as subLeagues } from "./subLeagues.json";
+export { default as teams } from "./teams.json";
 export { default as namesFirstFemale } from "./namesFirstFemale.json";
 export { default as namesFirstFemaleWeights } from "./namesFirstFemaleWeights.json";
 export { default as namesFirstMale } from "./namesFirstMale.json";

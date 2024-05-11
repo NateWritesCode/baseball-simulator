@@ -1,5 +1,6 @@
 import { Box, Flex } from "styled-system/jsx";
-import NavItem from "./NavItem";
+import NavItemAccordion from "./NavItemAccordion";
+import NavItemMenu from "./NavItemMenu";
 
 const DATA_ATTR = "DASHBOARD";
 
@@ -94,7 +95,8 @@ const Dashboard = () => {
                      gap="spacing-xs"
                      alignSelf="stretch"
                   >
-                     <NavItem />
+                     <NavItemMenu />
+                     {/* <NavItemAccordion /> */}
                   </Flex>
                </Flex>
             </Flex>

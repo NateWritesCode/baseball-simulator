@@ -25,7 +25,7 @@ import { parse } from "valibot";
 const cwd = import.meta.dir;
 
 const PATH_INPUT = `${cwd}/input/2011`;
-const PATH_OUTPUT = `${cwd}/output/2011`;
+const PATH_OUTPUT = "../../src/utils/data";
 
 createFolderPathIfNeeded(PATH_OUTPUT);
 
@@ -492,13 +492,13 @@ const parsePlayers = async () => {
       );
 
       // Get necessary data from players.csv
-      const bbRefId = player[34];
+      const idBbRef = player[34];
 
-      // const id = personHistoricalIdHelper.getPersonIdFromBbRefId(bbRefId);
+      // const id = personHistoricalIdHelper.getPersonIdFromidBbRef(idBbRef);
       // if (!id) continue;
 
       // TODO: Figure out what to do with ID
-      const id = kebabCase(bbRefId);
+      const id = kebabCase(idBbRef);
 
       const idOotp = player[0];
       const idTeam =
@@ -641,7 +641,7 @@ const parsePlayers = async () => {
       const position9Rating = Number(fieldingRatings[32]);
 
       const parseObj: TRowOotpPlayer = {
-         bbRefId,
+         idBbRef,
          birthdate,
          firstName,
          id,
@@ -815,7 +815,7 @@ const parsePlayers = async () => {
 
    await Bun.write(
       `${PATH_OUTPUT}/players.json`,
-      JSON.stringify(players, null, 0),
+      JSON.stringify(players.slice(0, 10), null, 0),
    );
 };
 

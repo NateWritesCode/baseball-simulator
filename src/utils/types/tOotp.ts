@@ -151,7 +151,7 @@ const VRowOotpPlayerPotential = object({
 });
 
 export const VRowOotpPlayer = object({
-   bbRefId: string(),
+   idBbRef: string(),
    birthdate: string([VRegexDate]),
    firstName: string(),
    id: string([VRegexSlug]),
