@@ -29,5 +29,3 @@ team_id,name,abbr,nickname,logo_file_name,city_id,park_id,league_id,sub_league_i
 28,"San Francisco","SF","Giants","san_francisco_giants.png",69999,28,100,1,2,206,0,1,0,0,0,0,"#FD5A1E","#000000","#FD5A1E","#000000","#FFFFFF","#AAAAAA","#FD5A1E","#FD5A1E",0,"SFN"
 29,"St. Louis","STL","Cardinals","st_louis_cardinals.png",69095,29,100,1,1,206,0,1,0,1,1,0,"#BE0A14","#001541","#BE0A14","#BE0A14","#FFFFFF","#AAAAAA","#BE0A14","#BE0A14",0,"SLN"
 30,"Washington","WAS","Nationals","washington_nationals.png",87845,30,100,1,0,206,0,1,0,0,0,0,"#AB0003","#11225B","#AB0003","#AB0003","#FFFFFF","#AAAAAA","#AB0003","#AB0003",0,"WAS"
-31,"AL","AL","All-Stars","al_all-stars.png",0,1,100,0,0,0,0,1,0,0,0,0,"#ED1C24","#066CC6","#ED1C24","#066CC6","#FFFFFF","#AAAAAA","#ED1C24","#ED1C24",1,""
-32,"NL","NL","All-Stars","nl_all-stars.png",0,28,100,1,0,0,0,1,0,0,0,0,"#ED1C24","#066CC6","#ED1C24","#066CC6","#FFFFFF","#AAAAAA","#ED1C24","#ED1C24",1,""

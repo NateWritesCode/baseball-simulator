@@ -11,12 +11,24 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TeamsImport } from './routes/teams'
 import { Route as IndexImport } from './routes/index'
+import { Route as TeamIdImport } from './routes/team.$id'
 
 // Create/Update Routes
 
+const TeamsRoute = TeamsImport.update({
+  path: '/teams',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TeamIdRoute = TeamIdImport.update({
+  path: '/team/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -28,11 +40,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/teams': {
+      preLoaderRoute: typeof TeamsImport
+      parentRoute: typeof rootRoute
+    }
+    '/team/$id': {
+      preLoaderRoute: typeof TeamIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren([IndexRoute])
+export const routeTree = rootRoute.addChildren([
+  IndexRoute,
+  TeamsRoute,
+  TeamIdRoute,
+])
 
 /* prettier-ignore-end */

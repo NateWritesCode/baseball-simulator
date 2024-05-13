@@ -147,30 +147,6 @@ export const VDbPersonFull = merge([
 ]);
 export type TDbPersonFull = Input<typeof VDbPersonFull>;
 
-export const VDbDivision = object({
-   id: string(),
-   idLeague: string(),
-   isSubLeague: string(),
-   name: string(),
-   slug: string(),
-});
-export const VDbDivisionGame = object({
-   date: string([VRegexDate]),
-   id: string(),
-   idGameGroup: string(),
-   idLeague: string(),
-   idTeamHome: string(),
-   idTeamAway: string(),
-   time: number(),
-});
-export const VDbDivisionGameGroup = object({
-   dateEnd: string([VRegexDate]),
-   dateStart: string([VRegexDate]),
-   id: string(),
-   idLeague: string(),
-   name: string(),
-   standings: string(),
-});
 export const VDbLeague = object({
    abbrev: string(),
    id: string(),
@@ -270,24 +246,24 @@ export const VDbPark = object({
 });
 
 export const VDbSubLeague = object({
-   abbrev: string(),
    id: string(),
    idLeague: string(),
+   abbrev: string(),
    name: string(),
    slug: string(),
 });
 
 export const VDbTeam = object({
+   id: string(),
+   idHistorical: string(),
+   idLeague: string(),
+   idPark: string(),
+   idSubLeague: string(),
    abbrev: string(),
    backgroundColor: string(),
    idDivision: string(),
    hatMainColor: string(),
    hatVisorColor: string(),
-   idHistorical: string(),
-   id: string(),
-   idLeague: string(),
-   idPark: string(),
-   idSubLeague: string(),
    jerseyAwayColor: string(),
    jerseyMainColor: string(),
    jerseyPinStripeColor: string(),
@@ -296,4 +272,12 @@ export const VDbTeam = object({
    nickname: string(),
    slug: string(),
    textColor: string(),
+});
+
+export const VDbDivision = object({
+   id: string(),
+   idLeague: string(),
+   idSubLeague: string(),
+   name: string(),
+   slug: string(),
 });

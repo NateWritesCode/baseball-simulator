@@ -11,6 +11,9 @@ import {
 import {
    VDbCity,
    VDbCountry,
+   VDbDivision,
+   VDbLeague,
+   VDbPark,
    VDbPerson,
    VDbPersonAlignment,
    VDbPersonFull,
@@ -18,7 +21,9 @@ import {
    VDbPersonPhysical,
    VDbPersonSkillMental,
    VDbPersonSkillPhysical,
+   VDbSubLeague,
    VDbSubregion,
+   VDbTeam,
 } from "./tDb";
 
 export const VInputConstructor = object({
@@ -131,5 +136,20 @@ export const VSubregionsObj = merge([
 export const VSubregions = array(VSubregionsObj);
 export type TSubregions = Input<typeof VSubregions>;
 
-export const VNavTeams = array();
-export type TNavTeams = Input<typeof VNavTeams>;
+export const VInputTeams = object({
+   limit: number(),
+   offset: number(),
+});
+export type TInputTeams = Input<typeof VInputTeams>;
+
+export const VTeamsObj = merge([
+   VDbTeam,
+   object({
+      division: pick(VDbDivision, ["id", "name", "slug"]),
+      league: pick(VDbLeague, ["id", "name", "slug"]),
+      park: pick(VDbPark, ["id", "name"]),
+      subLeague: pick(VDbSubLeague, ["id", "name", "slug"]),
+   }),
+]);
+export const VTeams = array(VTeamsObj);
+export type TTeams = Input<typeof VTeams>;

@@ -102,11 +102,11 @@ class FakeClientStructure {
    };
 
    createLeague = (_input: TInputCreateLeague) => {
-      // const { subleagues, teams } = this.fakeClientStructure.createLeague({
+      // const { subLeagues, teams } = this.fakeClientStructure.createLeague({
       //    league: {
       //       id: "my-league",
       //       name: "My League",
-      //       subleagues: [
+      //       subLeagues: [
       //          {
       //             divisions: [
       //                {
@@ -145,7 +145,7 @@ class FakeClientStructure {
 
       const teams: TTeam[] = [];
 
-      const subleagues = input.league.subleagues.map((subleague) => {
+      const subLeagues = input.league.subLeagues.map((subleague) => {
          const { divisions, id, name, numTeams } = subleague;
 
          const divisionsWithCities = this._locateCities({
@@ -207,7 +207,7 @@ class FakeClientStructure {
       return {
          id: input.league.id,
          name: input.league.name,
-         subleagues,
+         subLeagues,
          teams,
       };
    };
@@ -554,7 +554,7 @@ const VInputCreateLeague = object({
    league: object({
       id: string(),
       name: string(),
-      subleagues: array(
+      subLeagues: array(
          merge([
             VSubleague,
             object({

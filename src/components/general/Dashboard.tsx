@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Box, Flex } from "styled-system/jsx";
 import NavItemAccordion from "./NavItemAccordion";
 import NavItemMenu from "./NavItemMenu";
@@ -95,7 +96,16 @@ const Dashboard = () => {
                      gap="spacing-xs"
                      alignSelf="stretch"
                   >
-                     <NavItemMenu />
+                     {["Leagues", "Parks", "SubLeagues", "Teams"].map(
+                        (item, i) => {
+                           return (
+                              <Link key={item} to={`/${item.toLowerCase()}`}>
+                                 {item}
+                              </Link>
+                           );
+                        },
+                     )}
+                     {/* <NavItemMenu /> */}
                      {/* <NavItemAccordion /> */}
                   </Flex>
                </Flex>

@@ -33,10 +33,12 @@ import {
    type TInputPersons,
    type TInputSubregion,
    type TInputSubregions,
+   type TInputTeams,
    type TPerson,
    type TPersons,
    type TSubregion,
    type TSubregions,
+   type TTeams,
    VCities,
    VCity,
    VCountries,
@@ -54,6 +56,7 @@ import {
    VPersons,
    VSubregion,
    VSubregions,
+   VTeams,
 } from "../types/tDbClient";
 import { valibotParse } from "../valibot";
 
@@ -85,7 +88,7 @@ class DbClient {
       divisions: {
          id: { type: "string" },
          idLeague: { type: "string" },
-         idSubleague: { type: "string" },
+         idSubLeague: { type: "string" },
          name: { type: "string" },
          slug: { type: "string" },
       },
@@ -432,10 +435,10 @@ class DbClient {
          id: { type: "string" },
          name: { type: "string" },
       },
-      subleagues: {
-         abbrev: { type: "string" },
+      subLeagues: {
          id: { type: "string" },
          idLeague: { type: "string" },
+         abbrev: { type: "string" },
          name: { type: "string" },
          slug: { type: "string" },
       },
@@ -663,7 +666,19 @@ class DbClient {
          },
       );
 
+      this.queries.setQueryDefinition("leagues", "leagues", ({ select }) => {
+         select("abbrev");
+         select("id");
+         select("name");
+         select("slug");
+      });
+
       this.queries.setQueryDefinition("teams", "teams", ({ select, join }) => {
+         select("id");
+         select("idDivision");
+         select("idLeague");
+         select("idPark");
+         select("idSubLeague");
          select("abbrev");
          select("backgroundColor");
          select("hatMainColor");
@@ -673,26 +688,25 @@ class DbClient {
          select("jerseyMainColor");
          select("jerseyPinStripeColor");
          select("jerseySecondaryColor");
-         select("id");
          select("name");
          select("nickname");
          select("slug");
          select("textColor");
-         select("divisions", "id").as("division.id");
-         select("divisions", "name").as("division.name");
-         select("divisions", "slug").as("division.slug");
-         select("leagues", "id").as("league.id");
-         select("leagues", "name").as("league.name");
-         select("leagues", "slug").as("league.slug");
-         select("parks", "id").as("park.id");
-         select("parks", "name").as("park.name");
-         select("subleagues", "id").as("subleague.id");
-         select("subleagues", "name").as("subleague.name");
-         select("subleagues", "slug").as("subleague.slug");
+         select("division", "id").as("division.id");
+         select("division", "name").as("division.name");
+         select("division", "slug").as("division.slug");
+         select("league", "id").as("league.id");
+         select("league", "name").as("league.name");
+         select("league", "slug").as("league.slug");
+         select("park", "id").as("park.id");
+         select("park", "name").as("park.name");
+         select("subLeague", "id").as("subLeague.id");
+         select("subLeague", "name").as("subLeague.name");
+         select("subLeague", "slug").as("subLeague.slug");
          join("divisions", "idDivision").as("division");
          join("leagues", "idLeague").as("league");
          join("parks", "idPark").as("park");
-         join("subleagues", "idSubLeague").as("subleague");
+         join("subLeagues", "idSubLeague").as("subLeague");
       });
    }
 
@@ -1065,11 +1079,15 @@ class DbClient {
          }
 
          for (const subleague of subLeagues) {
-            this.store.setRow("subleagues", subleague.id, subleague);
+            this.store.setRow("subLeagues", subleague.id, subleague);
          }
 
          for (const division of divisions) {
             this.store.setRow("divisions", division.id, division);
+         }
+
+         for (const team of teams) {
+            this.store.setRow("teams", team.id, team);
          }
 
          this.store.setRow("simulation", "simulation", {
@@ -1220,23 +1238,6 @@ class DbClient {
       };
    };
 
-   navTeams = () => {
-      const leagueId = "major-league-baseball";
-
-      const teamIds = this.queries.getResultRowIds("teams");
-
-      const _teams = teamIds.map((id) =>
-         this._convertDotNotationToNestedObject(
-            this.queries.getResultRow("teams", id),
-         ),
-      );
-
-      const teams = valibotParse<TNavTeams>({
-         schema: VNavTeams,
-         data: _teams,
-      });
-   };
-
    public person = (_input: TInputPerson) => {
       const { id } = valibotParse<TInputPerson>({
          schema: VInputPerson,
@@ -1339,6 +1340,41 @@ class DbClient {
 
       return {
          subregions,
+         numTotal,
+      };
+   };
+
+   public teams = (_input: TInputTeams) => {
+      const { offset, limit } = valibotParse<TInputSubregions>({
+         schema: VInputSubregions,
+         data: _input,
+      });
+
+      const teamIds = this.queries.getResultSortedRowIds(
+         "teams",
+         undefined,
+         undefined,
+         offset,
+         limit,
+      );
+
+      const _teams = teamIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("teams", id),
+         ),
+      );
+
+      console.log("_teams", _teams);
+
+      const teams = valibotParse<TTeams>({
+         schema: VTeams,
+         data: _teams,
+      });
+
+      const numTotal = this.queries.getResultRowCount("teams");
+
+      return {
+         teams,
          numTotal,
       };
    };
