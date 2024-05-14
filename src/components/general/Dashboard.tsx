@@ -96,15 +96,19 @@ const Dashboard = () => {
                      gap="spacing-xs"
                      alignSelf="stretch"
                   >
-                     {["Leagues", "Parks", "SubLeagues", "Teams"].map(
-                        (item, i) => {
-                           return (
-                              <Link key={item} to={`/${item.toLowerCase()}`}>
-                                 {item}
-                              </Link>
-                           );
-                        },
-                     )}
+                     {[
+                        "Divisions",
+                        "Leagues",
+                        "Parks",
+                        "SubLeagues",
+                        "Teams",
+                     ].map((item, i) => {
+                        return (
+                           <Link key={item} to={`/${item.toLowerCase()}`}>
+                              {item}
+                           </Link>
+                        );
+                     })}
                      {/* <NavItemMenu /> */}
                      {/* <NavItemAccordion /> */}
                   </Flex>

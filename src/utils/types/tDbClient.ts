@@ -153,3 +153,43 @@ export const VTeamsObj = merge([
 ]);
 export const VTeams = array(VTeamsObj);
 export type TTeams = Input<typeof VTeams>;
+
+export const VInputLeagues = object({
+   limit: number(),
+   offset: number(),
+});
+export type TInputLeagues = Input<typeof VInputLeagues>;
+
+export const VLeaguesObj = VDbLeague;
+export const VLeagues = array(VLeaguesObj);
+export type TLeagues = Input<typeof VLeagues>;
+
+export const VInputDivisions = object({
+   limit: number(),
+   offset: number(),
+});
+export type TInputDivisions = Input<typeof VInputDivisions>;
+export const VDivisionsObj = VDbDivision;
+export const VDivisions = array(VDivisionsObj);
+export type TDivisions = Input<typeof VDivisions>;
+
+export const VInputParks = object({
+   limit: number(),
+   offset: number(),
+});
+export type TInputParks = Input<typeof VInputParks>;
+
+export const VParksObj = VDbPark;
+
+export const VParks = array(VParksObj);
+export type TParks = Input<typeof VParks>;
+
+export const VInputSubLeagues = object({
+   limit: number(),
+   offset: number(),
+});
+export type TInputSubLeagues = Input<typeof VInputSubLeagues>;
+export const VSubLeaguesObj = VDbSubLeague;
+
+export const VSubLeagues = array(VSubLeaguesObj);
+export type TSubLeagues = Input<typeof VSubLeagues>;

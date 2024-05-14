@@ -11,22 +11,22 @@ import {
 import { Container } from "styled-system/jsx";
 import { number, object, optional, parse } from "valibot";
 
-const Teams = () => {
-   const { numTotal, teams } = useLoaderData({ from: "/teams" });
-   const searchParams = useSearch({ from: "/teams" });
+const Parks = () => {
+   const { numTotal, parks } = useLoaderData({ from: "/parks" });
+   const searchParams = useSearch({ from: "/parks" });
    const { limit, offset } = searchParams;
 
    return (
       <Container maxW="4xl">
-         {teams.map((team) => {
+         {parks.map((park) => {
             return (
-               <div key={team.id}>
+               <div key={park.id}>
                   <Link
-                     to={"/team/$id"}
-                     params={{ id: team.id }}
+                     to={"/park/$id"}
+                     params={{ id: park.id }}
                      style={{ textDecoration: "underline" }}
                   >
-                     {team.name}
+                     {park.name}
                   </Link>
                </div>
             );
@@ -35,13 +35,13 @@ const Teams = () => {
             limit={limit}
             numTotal={numTotal}
             offset={offset}
-            to="/teams"
+            to="/parks"
          />
       </Container>
    );
 };
 
-export const Route = createFileRoute("/teams")({
+export const Route = createFileRoute("/parks")({
    validateSearch: (search?: { limit?: number; offset?: number }) => {
       return {
          limit: search?.limit,
@@ -66,9 +66,9 @@ export const Route = createFileRoute("/teams")({
          });
       }
 
-      return generalStore.state.dbClient.teams({ limit, offset });
+      return generalStore.state.dbClient.parks({ limit, offset });
    },
-   component: Teams,
+   component: Parks,
 });
 
-export default Teams;
+export default Parks;

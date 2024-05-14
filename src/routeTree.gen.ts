@@ -12,13 +12,41 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TeamsImport } from './routes/teams'
+import { Route as SubLeaguesImport } from './routes/subLeagues'
+import { Route as ParksImport } from './routes/parks'
+import { Route as LeaguesImport } from './routes/leagues'
+import { Route as DivisionsImport } from './routes/divisions'
 import { Route as IndexImport } from './routes/index'
 import { Route as TeamIdImport } from './routes/team.$id'
+import { Route as SubLeagueIdImport } from './routes/subLeague.$id'
+import { Route as ParkIdImport } from './routes/park.$id'
+import { Route as LeagueIdImport } from './routes/league.$id'
+import { Route as DivisionIdImport } from './routes/division.$id'
 
 // Create/Update Routes
 
 const TeamsRoute = TeamsImport.update({
   path: '/teams',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SubLeaguesRoute = SubLeaguesImport.update({
+  path: '/subLeagues',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ParksRoute = ParksImport.update({
+  path: '/parks',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LeaguesRoute = LeaguesImport.update({
+  path: '/leagues',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DivisionsRoute = DivisionsImport.update({
+  path: '/divisions',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +60,26 @@ const TeamIdRoute = TeamIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const SubLeagueIdRoute = SubLeagueIdImport.update({
+  path: '/subLeague/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ParkIdRoute = ParkIdImport.update({
+  path: '/park/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LeagueIdRoute = LeagueIdImport.update({
+  path: '/league/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DivisionIdRoute = DivisionIdImport.update({
+  path: '/division/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -40,8 +88,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/divisions': {
+      preLoaderRoute: typeof DivisionsImport
+      parentRoute: typeof rootRoute
+    }
+    '/leagues': {
+      preLoaderRoute: typeof LeaguesImport
+      parentRoute: typeof rootRoute
+    }
+    '/parks': {
+      preLoaderRoute: typeof ParksImport
+      parentRoute: typeof rootRoute
+    }
+    '/subLeagues': {
+      preLoaderRoute: typeof SubLeaguesImport
+      parentRoute: typeof rootRoute
+    }
     '/teams': {
       preLoaderRoute: typeof TeamsImport
+      parentRoute: typeof rootRoute
+    }
+    '/division/$id': {
+      preLoaderRoute: typeof DivisionIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/league/$id': {
+      preLoaderRoute: typeof LeagueIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/park/$id': {
+      preLoaderRoute: typeof ParkIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/subLeague/$id': {
+      preLoaderRoute: typeof SubLeagueIdImport
       parentRoute: typeof rootRoute
     }
     '/team/$id': {
@@ -55,7 +135,15 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  DivisionsRoute,
+  LeaguesRoute,
+  ParksRoute,
+  SubLeaguesRoute,
   TeamsRoute,
+  DivisionIdRoute,
+  LeagueIdRoute,
+  ParkIdRoute,
+  SubLeagueIdRoute,
   TeamIdRoute,
 ])
 

@@ -24,18 +24,26 @@ import {
    type TCity,
    type TCountries,
    type TCountry,
+   type TDivisions,
    type TInputCities,
    type TInputCity,
    type TInputConstructor,
    type TInputCountries,
    type TInputCountry,
+   type TInputDivisions,
+   type TInputLeagues,
+   type TInputParks,
    type TInputPerson,
    type TInputPersons,
+   type TInputSubLeagues,
    type TInputSubregion,
    type TInputSubregions,
    type TInputTeams,
+   type TLeagues,
+   type TParks,
    type TPerson,
    type TPersons,
+   type TSubLeagues,
    type TSubregion,
    type TSubregions,
    type TTeams,
@@ -43,17 +51,25 @@ import {
    VCity,
    VCountries,
    VCountry,
+   VDivisions,
    VInputCities,
    VInputCity,
    VInputConstructor,
    VInputCountries,
    VInputCountry,
+   VInputDivisions,
+   VInputLeagues,
+   VInputParks,
    VInputPerson,
    VInputPersons,
+   VInputSubLeagues,
    VInputSubregion,
    VInputSubregions,
+   VLeagues,
+   VParks,
    VPerson,
    VPersons,
+   VSubLeagues,
    VSubregion,
    VSubregions,
    VTeams,
@@ -524,6 +540,25 @@ class DbClient {
       );
 
       this.queries.setQueryDefinition(
+         "divisions",
+         "divisions",
+         ({ select }) => {
+            select("id");
+            select("idLeague");
+            select("idSubLeague");
+            select("name");
+            select("slug");
+         },
+      );
+
+      this.queries.setQueryDefinition("leagues", "leagues", ({ select }) => {
+         select("abbrev");
+         select("id");
+         select("name");
+         select("slug");
+      });
+
+      this.queries.setQueryDefinition(
          "persons",
          "persons",
          ({ select, join }) => {
@@ -643,12 +678,116 @@ class DbClient {
          },
       );
 
+      this.queries.setQueryDefinition("parks", "parks", ({ select }) => {
+         select("id");
+         select("idOotp");
+         select("avg");
+         select("avgL");
+         select("avgR");
+         select("basesX0");
+         select("basesX1");
+         select("basesX2");
+         select("basesY0");
+         select("basesY1");
+         select("basesY2");
+         select("batterLeftX");
+         select("batterLeftY");
+         select("batterRightX");
+         select("batterRightY");
+         select("capacity");
+         select("d");
+         select("dimensionsX");
+         select("dimensionsY");
+         select("distances0");
+         select("distances1");
+         select("distances2");
+         select("distances3");
+         select("distances4");
+         select("distances5");
+         select("distances6");
+         select("foulGround");
+         select("hr");
+         select("hrL");
+         select("hrR");
+         select("isHomeTeamDugoutAtFirstBase");
+         select("name");
+         select("positionsX0");
+         select("positionsX1");
+         select("positionsX2");
+         select("positionsX3");
+         select("positionsX4");
+         select("positionsX5");
+         select("positionsX6");
+         select("positionsX7");
+         select("positionsX8");
+         select("positionsX9");
+         select("positionsY0");
+         select("positionsY1");
+         select("positionsY2");
+         select("positionsY3");
+         select("positionsY4");
+         select("positionsY5");
+         select("positionsY6");
+         select("positionsY7");
+         select("positionsY8");
+         select("positionsY9");
+         select("rain0");
+         select("rain1");
+         select("rain2");
+         select("rain3");
+         select("rain4");
+         select("rain5");
+         select("rain6");
+         select("rain7");
+         select("rain8");
+         select("rain9");
+         select("rain10");
+         select("rain11");
+         select("slug");
+         select("t");
+         select("temperature0");
+         select("temperature1");
+         select("temperature2");
+         select("temperature3");
+         select("temperature4");
+         select("temperature5");
+         select("temperature6");
+         select("temperature7");
+         select("temperature8");
+         select("temperature9");
+         select("temperature10");
+         select("temperature11");
+         select("turf");
+         select("type");
+         select("wallHeights0");
+         select("wallHeights1");
+         select("wallHeights2");
+         select("wallHeights3");
+         select("wallHeights4");
+         select("wallHeights5");
+         select("wallHeights6");
+         select("wind");
+         select("windDirection");
+      });
+
       this.queries.setQueryDefinition(
          "simulation",
          "simulation",
          ({ select }) => {
             select("date");
             select("id");
+         },
+      );
+
+      this.queries.setQueryDefinition(
+         "subLeagues",
+         "subLeagues",
+         ({ select }) => {
+            select("id");
+            select("idLeague");
+            select("abbrev");
+            select("name");
+            select("slug");
          },
       );
 
@@ -665,13 +804,6 @@ class DbClient {
             join("countries", "idCountry").as("country");
          },
       );
-
-      this.queries.setQueryDefinition("leagues", "leagues", ({ select }) => {
-         select("abbrev");
-         select("id");
-         select("name");
-         select("slug");
-      });
 
       this.queries.setQueryDefinition("teams", "teams", ({ select, join }) => {
          select("id");
@@ -1238,6 +1370,105 @@ class DbClient {
       };
    };
 
+   public divisions = (_input: TInputDivisions) => {
+      const { offset, limit } = valibotParse<TInputDivisions>({
+         schema: VInputDivisions,
+         data: _input,
+      });
+
+      const divisionIds = this.queries.getResultSortedRowIds(
+         "divisions",
+         undefined,
+         undefined,
+         offset,
+         limit,
+      );
+
+      const _divisions = divisionIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("divisions", id),
+         ),
+      );
+
+      const divisions = valibotParse<TDivisions>({
+         schema: VDivisions,
+         data: _divisions,
+      });
+
+      const numTotal = this.queries.getResultRowCount("divisions");
+
+      return {
+         divisions,
+         numTotal,
+      };
+   };
+
+   public leagues = (_input: TInputLeagues) => {
+      const { offset, limit } = valibotParse<TInputLeagues>({
+         schema: VInputLeagues,
+         data: _input,
+      });
+
+      const leagueIds = this.queries.getResultSortedRowIds(
+         "leagues",
+         undefined,
+         undefined,
+         offset,
+         limit,
+      );
+
+      const _leagues = leagueIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("leagues", id),
+         ),
+      );
+
+      const leagues = valibotParse<TLeagues>({
+         schema: VLeagues,
+         data: _leagues,
+      });
+
+      const numTotal = this.queries.getResultRowCount("leagues");
+
+      return {
+         leagues,
+         numTotal,
+      };
+   };
+
+   public parks = (_input: TInputParks) => {
+      const { offset, limit } = valibotParse<TInputParks>({
+         schema: VInputParks,
+         data: _input,
+      });
+
+      const parkIds = this.queries.getResultSortedRowIds(
+         "parks",
+         undefined,
+         undefined,
+         offset,
+         limit,
+      );
+
+      const _parks = parkIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("parks", id),
+         ),
+      );
+
+      const parks = valibotParse<TParks>({
+         schema: VParks,
+         data: _parks,
+      });
+
+      const numTotal = this.queries.getResultRowCount("parks");
+
+      return {
+         parks,
+         numTotal,
+      };
+   };
+
    public person = (_input: TInputPerson) => {
       const { id } = valibotParse<TInputPerson>({
          schema: VInputPerson,
@@ -1288,6 +1519,39 @@ class DbClient {
       return {
          numTotal,
          persons,
+      };
+   };
+
+   public subLeagues = (_input: TInputSubLeagues) => {
+      const { offset, limit } = valibotParse<TInputSubLeagues>({
+         schema: VInputSubLeagues,
+         data: _input,
+      });
+
+      const subLeagueIds = this.queries.getResultSortedRowIds(
+         "subLeagues",
+         undefined,
+         undefined,
+         offset,
+         limit,
+      );
+
+      const _subLeagues = subLeagueIds.map((id) =>
+         this._convertDotNotationToNestedObject(
+            this.queries.getResultRow("subLeagues", id),
+         ),
+      );
+
+      const subLeagues = valibotParse<TSubLeagues>({
+         schema: VSubLeagues,
+         data: _subLeagues,
+      });
+
+      const numTotal = this.queries.getResultRowCount("subLeagues");
+
+      return {
+         numTotal,
+         subLeagues,
       };
    };
 
@@ -1363,8 +1627,6 @@ class DbClient {
             this.queries.getResultRow("teams", id),
          ),
       );
-
-      console.log("_teams", _teams);
 
       const teams = valibotParse<TTeams>({
          schema: VTeams,

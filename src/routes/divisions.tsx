@@ -11,22 +11,22 @@ import {
 import { Container } from "styled-system/jsx";
 import { number, object, optional, parse } from "valibot";
 
-const Teams = () => {
-   const { numTotal, teams } = useLoaderData({ from: "/teams" });
-   const searchParams = useSearch({ from: "/teams" });
+const Divisions = () => {
+   const { numTotal, divisions } = useLoaderData({ from: "/divisions" });
+   const searchParams = useSearch({ from: "/divisions" });
    const { limit, offset } = searchParams;
 
    return (
       <Container maxW="4xl">
-         {teams.map((team) => {
+         {divisions.map((division) => {
             return (
-               <div key={team.id}>
+               <div key={division.id}>
                   <Link
-                     to={"/team/$id"}
-                     params={{ id: team.id }}
+                     to={"/division/$id"}
+                     params={{ id: division.id }}
                      style={{ textDecoration: "underline" }}
                   >
-                     {team.name}
+                     {division.name}
                   </Link>
                </div>
             );
@@ -35,13 +35,13 @@ const Teams = () => {
             limit={limit}
             numTotal={numTotal}
             offset={offset}
-            to="/teams"
+            to="/divisions"
          />
       </Container>
    );
 };
 
-export const Route = createFileRoute("/teams")({
+export const Route = createFileRoute("/divisions")({
    validateSearch: (search?: { limit?: number; offset?: number }) => {
       return {
          limit: search?.limit,
@@ -66,9 +66,9 @@ export const Route = createFileRoute("/teams")({
          });
       }
 
-      return generalStore.state.dbClient.teams({ limit, offset });
+      return generalStore.state.dbClient.divisions({ limit, offset });
    },
-   component: Teams,
+   component: Divisions,
 });
 
-export default Teams;
+export default Divisions;
