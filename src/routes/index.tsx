@@ -7,7 +7,6 @@
 // // import { Divider } from "styled-system/jsx";
 
 // import { Page404 } from "@/components/general";
-import Dashboard from "@/components/general/Dashboard";
 import { createFileRoute } from "@tanstack/react-router";
 // import { css } from "styled-system/css";
 
@@ -68,5 +67,5 @@ const Index = () => {
 };
 
 export const Route = createFileRoute("/")({
-   component: () => <Dashboard />,
+   component: () => <Index />,
 });

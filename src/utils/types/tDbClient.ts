@@ -1,12 +1,16 @@
+import { name } from "happy-dom/lib/PropertySymbol.js";
 import {
    type Input,
    array,
+   coerce,
    merge,
    number,
    object,
    omit,
    pick,
+   record,
    string,
+   transform,
 } from "valibot";
 import {
    VDbCity,
@@ -25,6 +29,7 @@ import {
    VDbSubregion,
    VDbTeam,
 } from "./tDb";
+import { VRegexDate } from "./tRegex";
 
 export const VInputConstructor = object({
    name: string(),
@@ -193,3 +198,31 @@ export const VSubLeaguesObj = VDbSubLeague;
 
 export const VSubLeagues = array(VSubLeaguesObj);
 export type TSubLeagues = Input<typeof VSubLeagues>;
+
+export const VInputLeagueGameGroupStandings = object({
+   idGameGroup: string(),
+   idLeague: string(),
+});
+export type TInputLeagueGameGroupStandings = Input<
+   typeof VInputLeagueGameGroupStandings
+>;
+
+export const VGameGroup = object({
+   id: string(),
+   idLeague: string(),
+   dateEnd: string([VRegexDate]),
+   dateStart: string([VRegexDate]),
+   name: string(),
+   standings: coerce(
+      record(
+         string(),
+         object({
+            id: string(),
+            losses: number(),
+            wins: number(),
+         }),
+      ),
+      (input) => JSON.parse(input as string),
+   ),
+});
+export type TGameGroup = Input<typeof VGameGroup>;

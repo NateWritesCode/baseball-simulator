@@ -3,7 +3,11 @@ import {
    type IndexedDbPersister,
    createIndexedDbPersister,
 } from "tinybase/persisters/persister-indexed-db";
-import { createQueries, createStore } from "tinybase/with-schemas";
+import {
+   createQueries,
+   createRelationships,
+   createStore,
+} from "tinybase/with-schemas";
 import { string } from "valibot";
 import {
    cities,
@@ -25,12 +29,14 @@ import {
    type TCountries,
    type TCountry,
    type TDivisions,
+   TGameGroup,
    type TInputCities,
    type TInputCity,
    type TInputConstructor,
    type TInputCountries,
    type TInputCountry,
    type TInputDivisions,
+   type TInputLeagueGameGroupStandings,
    type TInputLeagues,
    type TInputParks,
    type TInputPerson,
@@ -52,12 +58,14 @@ import {
    VCountries,
    VCountry,
    VDivisions,
+   VGameGroup,
    VInputCities,
    VInputCity,
    VInputConstructor,
    VInputCountries,
    VInputCountry,
    VInputDivisions,
+   VInputLeagueGameGroupStandings,
    VInputLeagues,
    VInputParks,
    VInputPerson,
@@ -118,10 +126,10 @@ class DbClient {
          time: { type: "number" },
       },
       gameGroups: {
-         dateEnd: { type: "string" },
-         dateStart: { type: "string" },
          id: { type: "string" },
          idLeague: { type: "string" },
+         dateEnd: { type: "string" },
+         dateStart: { type: "string" },
          name: { type: "string" },
          standings: { type: "string" },
       },
@@ -488,6 +496,8 @@ class DbClient {
 
    public queries = createQueries(this.store);
 
+   public relationships = createRelationships(this.store);
+
    private persister: IndexedDbPersister;
 
    constructor(_input: TInputConstructor) {
@@ -557,6 +567,25 @@ class DbClient {
          select("name");
          select("slug");
       });
+
+      this.queries.setQueryDefinition(
+         "leagueGameGroupStandings",
+         "gameGroups",
+         ({ select, join }) => {
+            select("id");
+            select("idLeague");
+            select("name");
+            select("standings");
+            select("dateStart");
+            select("dateEnd");
+            select("league", "name").as("league.name");
+            select("league", "slug").as("league.slug");
+            join("leagues", "idLeague").as("league");
+            join("divisions", "idLeague");
+            join("subLeagues", "idLeague");
+            join("teams", "idLeague");
+         },
+      );
 
       this.queries.setQueryDefinition(
          "persons",
@@ -1401,6 +1430,28 @@ class DbClient {
          divisions,
          numTotal,
       };
+   };
+
+   public leagueGameGroupStandings = (
+      _input: TInputLeagueGameGroupStandings,
+   ) => {
+      const { idGameGroup, idLeague } =
+         valibotParse<TInputLeagueGameGroupStandings>({
+            schema: VInputLeagueGameGroupStandings,
+            data: _input,
+         });
+
+      const _gameGroup = this.queries.getResultRow(
+         "leagueGameGroupStandings",
+         `${idLeague}-${idGameGroup}`,
+      );
+
+      const gameGroup = valibotParse<TGameGroup>({
+         schema: VGameGroup,
+         data: this._convertDotNotationToNestedObject(_gameGroup),
+      });
+
+      console.log("gameGroup", gameGroup);
    };
 
    public leagues = (_input: TInputLeagues) => {

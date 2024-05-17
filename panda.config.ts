@@ -3990,6 +3990,7 @@ const config: Config = {
             "spacing-3xl": { value: "1.5rem" },
             "8": { value: "2rem" },
             "container-padding-xl": { value: "2rem" },
+            full: { value: "100%" },
             "spacing-4xl": { value: "2rem" },
             "10": { value: "2.5rem" },
             "spacing-5xl": { value: "2.5rem" },
