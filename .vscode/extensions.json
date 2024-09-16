@@ -1,0 +1,8 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"thebearingedge.vscode-sql-lit",
+		"alexcvzz.vscode-sqlite",
+		"bradlc.vscode-tailwindcss"
+	]
+}
