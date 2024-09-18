@@ -9,7 +9,13 @@
 		{
 			"label": "server-dev",
 			"type": "shell",
+			"dependsOn": ["server-seed"],
 			"command": "bash scripts/bash/server-dev.sh"
+		},
+		{
+			"label": "server-seed",
+			"type": "shell",
+			"command": "bash scripts/bash/server-seed.sh"
 		},
 		{
 			"label": "webapp-dev",
