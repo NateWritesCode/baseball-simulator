@@ -7,6 +7,11 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "blockchain-dev",
+			"type": "shell",
+			"command": "bash scripts/bash/blockchain-dev.sh"
+		},
+		{
 			"label": "server-dev",
 			"type": "shell",
 			"command": "bash scripts/bash/server-dev.sh"

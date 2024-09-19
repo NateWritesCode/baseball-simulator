@@ -2,6 +2,7 @@
 	"name": "baseball-simulator",
 	"module": "index.ts",
 	"type": "module",
+	"workspaces": ["apps/*", "packages/*"],
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
 		"@types/bun": "latest",
@@ -29,7 +30,8 @@
 		"react-dom": "^18.3.1",
 		"tailwind-merge": "^2.5.2",
 		"tailwindcss-animate": "^1.0.7",
-		"valibot": "^0.41.0"
+		"valibot": "^0.41.0",
+		"wouter": "^3.3.5"
 	},
 	"trustedDependencies": ["@biomejs/biome"]
 }
