@@ -1,0 +1,12 @@
+{
+	"name": "@baseball-simulator/utils",
+	"version": "0.0.1",
+	"exports": {
+		".": {
+			"import": "./src/index.ts"
+		},
+		"./types": {
+			"import": "./src/types/index.ts"
+		}
+	}
+}
