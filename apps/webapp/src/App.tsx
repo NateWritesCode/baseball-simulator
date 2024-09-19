@@ -1,7 +1,12 @@
-import Router from "@webapp/components/general/Router";
+import { ThemeProvider } from "@webapp/components/general/theme-provider";
+import type { ReactNode } from "react";
 
-function App() {
-	return <Router />;
-}
+const App: React.FC<{ children: ReactNode }> = ({ children }) => {
+	return (
+		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-them">
+			{children}
+		</ThemeProvider>
+	);
+};
 
 export default App;
