@@ -1,11 +1,16 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Router from "@webapp/components/general/Router";
 import { ThemeProvider } from "@webapp/components/general/theme-provider";
-import type { ReactNode } from "react";
 
-const App: React.FC<{ children: ReactNode }> = ({ children }) => {
+const queryClient = new QueryClient();
+
+const App = () => {
 	return (
-		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-them">
-			{children}
-		</ThemeProvider>
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider defaultTheme="dark" storageKey="vite-ui-them">
+				<Router />
+			</ThemeProvider>
+		</QueryClientProvider>
 	);
 };
 

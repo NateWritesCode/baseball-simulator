@@ -1,6 +1,6 @@
-import { object, string, type InferInput } from "valibot";
+import { type InferInput, object, string } from "valibot";
 
-export const VApiParamsPlayer = object({
-	id: string(),
+export const VApiParamsGetIdPlayer = object({
+	idPlayer: string(),
 });
-export type TApiParamsPlayer = InferInput<typeof VApiParamsPlayer>;
+export type TApiParamsGetPlayerId = InferInput<typeof VApiParamsGetIdPlayer>;

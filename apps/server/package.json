@@ -1,0 +1,9 @@
+{
+	"name": "@baseball-simulator/server",
+	"version": "0.0.1",
+	"exports": {
+		".": {
+			"import": "./src/index.ts"
+		}
+	}
+}

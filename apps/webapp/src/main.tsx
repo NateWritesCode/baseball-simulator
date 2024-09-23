@@ -1,5 +1,5 @@
 import "@fontsource/inter";
-import App from "@webapp/App.tsx";
+import App from "@webapp/App";
 import "@webapp/index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

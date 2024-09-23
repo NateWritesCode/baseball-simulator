@@ -5,6 +5,9 @@
 		".": {
 			"import": "./src/index.ts"
 		},
+		"./functions": {
+			"import": "./src/functions/index.ts"
+		},
 		"./types": {
 			"import": "./src/types/index.ts"
 		}
