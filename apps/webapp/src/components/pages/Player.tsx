@@ -30,10 +30,12 @@ const Player = () => {
 
 	return (
 		<div>
-			{data.map(({ firstName, lastName }) => {
+			{data.map(({ firstName, idPlayer, lastName }) => {
 				return (
 					<div key={`${firstName}-${lastName}`}>
-						{firstName} {lastName}
+						<a href={`/player/${idPlayer}`}>
+							{firstName} {lastName}
+						</a>
 					</div>
 				);
 			})}

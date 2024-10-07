@@ -1,12 +1,19 @@
-import { type InferInput, array, pick } from "valibot";
-import { VDbPlayer } from "./tDb";
+import { type InferInput, array, intersect, pick } from "valibot";
+import { VDbPersons, VDbPlayers } from "./tDb";
 
 export const VApiResponseGetPlayer = array(
-	pick(VDbPlayer, ["firstName", "lastName"]),
+	intersect([
+		pick(VDbPersons, ["firstName", "lastName"]),
+		pick(VDbPlayers, ["idPlayer"]),
+	]),
 );
 export type TApiResponseGetPlayer = InferInput<typeof VApiResponseGetPlayer>;
 
-export const VApiResponseGetIdPlayer = pick(VDbPlayer, [
-	"firstName",
-	"lastName",
+export const VApiResponseGetIdPlayer = intersect([
+	pick(VDbPlayers, ["idPlayer"]),
+	pick(VDbPersons, ["firstName", "lastName"]),
 ]);
+
+export type TApiResponseGetIdPlayer = InferInput<
+	typeof VApiResponseGetIdPlayer
+>;

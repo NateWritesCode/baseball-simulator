@@ -14,9 +14,16 @@ const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 
 		const query = db.query(/* sql */ `
 		select 
-			firstName, lastName 
+			persons.firstName, 
+			persons.lastName,
+			players.idPlayer 
 		from 
+			players
+		inner join
 			persons
+		on
+			players.idPerson = persons.idPerson
+		;
 		`);
 		const data = query.all();
 
@@ -33,10 +40,14 @@ const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 
 		const query = db.prepare(/* sql */ `
 		select 
-			firstName,
-			lastName
+			persons.firstName,
+			persons.lastName
 		from 
 			players
+		inner join
+			persons
+		on
+			players.idPerson = persons.idPerson
 		where 
 			idPlayer = $idPlayer
 		;

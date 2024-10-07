@@ -1,4 +1,4 @@
-import Home from "@webapp/components/home/Home";
+import Home from "@webapp/components/pages/Home";
 import IdPlayer from "@webapp/components/pages/IdPlayer";
 import Player from "@webapp/components/pages/Player";
 import { Route, Switch } from "wouter";
