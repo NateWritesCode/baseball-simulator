@@ -6,7 +6,7 @@
 	"tailwind": {
 		"config": "tailwind.config.ts",
 		"css": "src/index.css",
-		"baseColor": "zinc",
+		"baseColor": "gray",
 		"cssVariables": true,
 		"prefix": ""
 	},
@@ -16,6 +16,5 @@
 		"ui": "@webapp/components/ui",
 		"lib": "@webapp/lib",
 		"hooks": "@webapp/hooks"
-	},
-	"componentPath": "src/components/ui"
+	}
 }

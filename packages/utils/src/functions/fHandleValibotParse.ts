@@ -1,6 +1,7 @@
 import { type BaseIssue, type BaseSchema, safeParse } from "valibot";
 
 const handleValibotParse = <T>(_input: {
+	// biome-ignore lint/suspicious/noExplicitAny: Accept any schema
 	schema: BaseSchema<any, T, any>;
 	data: unknown;
 }) => {
@@ -18,6 +19,7 @@ const handleValibotParse = <T>(_input: {
 	if (!_output.success) {
 		if (Array.isArray(_output.issues)) {
 			for (const _issue of _output.issues) {
+				// biome-ignore lint/suspicious/noExplicitAny: Accept any schema
 				const issue = _issue as BaseIssue<any>;
 
 				if (issue?.path) {
@@ -40,10 +42,10 @@ const handleValibotParse = <T>(_input: {
 
 		console.error(JSON.stringify(errors, null, 2));
 
-		throw new Error("Error handling Valibot parse error");
+		return [null, errors] as const;
 	}
 
-	return _output.output as T;
+	return [_output.output, null] as [T, null];
 };
 
 export default handleValibotParse;

@@ -7,6 +7,7 @@ import {
 import { vValidator } from "@hono/valibot-validator";
 import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 
 const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 	.get("/", (c) => {
@@ -25,23 +26,29 @@ const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 			players.idPerson = persons.idPerson
 		;
 		`);
-		const data = query.all();
 
-		return c.json(
-			handleValibotParse({
-				data,
-				schema: VApiResponseGetPlayer,
-			}),
-		);
+		const [data, error] = handleValibotParse({
+			data: query.all(),
+			schema: VApiResponseGetPlayer,
+		});
+
+		if (error) {
+			throw new HTTPException(500, {
+				message: "There was an error fetching the data",
+			});
+		}
+
+		return c.json(data);
 	})
-	.get("/:idPlayer", vValidator("json", VApiParamsGetIdPlayer), (c) => {
+	.post("/:idPlayer", vValidator("json", VApiParamsGetIdPlayer), (c) => {
 		const db = c.var.db;
 		const params = c.req.valid("json");
 
 		const query = db.prepare(/* sql */ `
 		select 
 			persons.firstName,
-			persons.lastName
+			persons.lastName,
+			players.idPlayer
 		from 
 			players
 		inner join
@@ -52,14 +59,19 @@ const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 			idPlayer = $idPlayer
 		;
 	`);
-		const data = query.get(params);
 
-		return c.json(
-			handleValibotParse({
-				data,
-				schema: VApiResponseGetIdPlayer,
-			}),
-		);
+		const [data, error] = handleValibotParse({
+			data: query.get(params),
+			schema: VApiResponseGetIdPlayer,
+		});
+
+		if (error) {
+			throw new HTTPException(500, {
+				message: "There was an error fetching the data",
+			});
+		}
+
+		return c.json(data);
 	});
 
 export default player;

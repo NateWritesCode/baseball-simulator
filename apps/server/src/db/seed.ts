@@ -1,7 +1,7 @@
-import { Database } from "bun:sqlite";
 import { faker } from "@faker-js/faker";
-import fs from "node:fs";
+import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
+import fs from "node:fs";
 
 const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
 const MIN_RATING = 1;
@@ -249,6 +249,15 @@ try {
 
             unique (idTeamAway, idTeamHome, dateTime)
         );
+
+		create table owners (
+			idOwner integer primary key autoincrement,
+			idPerson integer not null,
+			idTeam integer not null,
+			numTokens integer not null,
+			foreign key (idPerson) references persons(idPerson)
+			foreign key (idTeam) references teams(idTeam)
+		);
 
         pragma foreign_keys = on;
     `);
@@ -1495,7 +1504,7 @@ try {
 		};
 	};
 
-	const seedPersons = Array.from({ length: 750 }, (_, i) => {
+	const seedPersons = Array.from({ length: 780 }, (_, i) => {
 		const [chaotic, neutralOrder, lawful] = getAlignmentNums();
 		const [good, neutralMorality, evil] = getAlignmentNums();
 		const alignment = {
@@ -1653,9 +1662,30 @@ try {
 
 	insertPersonsPhysical(seedPersons);
 
+	const seedPersonsOwners = seedPersons.slice(0, 30);
+	const seedPersonsPlayers = seedPersons.slice(30);
+
+	const insertOwner = db.prepare(/*sql*/ `
+			 insert into owners (idPerson, idTeam, numTokens) values ($idPerson, $idTeam, $numTokens);
+		  `);
+
+	const insertOwners = db.transaction(() => {
+		let idTeamIndex = 1;
+		for (const seedPerson of seedPersonsOwners) {
+			insertOwner.run({
+				idPerson: seedPerson.idPerson,
+				idTeam: idTeamIndex,
+				numTokens: 1_000,
+			});
+			idTeamIndex++;
+		}
+	});
+
+	insertOwners(seedPersonsOwners);
+
 	let idTeamIndex = 1;
 
-	const seedPlayers = seedPersons.map((person, i) => {
+	const seedPlayers = seedPersonsPlayers.map((person, i) => {
 		// Batting
 		const avoidKs = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
 		const contact = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
@@ -1801,7 +1831,7 @@ try {
 			batting,
 			fielding,
 			idPerson: person.idPerson,
-			idPlayer: person.idPerson,
+			idPlayer: i + 1,
 			idTeam,
 			pitches,
 			pitching,

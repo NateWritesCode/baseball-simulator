@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { hc } from "hono/client";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
-import { player } from "./routes";
+import { person, player } from "./routes";
 
 export type TMiddleware = {
 	Variables: {
@@ -14,7 +14,6 @@ export type TMiddleware = {
 
 const middlewareVariables = createMiddleware<TMiddleware>(async (c, next) => {
 	const db = new Database(`${import.meta.dir}/db/baseball-simulator.db`, {
-		safeIntegers: true,
 		strict: true,
 	});
 
@@ -35,7 +34,7 @@ app.use(
 
 app.use(middlewareVariables);
 
-const routes = app.route("/player", player);
+const routes = app.route("/player", player).route("/person", person);
 
 export const client = hc<typeof routes>("");
 export type THonoClient = typeof routes;

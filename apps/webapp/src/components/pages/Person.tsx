@@ -1,16 +1,16 @@
-import type { TApiResponseGetPlayer } from "@baseball-simulator/utils/types";
+import type { TApiResponseGetPerson } from "@baseball-simulator/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import PageError from "@webapp/components/general/PageError";
 import PageLoading from "@webapp/components/general/PageLoading";
 import PageNoDataFound from "@webapp/components/general/PageNoDataFound";
 import { honoClient } from "@webapp/services/hono";
 
-const Player = () => {
+const Person = () => {
 	const { data, error, isError, isLoading } = useQuery({
-		queryKey: ["player"],
+		queryKey: ["person"],
 		queryFn: async () => {
-			const res = await honoClient.player.$get();
-			return (await res.json()) as TApiResponseGetPlayer;
+			const res = await honoClient.person.$get();
+			return (await res.json()) as TApiResponseGetPerson;
 		},
 	});
 
@@ -30,10 +30,10 @@ const Player = () => {
 
 	return (
 		<div>
-			{data.map(({ firstName, idPlayer, lastName }) => {
+			{data.map(({ firstName, idPerson, lastName }) => {
 				return (
-					<div key={idPlayer}>
-						<a href={`/player/${idPlayer}`}>
+					<div key={idPerson}>
+						<a href={`/person/${idPerson}`}>
 							{firstName} {lastName}
 						</a>
 					</div>
@@ -43,4 +43,4 @@ const Player = () => {
 	);
 };
 
-export default Player;
+export default Person;

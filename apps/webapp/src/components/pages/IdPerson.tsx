@@ -1,4 +1,4 @@
-import type { TApiResponseGetIdPlayer } from "@baseball-simulator/utils/types";
+import type { TApiResponseGetIdPerson } from "@baseball-simulator/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import PageError from "@webapp/components/general/PageError";
 import PageLoading from "@webapp/components/general/PageLoading";
@@ -6,18 +6,18 @@ import PageNoDataFound from "@webapp/components/general/PageNoDataFound";
 import { honoClient } from "@webapp/services/hono";
 import { useParams } from "wouter";
 
-const IdPlayer = () => {
-	const params = useParams<{ idPlayer: string }>();
+const IdPerson = () => {
+	const params = useParams<{ idPerson: string }>();
 	const { data, error, isError, isLoading } = useQuery({
-		queryKey: ["player", params.idPlayer],
+		queryKey: ["player", params.idPerson],
 		queryFn: async () => {
 			try {
-				const res = await honoClient.player[":idPlayer"].$post({
+				const res = await honoClient.person[":idPerson"].$post({
 					json: {
-						idPlayer: params.idPlayer,
+						idPerson: params.idPerson,
 					},
 					param: {
-						idPlayer: params.idPlayer,
+						idPerson: params.idPerson,
 					},
 				});
 
@@ -25,7 +25,7 @@ const IdPlayer = () => {
 					throw new Error("There was an error fetching the data");
 				}
 
-				return (await res.json()) as TApiResponseGetIdPlayer;
+				return (await res.json()) as TApiResponseGetIdPerson;
 			} catch (error) {
 				console.error("error", error);
 				throw new Error("There was an error fetching the data");
@@ -57,4 +57,4 @@ const IdPlayer = () => {
 	);
 };
 
-export default IdPlayer;
+export default IdPerson;
