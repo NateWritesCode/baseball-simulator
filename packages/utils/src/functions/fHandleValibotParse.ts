@@ -1,9 +1,15 @@
 import { type BaseIssue, type BaseSchema, safeParse } from "valibot";
+import parseDotNotationObj from "./fParseDotNotationObj";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 const handleValibotParse = <T>(_input: {
 	// biome-ignore lint/suspicious/noExplicitAny: Accept any schema
 	schema: BaseSchema<any, T, any>;
 	data: unknown;
+	shouldParseDotNotation?: boolean;
 }) => {
 	// Create a new Error to access the stack trace
 	const err = new Error();
@@ -12,7 +18,13 @@ const handleValibotParse = <T>(_input: {
 		stack && stack.length > 2 ? stack[2].trim() : "No caller info";
 	const errors = [`Valibot parse error at ${callerInfo}`];
 
-	const { schema, data } = _input;
+	const { schema } = _input;
+
+	let data = _input.data;
+
+	if (_input.shouldParseDotNotation && isRecord(_input.data)) {
+		data = parseDotNotationObj({ data: _input.data });
+	}
 
 	const _output = safeParse(schema, data);
 

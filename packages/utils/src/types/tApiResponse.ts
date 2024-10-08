@@ -1,5 +1,15 @@
-import { type InferInput, array, intersect, pick } from "valibot";
-import { VDbPersons, VDbPlayers } from "./tDb";
+import { type InferInput, array, intersect, object, omit, pick } from "valibot";
+import {
+	VDbCities,
+	VDbCountries,
+	VDbPersons,
+	VDbPersonsAlignment,
+	VDbPersonsMental,
+	VDbPersonsMyersBriggs,
+	VDbPersonsPhysical,
+	VDbPlayers,
+	VDbStates,
+} from "./tDb";
 
 export const VApiResponseGetPerson = array(
 	intersect([pick(VDbPersons, ["firstName", "idPerson", "lastName"])]),
@@ -7,7 +17,33 @@ export const VApiResponseGetPerson = array(
 export type TApiResponseGetPerson = InferInput<typeof VApiResponseGetPerson>;
 
 export const VApiResponseGetIdPerson = intersect([
-	pick(VDbPersons, ["firstName", "idPerson", "lastName"]),
+	pick(VDbPersons, [
+		"dateOfBirth",
+		"firstName",
+		"idPerson",
+		"lastName",
+		"middleName",
+		"nickname",
+	]),
+	object({
+		birthplace: object({
+			city: pick(VDbCities, ["idCity", "name"]),
+			country: pick(VDbCountries, ["idCountry", "name"]),
+			state: pick(VDbStates, ["idState", "name"]),
+		}),
+	}),
+	object({
+		alignment: omit(VDbPersonsAlignment, ["idPerson"]),
+	}),
+	object({
+		mental: omit(VDbPersonsMental, ["idPerson"]),
+	}),
+	object({
+		myersBriggs: omit(VDbPersonsMyersBriggs, ["idPerson"]),
+	}),
+	object({
+		physical: omit(VDbPersonsPhysical, ["idPerson"]),
+	}),
 ]);
 
 export type TApiResponseGetIdPerson = InferInput<

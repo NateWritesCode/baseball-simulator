@@ -33,7 +33,7 @@ const Player = () => {
 			{data.map(({ firstName, idPlayer, lastName }) => {
 				return (
 					<div key={idPlayer}>
-						<a href={`/player/${idPlayer}`}>
+						<a className="underline text-blue-500" href={`/player/${idPlayer}`}>
 							{firstName} {lastName}
 						</a>
 					</div>
