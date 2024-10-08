@@ -23,6 +23,23 @@
 			"command": "bash scripts/bash/server-seed.sh"
 		},
 		{
+			"label": "webapp-build",
+			"type": "shell",
+			"command": "bash scripts/bash/webapp-build.sh"
+		},
+		{
+			"label": "webapp-deploy",
+			"type": "shell",
+			"command": "bash scripts/bash/webapp-deploy.sh",
+			"dependsOn": ["webapp-build"]
+		},
+		{
+			"label": "webapp-preview",
+			"type": "shell",
+			"command": "bash scripts/bash/webapp-preview.sh",
+			"dependsOn": ["webapp-build"]
+		},
+		{
 			"label": "webapp-dev",
 			"type": "shell",
 			"command": "bash scripts/bash/webapp-dev.sh"
