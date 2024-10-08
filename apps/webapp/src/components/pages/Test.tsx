@@ -4,7 +4,7 @@ const Test = () => {
 			<iframe
 				src="https://saferate.com/chat"
 				style={{
-					width: "400px",
+					width: "800px",
 					height: "800px",
 				}}
 				title="Safe Rate chat"
