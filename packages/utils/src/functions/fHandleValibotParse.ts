@@ -5,6 +5,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isArray(value: unknown): value is unknown[] {
+	return Array.isArray(value);
+}
+
 const handleValibotParse = <T>(_input: {
 	// biome-ignore lint/suspicious/noExplicitAny: Accept any schema
 	schema: BaseSchema<any, T, any>;
@@ -24,6 +28,16 @@ const handleValibotParse = <T>(_input: {
 
 	if (_input.shouldParseDotNotation && isRecord(_input.data)) {
 		data = parseDotNotationObj({ data: _input.data });
+	}
+
+	if (_input.shouldParseDotNotation && isArray(_input.data)) {
+		data = _input.data.map((item) => {
+			if (isRecord(item)) {
+				return parseDotNotationObj({ data: item });
+			}
+
+			return item;
+		});
 	}
 
 	const _output = safeParse(schema, data);

@@ -259,6 +259,10 @@ try {
 			foreign key (idTeam) references teams(idTeam)
 		);
 
+		create table universe (
+			dateTime date not null
+		);
+
         pragma foreign_keys = on;
     `);
 
@@ -1984,8 +1988,22 @@ try {
 	});
 
 	insertPlayersRunning(seedPlayers);
+
+	const insertUniverse = db.prepare(/*sql*/ `
+		insert into universe (dateTime) values ($dateTime);
+	`);
+
+	insertUniverse.run({
+		dateTime: dayjs("2024-04-01").format(),
+	});
 } catch (error) {
 	console.error("Error: ", error);
 }
 
-console.info("Finished seeding baseball-simulator!");
+console.info(`
+	 ********************************************************
+	 *                                                     *
+	 *   Finished seeding the data for baseball simulator! *
+	 *                                                     *
+	 *******************************************************
+`);

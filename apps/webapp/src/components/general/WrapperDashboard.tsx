@@ -1,3 +1,4 @@
+import SimulateButton from "@webapp/components/general/SimulateButton";
 import { Button } from "@webapp/components/ui/button";
 import {
 	DropdownMenu,
@@ -46,8 +47,11 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				</nav>
 			</aside>
 			<div className="flex flex-col">
-				<header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
+				<header className="sticky top-0 z-10 flex h-[57px] items-center place-content-between gap-1 border-b bg-background px-4">
 					<h1 className="text-xl font-semibold">Baseball Simulator</h1>
+					<div>
+						<SimulateButton />
+					</div>
 				</header>
 				<main className="ml-[4px]">{children}</main>
 			</div>

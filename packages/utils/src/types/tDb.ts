@@ -21,6 +21,13 @@ export const VDbCountries = object({
 	name: string(),
 });
 
+export const VDbGames = object({
+	dateTime: string(),
+	idGame: number(),
+	idTeamAway: number(),
+	idTeamHome: number(),
+});
+
 export const VDbPlayers = object({
 	idPerson: number(),
 	idPlayer: number(),
@@ -76,4 +83,16 @@ export const VDbStates = object({
 	idCountry: number(),
 	idState: number(),
 	name: string(),
+});
+
+export const VDbTeams = object({
+	abbreviation: string(),
+	colorPrimary: string(),
+	colorSecondary: string(),
+	idCity: number(),
+	idDivision: number(),
+	idLeague: number(),
+	idTeam: number(),
+	idSubLeague: number(),
+	nickname: string(),
 });
