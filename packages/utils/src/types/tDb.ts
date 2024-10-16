@@ -78,6 +78,86 @@ export const VDbPersonsPhysical = object({
 	weight: number(),
 });
 
+export const VDbPlayersBatting = object({
+	avoidKs: number(),
+	avoidKsVL: number(),
+	avoidKsVR: number(),
+	contact: number(),
+	contactVL: number(),
+	contactVR: number(),
+	eye: number(),
+	eyeVL: number(),
+	eyeVR: number(),
+	gap: number(),
+	gapVL: number(),
+	gapVR: number(),
+	idPlayer: number(),
+	power: number(),
+	powerVL: number(),
+	powerVR: number(),
+});
+
+export const VDbPlayersFielding = object({
+	c: number(),
+	catcherAbility: number(),
+	catcherArm: number(),
+	catcherFraming: number(),
+	cf: number(),
+	fb: number(),
+	idPlayer: number(),
+	infieldArm: number(),
+	infieldError: number(),
+	infieldRange: number(),
+	infieldDoublePlay: number(),
+	lf: number(),
+	outfieldArm: number(),
+	outfieldError: number(),
+	outfieldRange: number(),
+	rf: number(),
+	sb: number(),
+	ss: number(),
+	tb: number(),
+});
+
+export const VDbPlayersPitching = object({
+	control: number(),
+	controlVL: number(),
+	controlVR: number(),
+	idPlayer: number(),
+	movement: number(),
+	movementVL: number(),
+	movementVR: number(),
+	stamina: number(),
+	stuff: number(),
+	stuffVL: number(),
+	stuffVR: number(),
+});
+
+export const VDbPlayersPitches = object({
+	changeup: number(),
+	curveball: number(),
+	cutter: number(),
+	eephus: number(),
+	fastball: number(),
+	forkball: number(),
+	idPlayer: number(),
+	knuckleball: number(),
+	knuckleCurve: number(),
+	screwball: number(),
+	sinker: number(),
+	slider: number(),
+	slurve: number(),
+	splitter: number(),
+	sweeper: number(),
+});
+
+export const VDbPlayersRunning = object({
+	baserunning: number(),
+	idPlayer: number(),
+	speed: number(),
+	stealing: number(),
+});
+
 export const VDbStates = object({
 	abbreviation: string(),
 	idCountry: number(),
