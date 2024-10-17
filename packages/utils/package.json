@@ -8,6 +8,9 @@
 		"./constants": {
 			"import": "./src/constants/index.ts"
 		},
+		"./entities": {
+			"import": "./src/entities/index.ts"
+		},
 		"./functions": {
 			"import": "./src/functions/index.ts"
 		},

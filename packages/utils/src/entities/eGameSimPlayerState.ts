@@ -1,13 +1,15 @@
-import { type InferInput, object, parse } from "valibot";
+import { type InferInput, number, object, parse } from "valibot";
+import { PITCH_NAMES } from "../constants/cBaseball";
+import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
 	VGameSimEvent,
-} from "../types";
+} from "../types/tGameSim";
 import {
 	type TConstructorGameSimPlayer,
 	VConstructorGameSimPlayer,
-} from "./eGameSim";
+} from "../types/tGameSimConstructors";
 
 type TBattingStatistics = {
 	bb: number;
@@ -97,18 +99,250 @@ class GameSimPlayerState implements OGameSimObserver {
 		};
 	}
 
+	public getPitchLocation() {
+		return {
+			ax: 0,
+			ay: 0,
+			az: 0,
+			pfxX: 0,
+			pfxZ: 0,
+			plateX: 0,
+			plateZ: 0,
+			releaseSpeed: 0,
+			releasePosX: 0,
+			releasePosY: 0,
+			releasePosZ: 0,
+			szBot: 0,
+			szTop: 0,
+			vx0: 0,
+			vy0: 0,
+			vz0: 0,
+		};
+	}
+
+	public getPitchName(_input: TInputGetPitchName) {
+		// const input = parse(VInputGetPitchName, _input);
+
+		// const { numBalls, numOuts, numStrikes } = input;
+
+		// const pitches = this.player.pitches;
+
+		const randomIndex = Math.floor(Math.random() * PITCH_NAMES.length);
+		const pitchName = PITCH_NAMES[randomIndex];
+
+		return pitchName;
+	}
+
 	notifyGameEvent(_input: TGameSimEvent) {
-		const input = parse(VGameSimEvent, _input);
+		const [input, error] = handleValibotParse({
+			data: _input,
+			schema: VGameSimEvent,
+		});
+
+		if (error || !input) {
+			throw new Error("Invalid input");
+		}
 
 		const gameSimEvent = input.gameSimEvent;
 
 		switch (gameSimEvent) {
+			case "atBatEnd": {
+				break;
+			}
+			case "atBatStart": {
+				break;
+			}
+			case "double": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.h++;
+					this.statistics.batting.doubles++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.hitsAllowed++;
+					this.statistics.pitching.doublesAllowed++;
+				}
+
+				break;
+			}
 			case "gameEnd": {
 				break;
 			}
 			case "gameStart": {
 				break;
 			}
+			case "halfInningEnd": {
+				break;
+			}
+			case "halfInningStart": {
+				break;
+			}
+			case "homeRun": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.h++;
+					this.statistics.batting.hr++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.hitsAllowed++;
+					this.statistics.pitching.hrsAllowed++;
+				}
+
+				break;
+			}
+			case "out": {
+				const {
+					playerHitter,
+					playerPitcher,
+					playerRunner1,
+					playerRunner2,
+					playerRunner3,
+				} = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.outs++;
+					if (playerRunner1) {
+						this.statistics.batting.lob++;
+					}
+
+					if (playerRunner2) {
+						this.statistics.batting.lob++;
+					}
+
+					if (playerRunner3) {
+						this.statistics.batting.lob++;
+					}
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.outs++;
+
+					if (playerRunner1) {
+						this.statistics.pitching.lob++;
+					}
+
+					if (playerRunner2) {
+						this.statistics.pitching.lob++;
+					}
+
+					if (playerRunner3) {
+						this.statistics.pitching.lob++;
+					}
+				}
+
+				break;
+			}
+			case "pitch": {
+				const { playerPitcher, pitchOutcome } = input.data;
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.pitchesThrown++;
+
+					switch (pitchOutcome) {
+						case "BALL": {
+							this.statistics.pitching.pitchesThrownBalls++;
+							break;
+						}
+						case "IN_PLAY": {
+							this.statistics.pitching.pitchesThrownInPlay++;
+							break;
+						}
+						case "STRIKE": {
+							this.statistics.pitching.pitchesThrownStrikes++;
+							break;
+						}
+						default: {
+							const exhaustiveCheck: never = pitchOutcome;
+							throw new Error(exhaustiveCheck);
+						}
+					}
+				}
+
+				break;
+			}
+			case "run": {
+				const { playerHitter, playerPitcher, playerRunner } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.rbi++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.runs++;
+					this.statistics.pitching.runsEarned++;
+				}
+
+				if (playerRunner.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.runs++;
+				}
+
+				break;
+			}
+
+			case "single": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.h++;
+					this.statistics.batting.singles++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.hitsAllowed++;
+					this.statistics.pitching.singlesAllowed++;
+				}
+
+				break;
+			}
+
+			case "strikeout": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.k++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.k++;
+				}
+
+				break;
+			}
+
+			case "triple": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.h++;
+					this.statistics.batting.triples++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.hitsAllowed++;
+					this.statistics.pitching.triplesAllowed++;
+				}
+
+				break;
+			}
+
+			case "walk": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.bb++;
+				}
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.bb++;
+				}
+
+				break;
+			}
+
 			default: {
 				const exhaustiveCheck: never = gameSimEvent;
 				throw new Error(exhaustiveCheck);
@@ -118,3 +352,10 @@ class GameSimPlayerState implements OGameSimObserver {
 }
 
 export default GameSimPlayerState;
+
+const VInputGetPitchName = object({
+	numBalls: number(),
+	numOuts: number(),
+	numStrikes: number(),
+});
+type TInputGetPitchName = InferInput<typeof VInputGetPitchName>;

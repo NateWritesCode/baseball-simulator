@@ -1,3 +1,4 @@
+import { GameSim } from "@baseball-simulator/utils/entities";
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
 import {
 	VDbCities,
@@ -42,7 +43,7 @@ const queryGames = /* sql */ `
 
 const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 	"/simulate",
-	(c) => {
+	async (c) => {
 		const db = c.var.db;
 
 		const [dataGames, errorGames] = handleValibotParse({
@@ -234,10 +235,8 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			return c.text("Internal Server Error", 500);
 		}
 
-		// console.log("dataGames", dataGames);
-		// console.log("dataTeams", dataTeams);
-		// console.log("dataPlayers", dataPlayers);
-
+		console.info("Starting simulation");
+		const timeStart = performance.now();
 		for (const game of dataGames) {
 			const teams = dataTeams
 				.filter(
@@ -251,12 +250,18 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 					),
 				}));
 
-			console.log("game", game);
-			console.log(
-				"teams",
-				teams.map((t) => t.idTeam),
-			);
+			const gameSim = new GameSim({
+				idGame: game.idGame,
+				teams: [teams[0], teams[1]],
+			});
+
+			gameSim.simulate();
 		}
+		const timeEnd = performance.now();
+
+		console.info(
+			`Simulation took ${timeEnd - timeStart}ms for ${dataGames.length} games`,
+		);
 
 		return c.text("OK", 200);
 	},

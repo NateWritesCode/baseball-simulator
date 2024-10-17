@@ -1,11 +1,13 @@
 import { type InferInput, array, instance, object, parse } from "valibot";
 import type { POSITIONS } from "../constants/cBaseball";
+import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
 	VGameSimEvent,
-} from "../types";
-import { VConstructorGameSimTeam } from "./eGameSim";
+} from "../types/tGameSim";
+import { VConstructorGameSimTeam } from "../types/tGameSimConstructors";
+import { VPicklistPositions } from "../types/tPicklist";
 import GameSimPlayerState from "./eGameSimPlayerState";
 import GameSimUtils from "./eGameSimUtils";
 
@@ -48,7 +50,7 @@ type TStatistics = {
 };
 
 const VConstructorGameSimTeamState = object({
-	gameSimPlayerStates: array(instance(GameSimPlayerState)),
+	playerStates: array(instance(GameSimPlayerState)),
 	team: VConstructorGameSimTeam,
 });
 type TConstructorGameSimTeamState = InferInput<
@@ -58,7 +60,7 @@ type TConstructorGameSimTeamState = InferInput<
 class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 	lineup: number[];
 	numLineupIndex: number;
-	gameSimPlayerStates: {
+	playerStates: {
 		[key: number]: GameSimPlayerState;
 	};
 	positions: {
@@ -80,7 +82,7 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 		const input = parse(VConstructorGameSimTeamState, _input);
 		this.team = input.team;
 
-		this.gameSimPlayerStates = input.gameSimPlayerStates.reduce(
+		this.playerStates = input.playerStates.reduce(
 			(acc: { [key: number]: GameSimPlayerState }, player) => {
 				acc[player.player.idPlayer] = player;
 				return acc;
@@ -143,16 +145,97 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 		this.numLineupIndex = (this.numLineupIndex + 1) % this.lineup.length;
 	}
 
+	public getCurrentHitterId() {
+		return this.lineup[this.numLineupIndex];
+	}
+
+	public getPositionId(_input: TInputGetPositionId) {
+		const input = parse(VInputGetPositionId, _input);
+
+		return this.positions[input.position];
+	}
+
 	notifyGameEvent(_input: TGameSimEvent) {
-		const input = parse(VGameSimEvent, _input);
+		const [input, error] = handleValibotParse({
+			data: _input,
+			schema: VGameSimEvent,
+		});
+
+		if (error || !input) {
+			throw new Error("Invalid input");
+		}
 
 		const gameSimEvent = input.gameSimEvent;
 
 		switch (gameSimEvent) {
+			case "atBatEnd": {
+				break;
+			}
+			case "atBatStart": {
+				break;
+			}
+			case "double": {
+				break;
+			}
 			case "gameEnd": {
 				break;
 			}
 			case "gameStart": {
+				break;
+			}
+			case "halfInningEnd": {
+				break;
+			}
+			case "halfInningStart": {
+				break;
+			}
+			case "homeRun": {
+				const {
+					teamDefense,
+					teamOffense,
+					playerRunner1,
+					playerRunner2,
+					playerRunner3,
+				} = input.data;
+
+				if (teamOffense.team.idTeam === this.team.idTeam) {
+					this.statistics.batting.hr++;
+				}
+
+				if (teamDefense.team.idTeam === this.team.idTeam) {
+					this.statistics.pitching.hrsAllowed++;
+				}
+
+				break;
+			}
+			case "out": {
+				break;
+			}
+			case "pitch": {
+				break;
+			}
+			case "run": {
+				const { teamDefense, teamOffense } = input.data;
+
+				if (teamOffense.team.idTeam === this.team.idTeam) {
+					this.statistics.batting.runs++;
+				}
+
+				if (teamDefense.team.idTeam === this.team.idTeam) {
+					this.statistics.pitching.runsAllowed++;
+				}
+				break;
+			}
+			case "single": {
+				break;
+			}
+			case "strikeout": {
+				break;
+			}
+			case "triple": {
+				break;
+			}
+			case "walk": {
 				break;
 			}
 			default: {
@@ -163,7 +246,7 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 	}
 
 	private _getArrayOfAllPlayerStates() {
-		return Object.values(this.gameSimPlayerStates || {});
+		return Object.values(this.playerStates || {});
 	}
 
 	private _getArrayOfAllPlayerStatesActive() {
@@ -276,3 +359,8 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 }
 
 export default GameSimTeamState;
+
+const VInputGetPositionId = object({
+	position: VPicklistPositions,
+});
+type TInputGetPositionId = InferInput<typeof VInputGetPositionId>;
