@@ -1,11 +1,16 @@
+import { RATING_MAX, RATING_MIN } from "@baseball-simulator/utils/constants";
 import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
 import fs from "node:fs";
 
 const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
-const MIN_RATING = 1;
-const MAX_RATING = 1_000;
+
+const NUM_TEAMS = 30;
+const NUM_PLAYERS = 25 * NUM_TEAMS;
+const NUM_UMPIRES = 4 * (NUM_TEAMS / 2);
+const NUM_OWNERS = NUM_TEAMS;
+const NUM_COACHES = NUM_TEAMS;
 
 try {
 	if (fs.existsSync(DB_PATH)) {
@@ -257,6 +262,43 @@ try {
 			numTokens integer not null,
 			foreign key (idPerson) references persons(idPerson)
 			foreign key (idTeam) references teams(idTeam)
+		);
+
+		create table coaches (
+			idCoach integer primary key autoincrement,
+			idPerson integer not null,
+			idTeam integer,
+			foreign key (idPerson) references persons(idPerson)
+			foreign key (idTeam) references teams(idTeam)
+		);
+
+		create table coachesRatings (
+			ability integer not null,
+			idCoach integer primary key,
+			foreign key (idCoach) references coaches(idCoach)	
+		);
+
+		create table umpires (
+			idPerson integer primary key,
+			idUmpire integer primary key autoincrement,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table umpiresRatings (
+			balkAccuracy integer not null,
+			checkSwingAccuracy integer not null,
+			consistency integer not null,
+			expandedZone integer not null,
+			favorFastballs integer not null,
+			favorOffspeed integer not null,
+			highZone integer not null,
+			idUmpire integer primary key autoincrement,
+			insideZone integer not null,
+			lowZone integer not null,
+			outsideZone integer not null,
+			pitchFramingInfluence integer not null,
+			reactionTime integer not null,
+			foreign key (idUmpire) references umpires(idUmpire)
 		);
 
 		create table universe (
@@ -1101,7 +1143,7 @@ try {
 
 	insertDivisions(seedDivisions);
 
-	const seedTeamsCities = Array.from({ length: 30 }, (_) => {
+	const seedTeamsCities = Array.from({ length: NUM_TEAMS }, (_) => {
 		return faker.helpers.arrayElement(seedCities);
 	}).map((city, i) => {
 		return {
@@ -1411,15 +1453,15 @@ try {
 	const getAlignmentNums = () => {
 		// https://math.stackexchange.com/questions/1276206/method-of-generating-random-numbers-that-sum-to-100-is-this-truly-random
 
-		const num1 = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const num2 = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const num3 = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const num1 = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const num2 = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const num3 = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 
 		const numArray = [num1, num2, num3].sort((a, b) => a - b);
 
 		const trait1 = numArray[1] - numArray[0];
 		const trait2 = numArray[2] - numArray[1];
-		const trait3 = MAX_RATING + numArray[0] - numArray[2];
+		const trait3 = RATING_MAX + numArray[0] - numArray[2];
 
 		return [trait1, trait2, trait3];
 	};
@@ -1463,16 +1505,16 @@ try {
 		const isFirstTrait = getRandom0or1(weight);
 		const firstTrait = isFirstTrait
 			? getRandomBoxMullerTransform({
-					min: MAX_RATING / 2,
-					max: MAX_RATING,
+					min: RATING_MAX / 2,
+					max: RATING_MAX,
 					skew: 1,
 				})
 			: getRandomBoxMullerTransform({
-					min: MIN_RATING,
-					max: MAX_RATING / 2,
+					min: RATING_MIN,
+					max: RATING_MAX / 2,
 					skew: 1,
 				});
-		const secondTrait = MAX_RATING - firstTrait;
+		const secondTrait = RATING_MAX - firstTrait;
 
 		return [firstTrait, secondTrait];
 	};
@@ -1508,60 +1550,65 @@ try {
 		};
 	};
 
-	const seedPersons = Array.from({ length: 780 }, (_, i) => {
-		const [chaotic, neutralOrder, lawful] = getAlignmentNums();
-		const [good, neutralMorality, evil] = getAlignmentNums();
-		const alignment = {
-			chaotic,
-			evil,
-			good,
-			lawful,
-			neutralMorality,
-			neutralOrder,
-		};
+	const seedPersons = Array.from(
+		{
+			length: NUM_PLAYERS + NUM_COACHES + NUM_OWNERS + NUM_UMPIRES,
+		},
+		(_, i) => {
+			const [chaotic, neutralOrder, lawful] = getAlignmentNums();
+			const [good, neutralMorality, evil] = getAlignmentNums();
+			const alignment = {
+				chaotic,
+				evil,
+				good,
+				lawful,
+				neutralMorality,
+				neutralOrder,
+			};
 
-		const myersBriggs = getMyersBriggs();
+			const myersBriggs = getMyersBriggs();
 
-		const cityOfBirth = faker.helpers.arrayElement(seedCities);
-		return {
-			alignment,
-			dateOfBirth: faker.date
-				.between({ from: "1984-01-01", to: "2004-12-31" })
-				.toISOString()
-				.split("T")[0],
-			firstName: faker.person.firstName("male"),
-			idCityOfBirth: cityOfBirth.idCity,
-			idPerson: i + 1,
-			lastName: faker.person.lastName("male"),
-			mental: {
-				charisma: faker.number.int({ min: MIN_RATING, max: MAX_RATING }),
-				constitution: faker.number.int({
-					min: MIN_RATING,
-					max: MAX_RATING,
-				}),
-				intelligence: faker.number.int({
-					min: MIN_RATING,
-					max: MAX_RATING,
-				}),
-				loyalty: faker.number.int({ min: MIN_RATING, max: MAX_RATING }),
-				wisdom: faker.number.int({ min: MIN_RATING, max: MAX_RATING }),
-				workEthic: faker.number.int({ min: MIN_RATING, max: MAX_RATING }),
-			},
-			middleName: faker.person.middleName("male"),
-			myersBriggs,
-			nickname: null,
-			physical: {
-				height: faker.number.int({
-					min: MIN_RATING + 500,
-					max: MAX_RATING - 300,
-				}),
-				weight: faker.number.int({
-					min: MIN_RATING + 500,
-					max: MAX_RATING - 300,
-				}),
-			},
-		};
-	});
+			const cityOfBirth = faker.helpers.arrayElement(seedCities);
+			return {
+				alignment,
+				dateOfBirth: faker.date
+					.between({ from: "1984-01-01", to: "2004-12-31" })
+					.toISOString()
+					.split("T")[0],
+				firstName: faker.person.firstName("male"),
+				idCityOfBirth: cityOfBirth.idCity,
+				idPerson: i + 1,
+				lastName: faker.person.lastName("male"),
+				mental: {
+					charisma: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+					constitution: faker.number.int({
+						min: RATING_MIN,
+						max: RATING_MAX,
+					}),
+					intelligence: faker.number.int({
+						min: RATING_MIN,
+						max: RATING_MAX,
+					}),
+					loyalty: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+					wisdom: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+					workEthic: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				},
+				middleName: faker.person.middleName("male"),
+				myersBriggs,
+				nickname: null,
+				physical: {
+					height: faker.number.int({
+						min: RATING_MIN + 500,
+						max: RATING_MAX - 300,
+					}),
+					weight: faker.number.int({
+						min: RATING_MIN + 500,
+						max: RATING_MAX - 300,
+					}),
+				},
+			};
+		},
+	);
 
 	const insertPerson = db.prepare(/*sql*/ `
            insert into persons (dateOfBirth, firstName, idCityOfBirth, idPerson, lastName, middleName, nickname)
@@ -1666,8 +1713,18 @@ try {
 
 	insertPersonsPhysical(seedPersons);
 
-	const seedPersonsOwners = seedPersons.slice(0, 30);
-	const seedPersonsPlayers = seedPersons.slice(30);
+	const seedPersonsPlayers = seedPersons.slice(0, NUM_PLAYERS);
+	const seedPersonsOwners = seedPersons.slice(
+		NUM_PLAYERS,
+		NUM_PLAYERS + NUM_OWNERS,
+	);
+	const seedPersonsCoaches = seedPersons.slice(
+		NUM_PLAYERS + NUM_OWNERS,
+		NUM_PLAYERS + NUM_OWNERS + NUM_COACHES,
+	);
+	const seedPersonsUmpires = seedPersons.slice(
+		NUM_PLAYERS + NUM_OWNERS + NUM_COACHES,
+	);
 
 	const insertOwner = db.prepare(/*sql*/ `
 			 insert into owners (idPerson, idTeam, numTokens) values ($idPerson, $idTeam, $numTokens);
@@ -1691,11 +1748,11 @@ try {
 
 	const seedPlayers = seedPersonsPlayers.map((person, i) => {
 		// Batting
-		const avoidKs = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const contact = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const eye = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const gap = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const power = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const avoidKs = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const contact = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const eye = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const gap = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const power = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const batting = {
 			avoidKs,
 			avoidKsVL: avoidKs,
@@ -1715,27 +1772,27 @@ try {
 		};
 
 		// Fielding
-		const c = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const c = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const catcherAbility = c;
 		const catcherArm = c;
 		const catcherFraming = c;
-		const cf = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const fb = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const infieldArm = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const cf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const fb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const infieldArm = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const infieldDoublePlay = infieldArm;
 		const infieldError = infieldArm;
 		const infieldRange = infieldArm;
-		const lf = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const lf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const outfieldArm = faker.number.int({
-			min: MIN_RATING,
-			max: MAX_RATING,
+			min: RATING_MIN,
+			max: RATING_MAX,
 		});
 		const outfieldError = outfieldArm;
 		const outfieldRange = outfieldArm;
-		const rf = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const sb = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const ss = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const tb = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const rf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const sb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const ss = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const tb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const fielding = {
 			c,
 			catcherAbility,
@@ -1757,50 +1814,148 @@ try {
 			tb,
 		};
 
-		// Pitches
-		const changeup = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const curveball = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const cutter = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const eephus = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const fastball = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const forkball = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const knuckleball = faker.number.int({
-			min: MIN_RATING,
-			max: MAX_RATING,
-		});
-		const knuckleCurve = faker.number.int({
-			min: MIN_RATING,
-			max: MAX_RATING,
-		});
-		const screwball = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const sinker = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const slider = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const slurve = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const splitter = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const sweeper = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const assignPitches = () => {
+			const pitches = {
+				changeup: RATING_MIN,
+				curveball: RATING_MIN,
+				cutter: RATING_MIN,
+				eephus: RATING_MIN,
+				fastball: RATING_MIN,
+				forkball: RATING_MIN,
+				knuckleball: RATING_MIN,
+				knuckleCurve: RATING_MIN,
+				screwball: RATING_MIN,
+				sinker: RATING_MIN,
+				slider: RATING_MIN,
+				slurve: RATING_MIN,
+				splitter: RATING_MIN,
+				sweeper: RATING_MIN,
+			};
 
-		const pitches = {
-			changeup,
-			curveball,
-			cutter,
-			eephus,
-			fastball,
-			forkball,
-			knuckleball,
-			knuckleCurve,
-			screwball,
-			sinker,
-			slider,
-			slurve,
-			splitter,
-			sweeper,
+			// 98% chance of having a fastball
+			if (Math.random() < 0.98) {
+				pitches.fastball = faker.number.int({
+					min: RATING_MIN + 1,
+					max: RATING_MAX,
+				});
+			}
+
+			const pitchesCommon = [
+				"slider",
+				"curveball",
+				"changeup",
+				"sinker",
+			] as const;
+			const pitchesRare = ["knuckleball", "eephus"] as const;
+			const pitchesUncommon = [
+				"cutter",
+				"splitter",
+				"forkball",
+				"sweeper",
+				"slurve",
+				"knuckleCurve",
+				"screwball",
+			] as const;
+
+			function addPitchWithProbability({
+				pitch,
+				probability,
+			}: { pitch: keyof typeof pitches; probability: number }) {
+				if (Math.random() < probability) {
+					pitches[pitch] = faker.number.int({
+						min: RATING_MIN + 1,
+						max: RATING_MAX,
+					});
+					return true;
+				}
+				return false;
+			}
+
+			for (const pitch of pitchesCommon) {
+				addPitchWithProbability({ pitch, probability: 0.7 });
+			}
+
+			for (const pitch of pitchesUncommon) {
+				addPitchWithProbability({ pitch, probability: 0.2 });
+			}
+
+			for (const pitch of pitchesRare) {
+				addPitchWithProbability({ pitch, probability: 0.05 });
+			}
+
+			// Ensure the pitcher has at least 2 pitches
+			let activePitches = Object.keys(pitches).filter(
+				(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
+			);
+
+			while (activePitches.length < 2) {
+				const availablePitches = pitchesCommon.filter(
+					(pitch) => pitches[pitch] === RATING_MIN,
+				);
+				if (availablePitches.length > 0) {
+					const additionalPitch = faker.helpers.arrayElement(availablePitches);
+					pitches[additionalPitch] = faker.number.int({
+						min: RATING_MIN + 1,
+						max: RATING_MAX,
+					});
+				} else {
+					// If no common pitches are available, choose from uncommon
+					const uncommonAvailable = pitchesUncommon.filter(
+						(pitch) => pitches[pitch] === RATING_MIN,
+					);
+					if (uncommonAvailable.length > 0) {
+						const additionalPitch =
+							faker.helpers.arrayElement(uncommonAvailable);
+						pitches[additionalPitch] = faker.number.int({
+							min: RATING_MIN + 1,
+							max: RATING_MAX,
+						});
+					}
+				}
+				activePitches = Object.keys(pitches).filter(
+					(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
+				);
+			}
+
+			// Limit to a maximum of 6 pitches
+			while (Object.values(pitches).filter((v) => v > RATING_MIN).length > 6) {
+				const pitchesToRemove = (
+					Object.keys(pitches) as (keyof typeof pitches)[]
+				).filter(
+					(pitch) => pitches[pitch] > RATING_MIN && pitch !== "fastball",
+				);
+				if (pitchesToRemove.length > 0) {
+					const pitchToRemove = faker.helpers.arrayElement(pitchesToRemove);
+					pitches[pitchToRemove] = RATING_MIN;
+				} else {
+					break; // Prevent infinite loop if no pitches can be removed
+				}
+			}
+
+			// Ensure at least one pitch has a high rating
+			activePitches = Object.keys(pitches).filter(
+				(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
+			);
+			if (activePitches.length > 0) {
+				const primaryPitch = faker.helpers.arrayElement(
+					activePitches,
+				) as keyof typeof pitches;
+				pitches[primaryPitch] = faker.number.int({
+					min: Math.floor(RATING_MAX / 2),
+					max: RATING_MAX,
+				});
+			}
+
+			return pitches;
 		};
 
+		const pitches = assignPitches();
+
 		// Pitching
-		const control = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const movement = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const stamina = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
-		const stuff = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const control = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const movement = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const stamina = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const stuff = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 
 		const pitching = {
 			control,
@@ -1816,7 +1971,7 @@ try {
 		};
 
 		// Running
-		const speed = faker.number.int({ min: MIN_RATING, max: MAX_RATING });
+		const speed = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
 		const running = {
 			baserunning: speed,
 			speed,

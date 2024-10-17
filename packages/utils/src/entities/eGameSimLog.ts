@@ -97,6 +97,11 @@ class GameSimLog implements OGameSimObserver {
 				break;
 			}
 			case "pitch": {
+				const { pitchName, pitchLocation } = input.data;
+
+				this.logInfo([
+					`Pitch thrown: ${pitchName} at ${JSON.stringify(pitchLocation.releaseSpeed)}`,
+				]);
 				break;
 			}
 			case "run": {

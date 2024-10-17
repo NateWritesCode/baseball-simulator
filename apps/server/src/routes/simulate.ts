@@ -237,7 +237,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 		console.info("Starting simulation");
 		const timeStart = performance.now();
-		for (const game of dataGames) {
+		for (const game of dataGames.slice(0, 1)) {
 			const teams = dataTeams
 				.filter(
 					(t) => t.idTeam === game.idTeamAway || t.idTeam === game.idTeamHome,

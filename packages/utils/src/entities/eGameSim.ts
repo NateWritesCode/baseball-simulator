@@ -106,6 +106,13 @@ export default class GameSim {
 			isGameOver = _isGameOver;
 		}
 
+		const teamAway = this.teams[0];
+		const teamHome = this.teams[1];
+
+		console.log(
+			`Final score ${teamAway.city.name} ${teamAway.nickname} ${this.teamStates[this._getTeamId({ teamIndex: 0 })].statistics.batting.runs} - ${teamHome.city.name} ${teamHome.nickname} ${this.teamStates[this._getTeamId({ teamIndex: 1 })].statistics.batting.runs}`,
+		);
+
 		this._notifyObservers({
 			gameSimEvent: "gameEnd",
 		});
@@ -618,30 +625,34 @@ export default class GameSim {
 
 	private _simulatePitch() {
 		let isAtBatOver = false;
-		const pitcher = this._getCurrentPitcher({
+		const playerPitcher = this._getCurrentPitcher({
 			teamIndex: this.numTeamDefense,
 		});
-		const hitter = this._getCurrentHitter({
+		const playerHitter = this._getCurrentHitter({
 			teamIndex: this.numTeamOffense,
 		});
 
-		const pitchName = pitcher.getPitchName({
+		const pitchName = playerPitcher.choosePitch({
 			numBalls: this.numBalls,
 			numOuts: this.numOuts,
 			numStrikes: this.numStrikes,
 		});
 
-		const pitchLocation = pitcher.getPitchLocation();
+		const pitchLocation = playerPitcher.getPitchLocation({
+			pitchName,
+			playerHitter,
+			playerPitcher,
+		});
 
 		const pitchOutcome = this._simulatePitchOutcome();
 
 		this._notifyObservers({
 			data: {
-				playerHitter: hitter,
+				playerHitter,
 				pitchLocation,
 				pitchName,
 				pitchOutcome,
-				playerPitcher: pitcher,
+				playerPitcher,
 				teamDefense:
 					this.teamStates[this._getTeamId({ teamIndex: this.numTeamDefense })],
 				teamOffense:

@@ -1,3 +1,5 @@
+export const PITCHES_THROWN_STANDARD_MAX = 120;
+
 export const PITCH_IN_PLAY_EVENTS = [
 	"caughtStealing2B",
 	"double",
