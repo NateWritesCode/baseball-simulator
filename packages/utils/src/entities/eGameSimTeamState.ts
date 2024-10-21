@@ -6,7 +6,11 @@ import {
 	type TGameSimEvent,
 	VGameSimEvent,
 } from "../types/tGameSim";
-import { VConstructorGameSimTeam } from "../types/tGameSimConstructors";
+import {
+	type TConstructorGameSimCoach,
+	VConstructorGameSimCoach,
+	VConstructorGameSimTeam,
+} from "../types/tGameSimConstructors";
 import { VPicklistPositions } from "../types/tPicklist";
 import GameSimPlayerState from "./eGameSimPlayerState";
 import GameSimUtils from "./eGameSimUtils";
@@ -50,6 +54,7 @@ type TStatistics = {
 };
 
 const VConstructorGameSimTeamState = object({
+	coach: VConstructorGameSimCoach,
 	playerStates: array(instance(GameSimPlayerState)),
 	team: VConstructorGameSimTeam,
 });
@@ -58,6 +63,7 @@ type TConstructorGameSimTeamState = InferInput<
 >;
 
 class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
+	coach: TConstructorGameSimCoach;
 	lineup: number[];
 	numLineupIndex: number;
 	playerStates: {
@@ -81,6 +87,7 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 		super();
 		const input = parse(VConstructorGameSimTeamState, _input);
 		this.team = input.team;
+		this.coach = input.coach;
 
 		this.playerStates = input.playerStates.reduce(
 			(acc: { [key: number]: GameSimPlayerState }, player) => {

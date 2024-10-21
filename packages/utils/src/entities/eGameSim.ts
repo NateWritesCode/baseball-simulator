@@ -644,7 +644,12 @@ export default class GameSim {
 			playerPitcher,
 		});
 
-		const pitchOutcome = this._simulatePitchOutcome();
+		const pitchOutcome = this._simulatePitchOutcome({
+			pitchLocation,
+			pitchName,
+			playerHitter,
+			playerPitcher,
+		});
 
 		this._notifyObservers({
 			data: {

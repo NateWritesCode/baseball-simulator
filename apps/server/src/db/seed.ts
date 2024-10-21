@@ -279,7 +279,7 @@ try {
 		);
 
 		create table umpires (
-			idPerson integer primary key,
+			idPerson integer,
 			idUmpire integer primary key autoincrement,
 			foreign key (idPerson) references persons(idPerson)
 		);
@@ -1725,6 +1725,101 @@ try {
 	const seedPersonsUmpires = seedPersons.slice(
 		NUM_PLAYERS + NUM_OWNERS + NUM_COACHES,
 	);
+
+	const insertCoach = db.prepare(/*sql*/ `
+		insert into coaches (idPerson, idTeam) values ($idPerson, $idTeam);
+	`);
+
+	const insertCoachRatings = db.prepare(/*sql*/ `
+		insert into coachesRatings (ability, idCoach) values ($ability, $idCoach);
+	`);
+
+	const insertCoaches = db.transaction(() => {
+		let idTeamIndex = 1;
+		for (const seedPerson of seedPersonsCoaches) {
+			const { lastInsertRowid: idCoach } = insertCoach.run({
+				idPerson: seedPerson.idPerson,
+				idTeam: idTeamIndex,
+			});
+
+			insertCoachRatings.run({
+				ability: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				idCoach,
+			});
+
+			idTeamIndex++;
+		}
+	});
+
+	insertCoaches(seedPersonsCoaches);
+
+	const insertUmpire = db.prepare(/*sql*/ `
+		insert into umpires (idPerson) values ($idPerson);
+	`);
+
+	const insertUmpireRatings = db.prepare(/*sql*/ `
+		insert into umpiresRatings (
+			balkAccuracy, 
+			checkSwingAccuracy, 
+			consistency, 
+			expandedZone, 
+			favorFastballs, 
+			favorOffspeed, 
+			highZone, 
+			idUmpire, 
+			insideZone, 
+			lowZone,
+			outsideZone,
+			pitchFramingInfluence,
+			reactionTime
+			) values (
+				$balkAccuracy, 
+				$checkSwingAccuracy, 
+				$consistency, 
+				$expandedZone, 
+				$favorFastballs, 
+				$favorOffspeed, 
+				$highZone, 
+				$idUmpire, 
+				$insideZone, 
+				$lowZone,
+				$outsideZone,
+				$pitchFramingInfluence,
+				$reactionTime
+			);
+	`);
+
+	const insertUmpires = db.transaction(() => {
+		for (const seedPerson of seedPersonsUmpires) {
+			const { lastInsertRowid: idUmpire } = insertUmpire.run({
+				idPerson: seedPerson.idPerson,
+			});
+
+			insertUmpireRatings.run({
+				balkAccuracy: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				checkSwingAccuracy: faker.number.int({
+					min: RATING_MIN,
+					max: RATING_MAX,
+				}),
+				consistency: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				expandedZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				favorFastballs: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				favorOffspeed: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				highZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				idUmpire,
+				insideZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				lowZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				outsideZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				pitchFramingInfluence: faker.number.int({
+					min: RATING_MIN,
+					max: RATING_MAX,
+				}),
+				reactionTime: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+			});
+		}
+	});
+
+	insertUmpires(seedPersonsUmpires);
 
 	const insertOwner = db.prepare(/*sql*/ `
 			 insert into owners (idPerson, idTeam, numTokens) values ($idPerson, $idTeam, $numTokens);

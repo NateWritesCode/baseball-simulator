@@ -1,6 +1,8 @@
 import { GameSim } from "@baseball-simulator/utils/entities";
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
 import {
+	VConstructorGameSimCoach,
+	VConstructorGameSimUmpire,
 	VDbCities,
 	VDbGames,
 	VDbPersons,
@@ -235,9 +237,145 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			return c.text("Internal Server Error", 500);
 		}
 
+		const queryCoaches = /* sql */ `
+            select
+                persons.dateOfBirth,
+                persons.firstName,
+                persons.idPerson,
+                persons.lastName,
+                persons.middleName,
+                persons.nickname,
+                personsAlignment.chaotic as "alignment.chaotic",
+                personsAlignment.evil as "alignment.evil",
+                personsAlignment.good as "alignment.good",
+                personsAlignment.lawful as "alignment.lawful",
+                personsAlignment.neutralMorality as "alignment.neutralMorality",
+                personsAlignment.neutralOrder as "alignment.neutralOrder",
+                personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                personsMyersBriggs.feeling as "myersBriggs.feeling",
+                personsMyersBriggs.introversion as "myersBriggs.introversion",
+                personsMyersBriggs.intuition as "myersBriggs.intuition",
+                personsMyersBriggs.judging as "myersBriggs.judging",
+                personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                personsMyersBriggs.sensing as "myersBriggs.sensing",
+                personsMyersBriggs.thinking as "myersBriggs.thinking",
+                personsMental.charisma as "mental.charisma",
+                personsMental.constitution as "mental.constitution",
+                personsMental.intelligence as "mental.intelligence",
+                personsMental.loyalty as "mental.loyalty",
+                personsMental.wisdom as "mental.wisdom",
+                personsMental.workEthic as "mental.workEthic",
+                personsPhysical.height as "physical.height",
+                personsPhysical.weight as "physical.weight",
+                coaches.idCoach,
+                coaches.idPerson,
+                coaches.idTeam,
+                coachesRatings.ability
+            from
+                coaches
+            inner join
+                persons on coaches.idPerson = persons.idPerson
+            inner join
+                personsAlignment on persons.idPerson = personsAlignment.idPerson
+            inner join
+                personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+            inner join
+                personsMental on persons.idPerson = personsMental.idPerson
+            inner join
+                personsPhysical on persons.idPerson = personsPhysical
+            inner join
+                coachesRatings on coaches.idCoach = coachesRatings.idCoach
+            where
+                coaches.idTeam in (${paramsTeams.map(() => "?").join(", ")})
+            ;
+        `;
+
+		const [dataCoaches, errorCoaches] = handleValibotParse({
+			data: db.prepare(queryCoaches).all(...paramsTeams),
+			schema: array(VConstructorGameSimCoach),
+			shouldParseDotNotation: true,
+		});
+
+		if (errorCoaches || !dataCoaches) {
+			return c.text("Internal Server Error", 500);
+		}
+
 		console.info("Starting simulation");
 		const timeStart = performance.now();
 		for (const game of dataGames.slice(0, 1)) {
+			const queryUmpires = /* sql */ `
+                    select
+                        persons.dateOfBirth,
+                        persons.firstName,
+                        persons.idPerson,
+                        persons.lastName,
+                        persons.middleName,
+                        persons.nickname,
+                        personsAlignment.chaotic as "alignment.chaotic",
+                        personsAlignment.evil as "alignment.evil",
+                        personsAlignment.good as "alignment.good",
+                        personsAlignment.lawful as "alignment.lawful",
+                        personsAlignment.neutralMorality as "alignment.neutralMorality",
+                        personsAlignment.neutralOrder as "alignment.neutralOrder",
+                        personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                        personsMyersBriggs.feeling as "myersBriggs.feeling",
+                        personsMyersBriggs.introversion as "myersBriggs.introversion",
+                        personsMyersBriggs.intuition as "myersBriggs.intuition",
+                        personsMyersBriggs.judging as "myersBriggs.judging",
+                        personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                        personsMyersBriggs.sensing as "myersBriggs.sensing",
+                        personsMyersBriggs.thinking as "myersBriggs.thinking",
+                        personsMental.charisma as "mental.charisma",
+                        personsMental.constitution as "mental.constitution",
+                        personsMental.intelligence as "mental.intelligence",
+                        personsMental.loyalty as "mental.loyalty",
+                        personsMental.wisdom as "mental.wisdom",
+                        personsMental.workEthic as "mental.workEthic",
+                        personsPhysical.height as "physical.height",
+                        personsPhysical.weight as "physical.weight",
+                        umpires.idUmpire,
+                        umpiresRatings.balkAccuracy,
+                        umpiresRatings.checkSwingAccuracy,
+                        umpiresRatings.consistency,
+                        umpiresRatings.expandedZone,
+                        umpiresRatings.favorFastballs,
+                        umpiresRatings.favorOffspeed,
+                        umpiresRatings.highZone,
+                        umpiresRatings.insideZone,
+                        umpiresRatings.lowZone,
+                        umpiresRatings.outsideZone,
+                        umpiresRatings.pitchFramingInfluence
+                        umpiresRatings.reactionTime,
+                    from
+                        umpires
+                    inner join
+                        persons on umpires.idPerson = persons.idPerson
+                    inner join
+                        personsAlignment on persons.idPerson = personsAlignment.idPerson
+                    inner join
+                        personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+                    inner join
+                        personsMental on persons.idPerson = personsMental.idPerson
+                    inner join
+                        personsPhysical on persons.idPerson = personsPhysical.idPerson
+                    inner join
+                        umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
+                    limit 
+                        4
+                    
+                    ;
+                `;
+
+			const [dataUmpires, errorUmpires] = handleValibotParse({
+				data: db.prepare(queryUmpires).all(),
+				schema: array(VConstructorGameSimUmpire),
+				shouldParseDotNotation: true,
+			});
+
+			if (errorUmpires || !dataUmpires) {
+				return c.text("Internal Server Error", 500);
+			}
+
 			const teams = dataTeams
 				.filter(
 					(t) => t.idTeam === game.idTeamAway || t.idTeam === game.idTeamHome,
@@ -245,6 +383,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				.sort((a) => (a.idTeam === game.idTeamAway ? -1 : 1))
 				.map((team) => ({
 					...team,
+					coaches: dataCoaches.filter((coach) => coach.idTeam === team.idTeam),
 					players: dataPlayers.filter(
 						(player) => player.idTeam === team.idTeam,
 					),
@@ -253,6 +392,12 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			const gameSim = new GameSim({
 				idGame: game.idGame,
 				teams: [teams[0], teams[1]],
+				umpires: [
+					dataUmpires[0],
+					dataUmpires[1],
+					dataUmpires[2],
+					dataUmpires[3],
+				],
 			});
 
 			gameSim.simulate();
@@ -260,7 +405,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		const timeEnd = performance.now();
 
 		console.info(
-			`Simulation took ${timeEnd - timeStart}ms for ${dataGames.length} games`,
+			`Simulation took $timeEnd - timeStartms for ${dataGames.length} games`,
 		);
 
 		return c.text("OK", 200);

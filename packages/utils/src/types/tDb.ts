@@ -8,6 +8,17 @@ export const VDbCities = object({
 	name: string(),
 });
 
+export const VDbCoaches = object({
+	idCoach: number(),
+	idPerson: number(),
+	idTeam: nullable(number()),
+});
+
+export const VDbCoachesRatings = object({
+	ability: number(),
+	idCoach: number(),
+});
+
 export const VDbContinents = object({
 	abbreviation: string(),
 	idContinent: number(),
@@ -175,4 +186,25 @@ export const VDbTeams = object({
 	idTeam: number(),
 	idSubLeague: number(),
 	nickname: string(),
+});
+
+export const VDbUmpires = object({
+	idPerson: number(),
+	idUmpire: number(),
+});
+
+export const VDbUmpiresRatings = object({
+	balkAccuracy: number(),
+	checkSwingAccuracy: number(),
+	consistency: number(),
+	expandedZone: number(),
+	favorFastballs: number(),
+	favorOffspeed: number(),
+	highZone: number(),
+	idUmpire: number(),
+	insideZone: number(),
+	lowZone: number(),
+	outsideZone: number(),
+	pitchFramingInfluence: number(),
+	reactionTime: number(),
 });
