@@ -5,6 +5,7 @@ import {
 	VConstructorGameSimUmpire,
 	VDbCities,
 	VDbGames,
+	VDbParksWallSegments,
 	VDbPersons,
 	VDbPersonsAlignment,
 	VDbPersonsMental,
@@ -17,6 +18,7 @@ import {
 	VDbPlayersPitching,
 	VDbPlayersRunning,
 	VDbTeams,
+	VQueryConstructorGameSimPark,
 } from "@baseball-simulator/utils/types";
 import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
@@ -300,8 +302,93 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			return c.text("Internal Server Error", 500);
 		}
 
+		const queryParks = /* sql */ `
+            select
+                cities.idCity as 'city.idCity',
+                cities.latitude as 'city.latitude',
+                cities.longitude as 'city.longitude',
+                cities.name as 'city.name',
+                parks.backstopDistance,
+                parks.capacityMax,
+                parks.idPark,
+                parks.idTeam,
+                parks.name,
+                parks.roofType,
+                parks.surfaceType,
+                parksFieldCoordinates.basePath,
+                parksFieldCoordinates.batterLeftX,
+                parksFieldCoordinates.batterLeftY,
+                parksFieldCoordinates.batterRightX,
+                parksFieldCoordinates.batterRightY,
+                parksFieldCoordinates.coachesBoxFirstX,
+                parksFieldCoordinates.coachesBoxFirstY,
+                parksFieldCoordinates.coachesBoxThirdX,
+                parksFieldCoordinates.coachesBoxThirdY,
+                parksFieldCoordinates.firstBaseX,
+                parksFieldCoordinates.firstBaseY,
+                parksFieldCoordinates.foulLineLeftFieldX,
+                parksFieldCoordinates.foulLineLeftFieldY,
+                parksFieldCoordinates.foulLineRightFieldX,
+                parksFieldCoordinates.foulLineRightFieldY,
+                parksFieldCoordinates.homePlateX,
+                parksFieldCoordinates.homePlateY,
+                parksFieldCoordinates.idPark,
+                parksFieldCoordinates.onDeckLeftX,
+                parksFieldCoordinates.onDeckLeftY,
+                parksFieldCoordinates.onDeckRightX,
+                parksFieldCoordinates.onDeckRightY,
+                parksFieldCoordinates.pitchersPlateX,
+                parksFieldCoordinates.pitchersPlateY,
+                parksFieldCoordinates.secondBaseX,
+                parksFieldCoordinates.secondBaseY,
+                parksFieldCoordinates.thirdBaseX,
+                parksFieldCoordinates.thirdBaseY
+            from parks
+            inner join cities on parks.idCity = cities.idCity
+            inner join parksFieldCoordinates on parks.idPark = parksFieldCoordinates.idPark
+            where 
+                parks.idTeam in (${paramsTeams.map(() => "?").join(", ")})
+
+        `;
+
+		const [dataParks, errorParks] = handleValibotParse({
+			data: db.prepare(queryParks).all(...paramsTeams),
+			schema: array(VQueryConstructorGameSimPark),
+			shouldParseDotNotation: true,
+		});
+
+		if (errorParks || !dataParks) {
+			return c.text("Internal Server Error", 500);
+		}
+
+		const queryParksWallSegments = /* sql */ `
+            select
+                height,
+                idPark,
+                segmentEndX,
+                segmentEndY,
+                segmentStartX,
+                segmentStartY
+            from
+                parksWallSegments
+            where
+                idPark in (${dataParks.map(() => "?").join(", ")})
+            ;
+        `;
+
+		const [dataParksWallSegments, errorParksWallSegments] = handleValibotParse({
+			data: db
+				.prepare(queryParksWallSegments)
+				.all(...dataParks.map((park) => park.idPark)),
+			schema: array(VDbParksWallSegments),
+			shouldParseDotNotation: true,
+		});
+
+		if (errorParksWallSegments || !dataParksWallSegments) {
+			return c.text("Internal Server Error", 500);
+		}
+
 		console.info("Starting simulation");
-		const timeStart = performance.now();
 		for (const game of dataGames.slice(0, 1)) {
 			const queryUmpires = /* sql */ `
                     select
@@ -391,6 +478,10 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 			const gameSim = new GameSim({
 				idGame: game.idGame,
+				park: {
+					...dataParks.find((park) => park.idTeam === game.idTeamHome),
+					wallSegments: dataParksWallSegments,
+				},
 				teams: [teams[0], teams[1]],
 				umpires: [
 					dataUmpires[0],

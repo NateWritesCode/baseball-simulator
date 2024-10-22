@@ -1,4 +1,9 @@
-import { RATING_MAX, RATING_MIN } from "@baseball-simulator/utils/constants";
+import {
+	RATING_MAX,
+	RATING_MIN,
+	ROOF_TYPES,
+	SURFACE_TYPES,
+} from "@baseball-simulator/utils/constants";
 import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
@@ -308,8 +313,8 @@ try {
 			idPark integer primary key autoincrement,
 			idTeam integer,
 			name text not null,
-			roofType text check(roofType in ('dome', 'open', 'retractable')),
-			surfaceType text check(surfaceType in ('artificial', 'grass')),
+			roofType text check(roofType in (${ROOF_TYPES.map((roofType) => `'${roofType}'`).join(", ")})),
+			surfaceType text check(surfaceType in (${SURFACE_TYPES.map((surfaceType) => `'${surfaceType}'`).join(", ")})),
 			foreign key (idCity) references cities(idCity),
 			foreign key (idTeam) references teams(idTeam)
 		);
@@ -1331,6 +1336,189 @@ try {
 	});
 
 	insertTeams(seedTeams);
+
+	const seedParks = seedTeams.map((team) => {
+		const idCity = team.idCity;
+		const idTeam = team.idTeam;
+		const nickname = team.nickname;
+		const genericPark = {
+			park: {
+				backstopDistance: 60,
+				capacityMax: 45000,
+				idCity,
+				idTeam,
+				name: `${nickname.charAt(0).toUpperCase() + nickname.slice(1)} Park`,
+				roofType: "open",
+				surfaceType: "grass",
+			},
+			fieldCoordinates: {
+				basePath: 90,
+				batterLeftX: -4,
+				batterLeftY: 0,
+				batterRightX: 4,
+				batterRightY: 0,
+				coachesBoxFirstX: 80,
+				coachesBoxFirstY: 20,
+				coachesBoxThirdX: -80,
+				coachesBoxThirdY: 20,
+				firstBaseX: 90,
+				firstBaseY: 90,
+				foulLineLeftFieldX: -350,
+				foulLineLeftFieldY: 350,
+				foulLineRightFieldX: 350,
+				foulLineRightFieldY: 350,
+				homePlateX: 0,
+				homePlateY: 0,
+				onDeckLeftX: -20,
+				onDeckLeftY: -10,
+				onDeckRightX: 20,
+				onDeckRightY: -10,
+				pitchersPlateX: 0,
+				pitchersPlateY: 60,
+				secondBaseX: 0,
+				secondBaseY: 127,
+				thirdBaseX: -90,
+				thirdBaseY: 90,
+			},
+
+			wallSegments: [
+				// Left field wall
+				{
+					height: 8,
+					segmentStartX: -350,
+					segmentStartY: 350,
+					segmentEndX: -200,
+					segmentEndY: 400,
+				},
+				// Left-center field wall
+				{
+					height: 8,
+					segmentStartX: -200,
+					segmentStartY: 400,
+					segmentEndX: 0,
+					segmentEndY: 420,
+				},
+				// Right-center field wall
+				{
+					height: 8,
+					segmentStartX: 0,
+					segmentStartY: 420,
+					segmentEndX: 200,
+					segmentEndY: 400,
+				},
+				// Right field wall
+				{
+					height: 8,
+					segmentStartX: 200,
+					segmentStartY: 400,
+					segmentEndX: 350,
+					segmentEndY: 350,
+				},
+			],
+		};
+
+		return genericPark;
+	});
+
+	const insertPark = db.prepare(/*sql*/ `
+		  insert into parks (backstopDistance, capacityMax, idCity, idTeam, name, roofType, surfaceType) values ($backstopDistance, $capacityMax, $idCity, $idTeam, $name, $roofType, $surfaceType);
+	 `);
+
+	const insertFieldCoordinates = db.prepare(/*sql*/ `
+	 		insert into parksFieldCoordinates (
+					basePath, 
+					batterLeftX, 
+					batterLeftY, 
+					batterRightX, 
+					batterRightY, 
+					coachesBoxFirstX, 
+					coachesBoxFirstY, 
+					coachesBoxThirdX, 
+					coachesBoxThirdY, 
+					firstBaseX, 
+					firstBaseY, 
+					foulLineLeftFieldX, 
+					foulLineLeftFieldY, 
+					foulLineRightFieldX, 
+					foulLineRightFieldY,
+					homePlateX, 
+					homePlateY,
+					idPark, 
+					onDeckLeftX, 
+					onDeckLeftY, 
+					onDeckRightX, 
+					onDeckRightY, 
+					pitchersPlateX, 
+					pitchersPlateY, 
+					secondBaseX, 
+					secondBaseY, 
+					thirdBaseX, 
+					thirdBaseY
+					) 
+			values (
+					$basePath,
+					$batterLeftX, 
+					$batterLeftY, 
+					$batterRightX, 
+					$batterRightY, 
+					$coachesBoxFirstX, 
+					$coachesBoxFirstY, 
+					$coachesBoxThirdX, 
+					$coachesBoxThirdY, 
+					$firstBaseX, 
+					$firstBaseY, 
+					$foulLineLeftFieldX, 
+					$foulLineLeftFieldY, 
+					$foulLineRightFieldX,
+					$foulLineRightFieldY,
+					$homePlateX,
+					$homePlateY,
+					$idPark,
+					$onDeckLeftX,
+					$onDeckLeftY,
+					$onDeckRightX,
+					$onDeckRightY,
+					$pitchersPlateX,
+					$pitchersPlateY,
+					$secondBaseX,
+					$secondBaseY,
+					$thirdBaseX,
+					$thirdBaseY
+				);
+		)`);
+
+	const insertWallSegment = db.prepare(/*sql*/ `
+	   insert into parksWallSegments (
+		height,
+		idPark, 
+		segmentStartX, 
+		segmentStartY, 
+		segmentEndX, 
+		segmentEndY
+	   ) values (
+		$height,
+		$idPark, 
+		$segmentStartX, 
+		$segmentStartY, 
+		$segmentEndX, 
+		$segmentEndY 
+	   );
+	 `);
+
+	const insertParks = db.transaction(() => {
+		for (const seedPark of seedParks) {
+			const { lastInsertRowid: idPark } = insertPark.run(seedPark.park);
+			insertFieldCoordinates.run({ ...seedPark.fieldCoordinates, idPark });
+			for (const wallSegment of seedPark.wallSegments) {
+				insertWallSegment.run({
+					...wallSegment,
+					idPark,
+				});
+			}
+		}
+	});
+
+	insertParks(seedParks);
 
 	const createGames = ({
 		dateStart,

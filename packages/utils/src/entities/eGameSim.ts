@@ -24,6 +24,7 @@ import {
 import GameSimCoachState from "./eGameSimCoachState";
 import GameSimEventStore from "./eGameSimEventStore";
 import GameSimLog from "./eGameSimLog";
+import type GameSimParkState from "./eGameSimParkState";
 import GameSimPlayerState from "./eGameSimPlayerState";
 import GameSimTeamState from "./eGameSimTeamState";
 import GameSimUmpireState from "./eGameSimUmpireState";
@@ -42,6 +43,7 @@ export default class GameSim {
 	private numTeamDefense: 0 | 1;
 	private numTeamOffense: 0 | 1;
 	private observers: OGameSimObserver[] = [];
+	private parkState: GameSimParkState;
 	private playerRunner1: GameSimPlayerState | null = null;
 	private playerRunner2: GameSimPlayerState | null = null;
 	private playerRunner3: GameSimPlayerState | null = null;

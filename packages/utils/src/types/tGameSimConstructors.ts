@@ -2,16 +2,20 @@ import {
 	type InferInput,
 	array,
 	intersect,
+	nullable,
 	number,
 	object,
 	omit,
 	pick,
+	string,
 	tuple,
 } from "valibot";
 import {
 	VDbCities,
 	VDbCoaches,
 	VDbCoachesRatings,
+	VDbParksFieldCoordinates,
+	VDbParksWallSegments,
 	VDbPersons,
 	VDbPersonsAlignment,
 	VDbPersonsMental,
@@ -27,6 +31,7 @@ import {
 	VDbUmpires,
 	VDbUmpiresRatings,
 } from "./tDb";
+import { VPicklistRoofType, VPicklistSurfaceType } from "./tPicklist";
 
 export const VConstructorGameSimCoach = intersect([
 	pick(VDbCoaches, ["idCoach", "idTeam"]),
@@ -48,6 +53,36 @@ export const VConstructorGameSimCoach = intersect([
 ]);
 export type TConstructorGameSimCoach = InferInput<
 	typeof VConstructorGameSimCoach
+>;
+
+export const VQueryConstructorGameSimPark = intersect([
+	object({
+		backstopDistance: number(),
+		capacityMax: number(),
+		idCity: number(),
+		idPark: number(),
+		idTeam: nullable(number()),
+		name: string(),
+		roofType: VPicklistRoofType,
+		surfaceType: VPicklistSurfaceType,
+	}),
+	VDbParksFieldCoordinates,
+	object({
+		city: pick(VDbCities, ["latitude", "longitude", "idCity", "name"]),
+	}),
+]);
+
+export const VConstructorGameSimParkWallSegments = object({
+	wallSegments: array(VDbParksWallSegments),
+});
+
+export const VConstructorGameSimPark = intersect([
+	VQueryConstructorGameSimPark,
+	VConstructorGameSimParkWallSegments,
+]);
+
+export type TConstructorGameSimPark = InferInput<
+	typeof VConstructorGameSimPark
 >;
 
 export const VConstructorGameSimPlayer = intersect([
@@ -130,6 +165,7 @@ export type TConstructorGameSimUmpire = InferInput<
 
 export const VConstructorGameSim = object({
 	idGame: number(),
+	park: VConstructorGameSimPark,
 	teams: tuple([VConstructorGameSimTeam, VConstructorGameSimTeam]),
 	umpires: tuple([
 		VConstructorGameSimUmpire,

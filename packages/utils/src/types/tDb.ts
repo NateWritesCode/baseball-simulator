@@ -1,4 +1,5 @@
 import { nullable, number, object, pipe, regex, string } from "valibot";
+import { VPicklistRoofType, VPicklistSurfaceType } from "./tPicklist";
 
 export const VDbCities = object({
 	idCity: number(),
@@ -43,6 +44,58 @@ export const VDbPlayers = object({
 	idPerson: number(),
 	idPlayer: number(),
 	idTeam: nullable(number()),
+});
+
+export const VDParks = object({
+	backstopDistance: number(),
+	capacityMax: number(),
+	idCity: number(),
+	idPark: number(),
+	idTeam: nullable(number()),
+	name: string(),
+	roofType: VPicklistRoofType,
+	surfaceType: VPicklistSurfaceType,
+});
+
+export const VDbParksFieldCoordinates = object({
+	basePath: number(),
+	batterLeftX: number(),
+	batterLeftY: number(),
+	batterRightX: number(),
+	batterRightY: number(),
+	coachesBoxFirstX: number(),
+	coachesBoxFirstY: number(),
+	coachesBoxThirdX: number(),
+	coachesBoxThirdY: number(),
+	firstBaseX: number(),
+	firstBaseY: number(),
+	foulLineLeftFieldX: number(),
+	foulLineLeftFieldY: number(),
+	foulLineRightFieldX: number(),
+	foulLineRightFieldY: number(),
+	homePlateX: number(),
+	homePlateY: number(),
+	idPark: number(),
+	onDeckLeftX: number(),
+	onDeckLeftY: number(),
+	onDeckRightX: number(),
+	onDeckRightY: number(),
+	pitchersPlateX: number(),
+	pitchersPlateY: number(),
+	secondBaseX: number(),
+	secondBaseY: number(),
+	thirdBaseX: number(),
+	thirdBaseY: number(),
+});
+
+export const VDbParksWallSegments = object({
+	height: number(),
+	idPark: number(),
+	idWallSegment: number(),
+	segmentEndX: number(),
+	segmentEndY: number(),
+	segmentStartX: number(),
+	segmentStartY: number(),
 });
 
 export const VDbPersons = object({
