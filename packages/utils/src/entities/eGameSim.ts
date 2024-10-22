@@ -6,19 +6,32 @@ import {
 	parse,
 	union,
 } from "valibot";
-import { PITCH_OUTCOMES } from "../constants/cBaseball";
-import type { OGameSimObserver, TGameSimEvent } from "../types/tGameSim";
+import { RATING_MAX } from "../constants";
+import {
+	type OGameSimObserver,
+	type TGameSimEvent,
+	VGameSimEventPitchLocation,
+} from "../types/tGameSim";
 import {
 	type TConstructorGameSim,
 	type TConstructorGameSimTeam,
 	VConstructorGameSim,
 } from "../types/tGameSimConstructors";
+import {
+	type TPicklistPitchNames,
+	VPicklistPitchNames,
+} from "../types/tPicklist";
+import GameSimCoachState from "./eGameSimCoachState";
 import GameSimEventStore from "./eGameSimEventStore";
 import GameSimLog from "./eGameSimLog";
 import GameSimPlayerState from "./eGameSimPlayerState";
 import GameSimTeamState from "./eGameSimTeamState";
+import GameSimUmpireState from "./eGameSimUmpireState";
 
 export default class GameSim {
+	private coachStates: {
+		[key: number]: GameSimCoachState;
+	};
 	private isNeutralPark: boolean;
 	private isTopOfInning: boolean;
 	private numBalls: number;
@@ -39,9 +52,14 @@ export default class GameSim {
 	private teamStates: {
 		[key: number]: GameSimTeamState;
 	};
+	private umpireHp: GameSimUmpireState;
+	private umpireFb: GameSimUmpireState;
+	private umpireSb: GameSimUmpireState;
+	private umpireTb: GameSimUmpireState;
 
 	constructor(_input: TConstructorGameSim) {
 		const input = parse(VConstructorGameSim, _input);
+		this.coachStates = {};
 		this.isNeutralPark = true;
 		this.isTopOfInning = true;
 		this.numBalls = 0;
@@ -53,12 +71,30 @@ export default class GameSim {
 		this.numTeamOffense = 0;
 		this.observers = [];
 		this.playerStates = {};
+		this.teamStates = {};
+		this.umpireHp = new GameSimUmpireState({
+			umpire: input.umpires[0],
+		});
+		this.umpireFb = new GameSimUmpireState({
+			umpire: input.umpires[1],
+		});
+		this.umpireSb = new GameSimUmpireState({
+			umpire: input.umpires[2],
+		});
+		this.umpireTb = new GameSimUmpireState({
+			umpire: input.umpires[3],
+		});
 
 		// team0 is the away team, team1 is the home team
 		this.teams = [input.teams[0], input.teams[1]];
-		this.teamStates = {};
 
 		for (const team of this.teams) {
+			const coachStates = team.coaches.map((coach) => {
+				const coachState = new GameSimCoachState({
+					coach,
+				});
+				return coachState;
+			});
 			const playerStates = team.players.map((player) => {
 				const playerState = new GameSimPlayerState({
 					player,
@@ -67,12 +103,18 @@ export default class GameSim {
 			});
 
 			const teamState = new GameSimTeamState({
+				coachStates,
 				playerStates,
 				team,
 			});
 			this.observers.push(teamState);
 
 			this.teamStates[team.idTeam] = teamState;
+
+			for (const coachState of coachStates) {
+				this.coachStates[coachState.coach.idCoach] = coachState;
+				this.observers.push(coachState);
+			}
 
 			for (const playerState of playerStates) {
 				this.playerStates[playerState.player.idPlayer] = playerState;
@@ -649,6 +691,9 @@ export default class GameSim {
 			pitchName,
 			playerHitter,
 			playerPitcher,
+			umpireFb: this.umpireFb,
+			umpireHp: this.umpireHp,
+			umpireTb: this.umpireSb,
 		});
 
 		this._notifyObservers({
@@ -737,11 +782,143 @@ export default class GameSim {
 		return isAtBatOver;
 	}
 
-	private _simulatePitchOutcome() {
-		const randomIndex = Math.floor(Math.random() * PITCH_OUTCOMES.length);
-		const pitchOutcome = PITCH_OUTCOMES[randomIndex];
+	_determineSwingLikelihood(_input: TInputDetermineSwingLikelihood) {
+		const { pitchLocation, playerHitter, playerPitcher } = parse(
+			VInputDetermineSwingLikelihood,
+			_input,
+		);
 
-		return pitchOutcome;
+		const baseSwingLikelihood = playerHitter.player.batting.eye / RATING_MAX;
+
+		// Adjust based on how close to the zone the pitch is
+		const distanceFromCenter = Math.sqrt(
+			pitchLocation.plateX ** 2 +
+				(pitchLocation.plateZ -
+					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
+					2,
+		);
+
+		const adjustedLikelihood =
+			baseSwingLikelihood *
+			(1 - distanceFromCenter * 0.2) *
+			(playerPitcher.player.pitching.movement / RATING_MAX);
+
+		return Math.random() < adjustedLikelihood;
+	}
+
+	_determineStrikeZone(_input: TInputDetermineStrikeZone) {
+		const { pitchLocation, umpireHp } = parse(
+			VInputDetermineStrikeZone,
+			_input,
+		);
+
+		const xInZone = Math.abs(pitchLocation.plateX) < 0.85; // Standard strike zone width
+		const zInZone =
+			pitchLocation.plateZ > pitchLocation.szBot &&
+			pitchLocation.plateZ < pitchLocation.szTop;
+
+		// Apply umpire tendencies
+		const xAdjustment =
+			pitchLocation.plateX > 0
+				? umpireHp.umpire.outsideZone / RATING_MAX
+				: umpireHp.umpire.insideZone / RATING_MAX;
+		const zAdjustment =
+			pitchLocation.plateZ > (pitchLocation.szTop + pitchLocation.szBot) / 2
+				? umpireHp.umpire.highZone / RATING_MAX
+				: umpireHp.umpire.lowZone / RATING_MAX;
+
+		return (
+			(xInZone || Math.random() < xAdjustment) &&
+			(zInZone || Math.random() < zAdjustment)
+		);
+	}
+
+	_getPitchWhiffFactor(_input: TInputGetPitchWhiffFactor) {
+		const { pitchName } = parse(VInputGetPitchWhiffFactor, _input);
+		// Based loosely on MLB whiff rates per pitch type
+		const whiffFactors: Record<TPicklistPitchNames, number> = {
+			changeup: 0.31,
+			curveball: 0.32,
+			cutter: 0.25,
+			eephus: 0.2,
+			fastball: 0.22,
+			forkball: 0.3,
+			knuckleball: 0.23,
+			knuckleCurve: 0.33,
+			screwball: 0.29,
+			sinker: 0.18,
+			slider: 0.35,
+			slurve: 0.34,
+			splitter: 0.37,
+			sweeper: 0.36,
+		};
+
+		return whiffFactors[pitchName];
+	}
+
+	_determineContactQuality(_input: TInputDetermineContactQuality) {
+		const { pitchLocation, pitchName, playerHitter, playerPitcher } = parse(
+			VInputDetermineContactQuality,
+			_input,
+		);
+
+		// Convert ratings to 0-1 scale
+		const batterContact = playerHitter.player.batting.contact / RATING_MAX;
+		const batterWhiffResistance =
+			playerHitter.player.batting.avoidKs / RATING_MAX;
+		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
+
+		// Get base whiff rate for this pitch type
+		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName });
+
+		// Location factor - pitches further from center of zone are harder to hit
+		const distanceFromCenter = Math.sqrt(
+			pitchLocation.plateX ** 2 +
+				(pitchLocation.plateZ -
+					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
+					2,
+		);
+		const locationFactor = 1 - distanceFromCenter * 0.15;
+
+		// Calculate contact probability
+		const contactProbability =
+			batterContact *
+			batterWhiffResistance *
+			(1 - pitcherStuff * pitchWhiffFactor) *
+			locationFactor;
+
+		// Add some randomness
+		return contactProbability * (0.85 + Math.random() * 0.3);
+	}
+
+	private _simulatePitchOutcome(_input: TInputSimulatePitchOutcome) {
+		const input = parse(VInputSimulatePitchOutcome, _input);
+		const isInStrikeZone = this._determineStrikeZone({
+			pitchLocation: input.pitchLocation,
+			umpireHp: input.umpireHp,
+		});
+		const isBatterSwinging = this._determineSwingLikelihood({
+			pitchLocation: input.pitchLocation,
+			playerHitter: input.playerHitter,
+			playerPitcher: input.playerPitcher,
+		});
+
+		if (!isBatterSwinging) {
+			return isInStrikeZone ? "STRIKE" : "BALL";
+		}
+
+		const contactQuality = this._determineContactQuality({
+			pitchLocation: input.pitchLocation,
+			pitchName: input.pitchName,
+			playerHitter: input.playerHitter,
+			playerPitcher: input.playerPitcher,
+		});
+
+		if (contactQuality < 0.25) {
+			return "STRIKE";
+		}
+
+		return "IN_PLAY";
 	}
 }
 
@@ -771,3 +948,43 @@ const VInputHandleRunnersAdvanceXBases = object({
 type TInputHandleRunnersAdvanceXBases = InferInput<
 	typeof VInputHandleRunnersAdvanceXBases
 >;
+const VInputSimulatePitchOutcome = object({
+	pitchLocation: VGameSimEventPitchLocation,
+	pitchName: VPicklistPitchNames,
+	playerHitter: instance(GameSimPlayerState),
+	playerPitcher: instance(GameSimPlayerState),
+	umpireHp: instance(GameSimUmpireState),
+	umpireFb: instance(GameSimUmpireState),
+	umpireTb: instance(GameSimUmpireState),
+});
+type TInputSimulatePitchOutcome = InferInput<typeof VInputSimulatePitchOutcome>;
+
+const VInputDetermineStrikeZone = object({
+	pitchLocation: VGameSimEventPitchLocation,
+	umpireHp: instance(GameSimUmpireState),
+});
+type TInputDetermineStrikeZone = InferInput<typeof VInputDetermineStrikeZone>;
+
+const VInputDetermineSwingLikelihood = object({
+	pitchLocation: VGameSimEventPitchLocation,
+	playerHitter: instance(GameSimPlayerState),
+	playerPitcher: instance(GameSimPlayerState),
+});
+type TInputDetermineSwingLikelihood = InferInput<
+	typeof VInputDetermineSwingLikelihood
+>;
+
+const VInputDetermineContactQuality = object({
+	pitchLocation: VGameSimEventPitchLocation,
+	pitchName: VPicklistPitchNames,
+	playerHitter: instance(GameSimPlayerState),
+	playerPitcher: instance(GameSimPlayerState),
+});
+type TInputDetermineContactQuality = InferInput<
+	typeof VInputDetermineContactQuality
+>;
+
+const VInputGetPitchWhiffFactor = object({
+	pitchName: VPicklistPitchNames,
+});
+type TInputGetPitchWhiffFactor = InferInput<typeof VInputGetPitchWhiffFactor>;

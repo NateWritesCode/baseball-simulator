@@ -89,7 +89,7 @@ const VGameSimEventOut = object({
 	gameSimEvent: literal("out"),
 });
 
-const VGameSimEventPitchLocation = object({
+export const VGameSimEventPitchLocation = object({
 	ax: number(),
 	ay: number(),
 	az: number(),

@@ -301,6 +301,62 @@ try {
 			foreign key (idUmpire) references umpires(idUmpire)
 		);
 
+		create table parks (
+			backstopDistance integer not null,
+			capacityMax integer not null,
+			idCity integer not null,
+			idPark integer primary key autoincrement,
+			idTeam integer,
+			name text not null,
+			roofType text check(roofType in ('dome', 'open', 'retractable')),
+			surfaceType text check(surfaceType in ('artificial', 'grass')),
+			foreign key (idCity) references cities(idCity),
+			foreign key (idTeam) references teams(idTeam)
+		);
+
+		create table parksFieldCoordinates (
+			basePath integer not null,
+			batterLeftX integer not null,
+			batterLeftY integer not null,
+			batterRightX integer not null,
+			batterRightY integer not null,
+			coachesBoxFirstX integer not null,
+			coachesBoxFirstY integer not null,
+			coachesBoxThirdX integer not null,
+			coachesBoxThirdY integer not null,
+			firstBaseX integer not null,
+			firstBaseY integer not null,
+			foulLineLeftFieldX integer not null,
+			foulLineLeftFieldY integer not null,
+			foulLineRightFieldX integer not null,
+			foulLineRightFieldY integer not null,
+			homePlateX integer not null,
+			homePlateY integer not null,
+			idPark integer primary key,
+			onDeckLeftX integer not null,
+			onDeckLeftY integer not null,
+			onDeckRightX integer not null,
+			onDeckRightY integer not null,
+			pitchersPlateX integer not null,
+			pitchersPlateY integer not null,
+			secondBaseX integer not null,
+			secondBaseY integer not null,
+			thirdBaseX integer not null,
+			thirdBaseY integer not null,
+			foreign key (idPark) references parks(idPark)
+		);
+
+		create table parksWallSegments (
+			height integer not null,
+			idPark integer not null,
+			idWallSegment integer primary key autoincrement,
+			segmentEndX integer not null,
+			segmentEndY integer not null,
+			segmentStartX integer not null,
+			segmentStartY integer not null,
+			foreign key (idPark) references parks(idPark)
+		);
+
 		create table universe (
 			dateTime date not null
 		);
