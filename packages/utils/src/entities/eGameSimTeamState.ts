@@ -162,6 +162,12 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 		return this.lineup[this.numLineupIndex];
 	}
 
+	public getFielderForPosition(position: (typeof POSITIONS)[number]) {
+		const idPlayer = this.positions[position];
+
+		return this.playerStates[idPlayer];
+	}
+
 	public getPositionId(_input: TInputGetPositionId) {
 		const input = parse(VInputGetPositionId, _input);
 

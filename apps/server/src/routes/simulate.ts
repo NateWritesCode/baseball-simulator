@@ -476,10 +476,16 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 					),
 				}));
 
+			const park = dataParks.find((park) => park.idTeam === game.idTeamHome);
+
+			if (!park) {
+				return c.text("Internal Server Error", 500);
+			}
+
 			const gameSim = new GameSim({
 				idGame: game.idGame,
 				park: {
-					...dataParks.find((park) => park.idTeam === game.idTeamHome),
+					...park,
 					wallSegments: dataParksWallSegments,
 				},
 				teams: [teams[0], teams[1]],
