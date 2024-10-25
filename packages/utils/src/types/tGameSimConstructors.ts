@@ -149,14 +149,9 @@ export const VConstructorGameSimUmpire = intersect([
 	]),
 	object({
 		alignment: omit(VDbPersonsAlignment, ["idPerson"]),
-		batting: omit(VDbPlayersBatting, ["idPlayer"]),
-		fielding: omit(VDbPlayersFielding, ["idPlayer"]),
 		mental: omit(VDbPersonsMental, ["idPerson"]),
 		myersBriggs: omit(VDbPersonsMyersBriggs, ["idPerson"]),
 		physical: omit(VDbPersonsPhysical, ["idPerson"]),
-		pitches: omit(VDbPlayersPitches, ["idPlayer"]),
-		pitching: omit(VDbPlayersPitching, ["idPlayer"]),
-		running: omit(VDbPlayersRunning, ["idPlayer"]),
 	}),
 ]);
 export type TConstructorGameSimUmpire = InferInput<

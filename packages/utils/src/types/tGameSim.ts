@@ -14,7 +14,10 @@ import GameSimTeamState from "../entities/eGameSimTeamState";
 import { VPicklistPitchNames, VPicklistPitchOutcomes } from "./tPicklist";
 
 const VGameSimEventAtBatEnd = object({
-	data: nullish(null_()),
+	data: object({
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
 	gameSimEvent: literal("atBatEnd"),
 });
 

@@ -1,5 +1,5 @@
 import { type InferInput, instance, number, object, parse } from "valibot";
-import { RATING_MAX, RATING_MIN } from "../constants";
+import { FATIGUE_MAX, FATIGUE_MIN, RATING_MAX, RATING_MIN } from "../constants";
 import { PITCHES_THROWN_STANDARD_MAX } from "../constants/cBaseball";
 import { handleValibotParse } from "../functions";
 import {
@@ -12,6 +12,33 @@ import {
 	VConstructorGameSimPlayer,
 } from "../types/tGameSimConstructors";
 import { VPicklistPitchNames } from "../types/tPicklist";
+
+// Fatigue multipliers for different pitch types
+const PITCH_TYPE_FATIGUE_MULTIPLIERS = {
+	fastball: 1.2, // High stress on arm
+	sinker: 1.15, // Heavy ball, high effort
+	cutter: 1.1, // Modified fastball, moderate stress
+	slider: 1.0, // Standard breaking ball effort
+	changeup: 0.9, // Lower velocity, less stress
+	curveball: 0.95, // Breaking ball, moderate effort
+	splitter: 1.05, // Split-finger puts stress on arm
+	sweeper: 1.0, // Standard breaking ball effort
+	knuckleball: 0.8, // Low velocity, minimal stress
+	eephus: 0.7, // Very low effort pitch
+	forkball: 1.0, // Moderate stress on arm
+	knuckleCurve: 0.9, // Low velocity breaking ball
+	screwball: 1.1, // High stress on arm
+	slurve: 1.0, // Standard breaking ball effort
+} as const;
+
+// Base fatigue values for different actions
+const BASE_FATIGUE = {
+	PITCH: 0.15, // Base fatigue per pitch
+	RUN_TO_BASE: 0.3, // Base fatigue for running to next base
+	HUSTLE_MULTIPLIER: 2, // Multiplier for hustle plays
+	FIELD_ROUTINE: 0.15, // Routine fielding play
+	FIELD_SPECTACULAR: 0.4, // Spectacular fielding play
+} as const;
 
 type TBattingStatistics = {
 	bb: number;
@@ -46,6 +73,11 @@ type TPitchingStatistics = {
 	triplesAllowed: number;
 };
 
+type TFatigue = {
+	accumulator: number;
+	current: number;
+};
+
 type TStatistics = {
 	batting: TBattingStatistics;
 	pitching: TPitchingStatistics;
@@ -59,6 +91,10 @@ type TConstructorGameSimPlayerState = InferInput<
 >;
 
 class GameSimPlayerState implements OGameSimObserver {
+	fatigue: TFatigue = {
+		accumulator: 0,
+		current: FATIGUE_MIN,
+	};
 	public player: TConstructorGameSimPlayer;
 	statistics: TStatistics;
 
@@ -66,6 +102,7 @@ class GameSimPlayerState implements OGameSimObserver {
 		const input = parse(VConstructorGameSimPlayerState, _input);
 
 		this.player = input.player;
+
 		this.statistics = {
 			batting: {
 				bb: 0,
@@ -103,11 +140,15 @@ class GameSimPlayerState implements OGameSimObserver {
 
 	public getPitchLocation(_input: TInputGetPitchLocation) {
 		const input = parse(VInputGetPitchLocation, _input);
-		const numPitchesThrown =
-			input.playerPitcher.statistics.pitching.pitchesThrown;
+		const fatigueEffect = this._calculateFatigueEffect();
+
+		const numPitchesThrown = this.statistics.pitching.pitchesThrown;
 		const pitchName = input.pitchName;
 		const playerHitterHeight = input.playerHitter.player.physical.height;
 		const pitcherStamina = input.playerPitcher.player.pitching.stamina;
+
+		const fatigueMultiplier = 1 - fatigueEffect.pitching.controlPenalty;
+		const velocityMultiplier = 1 - fatigueEffect.pitching.velocityPenalty;
 
 		const getRandomInRange = (min: number, max: number) =>
 			Math.random() * (max - min) + min;
@@ -259,19 +300,23 @@ class GameSimPlayerState implements OGameSimObserver {
 			// plateX, plateZ: Horizontal and vertical position of the pitch as it crosses home plate (ft)
 			// plateX range: -2.5 to 2.5 ft (0 is the center of the plate)
 			// plateZ range: 0 to 5 ft (height above ground)
-			plateX: getRandomInRange(-1.5, 1.5),
-			plateZ: getRandomInRange(szBot, szTop),
+			plateX: getRandomInRange(-1.5, 1.5) * fatigueMultiplier,
+			plateZ: getRandomInRange(szBot, szTop) * fatigueMultiplier,
 			// releaseSpeed: Velocity of the pitch at release (mph)
 			// Range: Typically 70 to 105 mph
-			releaseSpeed,
+			releaseSpeed: releaseSpeed * velocityMultiplier,
 			// releasePosX, releasePosY, releasePosZ: Position of the ball at release (ft)
 			// Range: Varies based on pitcher's release point, but typically:
 			// X: -3 to 3 ft
 			// Y: 50 to 55 ft (distance from home plate)
 			// Z: 5 to 7 ft (height)
-			releasePosX: getRandomInRange(-2, 2),
+			releasePosX:
+				getRandomInRange(-2, 2) *
+				(1 + fatigueEffect.pitching.controlPenalty * 0.5),
 			releasePosY: getRandomInRange(50, 55),
-			releasePosZ: getRandomInRange(5, 7),
+			releasePosZ:
+				getRandomInRange(5, 7) *
+				(1 + fatigueEffect.pitching.controlPenalty * 0.5),
 			// szBot, szTop: Bottom and top of the strike zone for the batter (ft)
 			// Range: Typically between 1.5 to 4 ft, varies by batter
 			szBot,
@@ -289,46 +334,112 @@ class GameSimPlayerState implements OGameSimObserver {
 
 	public choosePitch(_input: TInputChoosePitch) {
 		const input = parse(VInputChoosePitch, _input);
-
 		const { numBalls, numOuts, numStrikes } = input;
 		const numPitchesThrown = this.statistics.pitching.pitchesThrown;
 		const pitcherStamina = this.player.pitching.stamina;
 		const pitches = this.player.pitches;
+		const fatigueCurrent = this.fatigue.current;
 
+		// Only consider pitches the pitcher knows (rating > RATING_MIN)
 		const availablePitches = Object.entries(pitches).filter(
 			([, rating]) => rating > RATING_MIN,
 		) as [keyof typeof pitches, number][];
 
+		// Emergency random pitch for edge cases (0.1% chance)
 		if (Math.random() > 0.999) {
 			return Object.keys(pitches)[
 				Math.floor(Math.random() * Object.keys(pitches).length)
 			] as keyof typeof pitches;
 		}
 
-		const STAMINA_FACTOR = 0.7;
-		const RELY_ON_BEST_THRESHOLD = 0.8;
-
+		// Calculate fatigue penalties
+		const fatiguePercentage = fatigueCurrent / FATIGUE_MAX;
 		const staminaPercentage = Math.max(
 			0,
-			1 - numPitchesThrown / (pitcherStamina * STAMINA_FACTOR),
+			1 - numPitchesThrown / (pitcherStamina * 0.7),
 		);
 
 		const weightedPitches = availablePitches.map(([pitch, rating]) => {
 			let weight = rating;
 
-			// Adjust weight based on game situation
+			// Base pitch type fatigue consideration
+			const fatigueCost = PITCH_TYPE_FATIGUE_MULTIPLIERS[pitch] || 1;
+
+			// Reduce weight of high-fatigue pitches when tired
+			const fatigueMultiplier = 1 - fatiguePercentage * (fatigueCost - 0.7);
+			weight *= fatigueMultiplier;
+
+			// Game situation adjustments
 			if (numStrikes === 2) {
-				weight *= 1.2; // Increase weight for strikeout pitches
-			}
-			if (numBalls === 3) {
-				weight *= 0.8; // Decrease weight for potential walk pitches
+				// Strikeout situation - favor breaking balls
+				switch (pitch) {
+					case "slider":
+					case "curveball":
+					case "splitter":
+						weight *= 1.3;
+						break;
+				}
 			}
 
-			// Adjust weight based on stamina
-			if (["fastball", "cutter", "sinker"].includes(pitch)) {
+			if (numBalls === 3) {
+				// Must-throw strike situation - favor control pitches
+				switch (pitch) {
+					case "fastball":
+					case "sinker":
+					case "changeup":
+						weight *= 1.4;
+						break;
+					case "knuckleball":
+					case "eephus":
+						weight *= 0.5; // Too risky in full count
+						break;
+				}
+			}
+
+			// Adjust weight based on stamina/fatigue combination
+			if (["fastball", "sinker", "cutter"].includes(pitch)) {
+				// Power pitches become less appealing as stamina/fatigue worsen
 				weight *= staminaPercentage;
+
+				// Further reduce weight in high-fatigue situations
+				if (fatiguePercentage > 0.7) {
+					weight *= 0.7;
+				}
 			} else {
+				// Off-speed and breaking pitches become more appealing when tired
 				weight *= 1 + (1 - staminaPercentage) * 0.5;
+			}
+
+			// Pitcher tendency adjustments based on current fatigue
+			if (fatiguePercentage > 0.8) {
+				// Very tired - strongly favor low-effort pitches
+				switch (pitch) {
+					case "changeup":
+					case "eephus":
+					case "knuckleball":
+						weight *= 1.4;
+						break;
+					case "fastball":
+					case "sinker":
+						weight *= 0.6;
+						break;
+				}
+			} else if (fatiguePercentage > 0.6) {
+				// Moderately tired - start mixing in more off-speed
+				switch (pitch) {
+					case "changeup":
+					case "curveball":
+					case "slider":
+						weight *= 1.2;
+						break;
+				}
+			}
+
+			// Critical situation adjustments
+			if (numOuts === 2 && (numBalls === 3 || numStrikes === 2)) {
+				// High-leverage situation - favor pitcher's best pitches despite fatigue
+				weight *=
+					(rating / Math.max(...availablePitches.map(([, r]) => r))) * 1.3;
 			}
 
 			return { pitch, weight };
@@ -337,10 +448,10 @@ class GameSimPlayerState implements OGameSimObserver {
 		// Sort pitches by weight in descending order
 		weightedPitches.sort((a, b) => b.weight - a.weight);
 
-		// If pitcher is tired or in a crucial situation, rely more on best pitches
+		// If severely tired or in a crucial situation, rely more on best available pitch
 		if (
-			staminaPercentage < RELY_ON_BEST_THRESHOLD ||
-			(numOuts === 2 && (numBalls === 3 || numStrikes === 2))
+			fatiguePercentage > 0.9 ||
+			(numOuts === 2 && numBalls === 3 && numStrikes === 2)
 		) {
 			return weightedPitches[0].pitch;
 		}
@@ -359,7 +470,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 		}
 
-		// Fallback to the highest rated pitch (should never reach here)
+		// Fallback to the highest weighted pitch (should never reach here)
 		return weightedPitches[0].pitch;
 	}
 
@@ -579,9 +690,48 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 		}
 	}
+
+	private _addFatigue(_input: TInputAddFatigue) {
+		const input = parse(VInputAddFatigue, _input);
+		this.fatigue.accumulator += input.amount;
+
+		// Apply accumulated fatigue when it reaches a threshold
+		if (this.fatigue.accumulator >= 1) {
+			const fatigueToAdd = Math.floor(this.fatigue.accumulator);
+			this.fatigue.current = Math.min(
+				FATIGUE_MAX,
+				this.fatigue.current + fatigueToAdd,
+			);
+			this.fatigue.accumulator -= fatigueToAdd;
+		}
+	}
+
+	private _calculateFatigueEffect() {
+		const fatiguePercentage = this.fatigue.current / FATIGUE_MAX;
+
+		return {
+			batting: {
+				contactPenalty: fatiguePercentage * 0.15, // 15% max penalty
+				powerPenalty: fatiguePercentage * 0.2, // 20% max penalty
+				eyePenalty: fatiguePercentage * 0.1, // 10% max penalty
+				speedPenalty: fatiguePercentage * 0.25, // 25% max penalty
+			},
+			pitching: {
+				controlPenalty: fatiguePercentage * 0.2, // 20% max penalty
+				movementPenalty: fatiguePercentage * 0.15, // 15% max penalty
+				velocityPenalty: fatiguePercentage * 0.25, // 25% max penalty
+				commandPenalty: fatiguePercentage * 0.2, // 20% max penalty
+			},
+		};
+	}
 }
 
 export default GameSimPlayerState;
+
+const VInputAddFatigue = object({
+	amount: number(),
+});
+type TInputAddFatigue = InferInput<typeof VInputAddFatigue>;
 
 const VInputGetPitchLocation = object({
 	pitchName: VPicklistPitchNames,

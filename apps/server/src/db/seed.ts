@@ -17,6 +17,33 @@ const NUM_UMPIRES = 4 * (NUM_TEAMS / 2);
 const NUM_OWNERS = NUM_TEAMS;
 const NUM_COACHES = NUM_TEAMS;
 
+const getNormalDistributionRating = ({
+	mean = (RATING_MAX + RATING_MIN) / 2,
+	stdDev = (RATING_MAX - RATING_MIN) / 6, // This means ~99.7% of values will fall within the range
+	min = RATING_MIN,
+	max = RATING_MAX,
+	skew = 1,
+} = {}) => {
+	let u = 0;
+	let v = 0;
+	while (u === 0) u = Math.random();
+	while (v === 0) v = Math.random();
+
+	// Box-Muller transform
+	let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+
+	// Transform to desired mean and standard deviation
+	num = num * stdDev + mean;
+
+	// Apply skew if needed
+	if (skew !== 1) {
+		num = ((num - min) / (max - min)) ** skew * (max - min) + min;
+	}
+
+	// Clamp to range and round
+	return Math.round(Math.min(Math.max(num, min), max));
+};
+
 try {
 	if (fs.existsSync(DB_PATH)) {
 		fs.unlinkSync(DB_PATH);
@@ -1824,31 +1851,19 @@ try {
 				idPerson: i + 1,
 				lastName: faker.person.lastName("male"),
 				mental: {
-					charisma: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-					constitution: faker.number.int({
-						min: RATING_MIN,
-						max: RATING_MAX,
-					}),
-					intelligence: faker.number.int({
-						min: RATING_MIN,
-						max: RATING_MAX,
-					}),
-					loyalty: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-					wisdom: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-					workEthic: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+					charisma: getNormalDistributionRating(),
+					constitution: getNormalDistributionRating(),
+					intelligence: getNormalDistributionRating(),
+					loyalty: getNormalDistributionRating(),
+					wisdom: getNormalDistributionRating(),
+					workEthic: getNormalDistributionRating(),
 				},
 				middleName: faker.person.middleName("male"),
 				myersBriggs,
 				nickname: null,
 				physical: {
-					height: faker.number.int({
-						min: RATING_MIN + 500,
-						max: RATING_MAX - 300,
-					}),
-					weight: faker.number.int({
-						min: RATING_MIN + 500,
-						max: RATING_MAX - 300,
-					}),
+					height: getNormalDistributionRating(),
+					weight: getNormalDistributionRating(),
 				},
 			};
 		},
@@ -1987,7 +2002,7 @@ try {
 			});
 
 			insertCoachRatings.run({
-				ability: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				ability: getNormalDistributionRating(),
 				idCoach,
 			});
 
@@ -2040,25 +2055,19 @@ try {
 			});
 
 			insertUmpireRatings.run({
-				balkAccuracy: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				checkSwingAccuracy: faker.number.int({
-					min: RATING_MIN,
-					max: RATING_MAX,
-				}),
-				consistency: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				expandedZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				favorFastballs: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				favorOffspeed: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				highZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				balkAccuracy: getNormalDistributionRating(),
+				checkSwingAccuracy: getNormalDistributionRating(),
+				consistency: getNormalDistributionRating(),
+				expandedZone: getNormalDistributionRating(),
+				favorFastballs: getNormalDistributionRating(),
+				favorOffspeed: getNormalDistributionRating(),
+				highZone: getNormalDistributionRating(),
 				idUmpire,
-				insideZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				lowZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				outsideZone: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
-				pitchFramingInfluence: faker.number.int({
-					min: RATING_MIN,
-					max: RATING_MAX,
-				}),
-				reactionTime: faker.number.int({ min: RATING_MIN, max: RATING_MAX }),
+				insideZone: getNormalDistributionRating(),
+				lowZone: getNormalDistributionRating(),
+				outsideZone: getNormalDistributionRating(),
+				pitchFramingInfluence: getNormalDistributionRating(),
+				reactionTime: getNormalDistributionRating(),
 			});
 		}
 	});
@@ -2087,11 +2096,11 @@ try {
 
 	const seedPlayers = seedPersonsPlayers.map((person, i) => {
 		// Batting
-		const avoidKs = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const contact = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const eye = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const gap = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const power = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const avoidKs = getNormalDistributionRating();
+		const contact = getNormalDistributionRating();
+		const eye = getNormalDistributionRating();
+		const gap = getNormalDistributionRating();
+		const power = getNormalDistributionRating();
 		const batting = {
 			avoidKs,
 			avoidKsVL: avoidKs,
@@ -2111,27 +2120,24 @@ try {
 		};
 
 		// Fielding
-		const c = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const c = getNormalDistributionRating();
 		const catcherAbility = c;
 		const catcherArm = c;
 		const catcherFraming = c;
-		const cf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const fb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const infieldArm = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const cf = getNormalDistributionRating();
+		const fb = getNormalDistributionRating();
+		const infieldArm = getNormalDistributionRating();
 		const infieldDoublePlay = infieldArm;
 		const infieldError = infieldArm;
 		const infieldRange = infieldArm;
-		const lf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const outfieldArm = faker.number.int({
-			min: RATING_MIN,
-			max: RATING_MAX,
-		});
+		const lf = getNormalDistributionRating();
+		const outfieldArm = getNormalDistributionRating();
 		const outfieldError = outfieldArm;
 		const outfieldRange = outfieldArm;
-		const rf = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const sb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const ss = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const tb = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const rf = getNormalDistributionRating();
+		const sb = getNormalDistributionRating();
+		const ss = getNormalDistributionRating();
+		const tb = getNormalDistributionRating();
 		const fielding = {
 			c,
 			catcherAbility,
@@ -2291,10 +2297,10 @@ try {
 		const pitches = assignPitches();
 
 		// Pitching
-		const control = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const movement = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const stamina = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
-		const stuff = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const control = getNormalDistributionRating();
+		const movement = getNormalDistributionRating();
+		const stamina = getNormalDistributionRating();
+		const stuff = getNormalDistributionRating();
 
 		const pitching = {
 			control,
@@ -2310,7 +2316,7 @@ try {
 		};
 
 		// Running
-		const speed = faker.number.int({ min: RATING_MIN, max: RATING_MAX });
+		const speed = getNormalDistributionRating();
 		const running = {
 			baserunning: speed,
 			speed,

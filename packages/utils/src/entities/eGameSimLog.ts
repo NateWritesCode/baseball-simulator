@@ -1,4 +1,5 @@
-import { type InferInput, number, object, parse } from "valibot";
+import fs from "node:fs";
+import { type InferInput, number, object, parse, string } from "valibot";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -8,11 +9,14 @@ import {
 import Logger from "./eLogger";
 
 const VConstructorGameSimLog = object({
+	filePathSave: string(),
 	idGame: number(),
 });
 type TConstructorGameSimLog = InferInput<typeof VConstructorGameSimLog>;
 
 class GameSimLog implements OGameSimObserver {
+	filePathSave =
+		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/log";
 	gameLog: string[][] = [];
 	idGame: number;
 
@@ -22,13 +26,20 @@ class GameSimLog implements OGameSimObserver {
 		this.idGame = input.idGame;
 	}
 
+	close = () => {
+		fs.writeFileSync(
+			`${this.filePathSave}/${this.idGame}.json`,
+			JSON.stringify(this.gameLog),
+		);
+	};
+
 	logDanger = (info: string[]) => {
 		Logger.danger.apply(null, info);
 		this.gameLog.push(info);
 	};
 
 	logInfo = (info: string[]) => {
-		const shouldLog = true;
+		const shouldLog = false;
 
 		if (shouldLog) {
 			Logger.info.apply(null, info);

@@ -1,4 +1,12 @@
-import { type InferInput, array, instance, object, parse } from "valibot";
+import {
+	type InferInput,
+	array,
+	instance,
+	number,
+	object,
+	parse,
+} from "valibot";
+import { FATIGUE_MAX, RATING_MAX } from "../constants";
 import type { POSITIONS } from "../constants/cBaseball";
 import { handleValibotParse } from "../functions";
 import {
@@ -188,6 +196,20 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 
 		switch (gameSimEvent) {
 			case "atBatEnd": {
+				const { data } = input;
+				const { teamDefense } = data;
+
+				if (teamDefense.team.idTeam === this.team.idTeam) {
+					const shouldSubstitutePitcher = this._shouldSubstitutePitcher({
+						maxFatiguePercentage: 0.75,
+						maxPitchesThrown: 125,
+					});
+
+					if (shouldSubstitutePitcher) {
+						this._substitutePitcherToBestAvailable();
+					}
+				}
+
 				break;
 			}
 			case "atBatStart": {
@@ -209,13 +231,7 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 				break;
 			}
 			case "homeRun": {
-				const {
-					teamDefense,
-					teamOffense,
-					playerRunner1,
-					playerRunner2,
-					playerRunner3,
-				} = input.data;
+				const { teamDefense, teamOffense } = input.data;
 
 				if (teamOffense.team.idTeam === this.team.idTeam) {
 					this.statistics.batting.hr++;
@@ -375,6 +391,140 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 
 		return players[0].player.idPlayer;
 	}
+
+	private _shouldSubstitutePitcher(_input: TInputShouldSubstitutePitcher) {
+		const input = parse(VInputShouldSubstitutePitcher, _input);
+
+		// Get current pitcher
+		const currentPitcherId = this.positions.p;
+		const currentPitcher = this.playerStates[currentPitcherId];
+
+		// Check fatigue and stamina thresholds
+		const fatiguePercentage = currentPitcher.fatigue.current / FATIGUE_MAX;
+		const staminaPercentage =
+			currentPitcher.player.pitching.stamina / RATING_MAX;
+		const pitchesThrown = currentPitcher.statistics.pitching.pitchesThrown;
+
+		// Determine if substitution is needed based on multiple factors
+		const needsSubstitution =
+			fatiguePercentage > input.maxFatiguePercentage || // Exceeds fatigue threshold
+			pitchesThrown > input.maxPitchesThrown || // Too many pitches
+			(fatiguePercentage > input.maxFatiguePercentage * 0.75 &&
+				staminaPercentage < 0.4); // Combined fatigue and low stamina
+
+		if (!needsSubstitution) {
+			return false;
+		}
+
+		// Find best available relief pitcher
+		const availablePitchers = this._getArrayOfAllPlayerStatesBench().toSorted(
+			(a, b) => {
+				// Calculate combined rating for each pitcher
+				const getRating = (player: GameSimPlayerState) => {
+					const basePitchingRating =
+						player.player.pitching.stuff +
+						player.player.pitching.movement +
+						player.player.pitching.control;
+
+					// Consider fatigue in rating calculation
+					const fatigueMultiplier = 1 - player.fatigue.current / FATIGUE_MAX;
+					const staminaMultiplier = player.player.pitching.stamina / RATING_MAX;
+
+					return basePitchingRating * fatigueMultiplier * staminaMultiplier;
+				};
+
+				return getRating(b) - getRating(a);
+			},
+		);
+
+		// If no pitchers available, keep current pitcher
+		if (!availablePitchers.length) {
+			return false;
+		}
+
+		// Check if best available pitcher is actually better than current pitcher
+		const bestAvailablePitcher = availablePitchers[0];
+		const currentFatigueMultiplier =
+			1 - currentPitcher.fatigue.current / FATIGUE_MAX;
+		const currentEffectiveness =
+			(currentPitcher.player.pitching.stuff +
+				currentPitcher.player.pitching.movement +
+				currentPitcher.player.pitching.control) *
+			currentFatigueMultiplier;
+
+		const replacementFatigueMultiplier =
+			1 - bestAvailablePitcher.fatigue.current / FATIGUE_MAX;
+		const replacementEffectiveness =
+			(bestAvailablePitcher.player.pitching.stuff +
+				bestAvailablePitcher.player.pitching.movement +
+				bestAvailablePitcher.player.pitching.control) *
+			replacementFatigueMultiplier;
+
+		// Only substitute if replacement is significantly better
+		if (replacementEffectiveness > currentEffectiveness * 1.1) {
+			this.positions.p = bestAvailablePitcher.player.idPlayer;
+			return true;
+		}
+
+		return false;
+	}
+
+	private _substitutePitcherToBestAvailable() {
+		const currentPitcherId = this.positions.p;
+		const currentPitcher = this.playerStates[currentPitcherId];
+
+		// Find best available relief pitcher
+		const availablePitchers = this._getArrayOfAllPlayerStatesBench().toSorted(
+			(a, b) => {
+				// Calculate combined rating for each pitcher
+				const getRating = (player: GameSimPlayerState) => {
+					const basePitchingRating =
+						player.player.pitching.stuff +
+						player.player.pitching.movement +
+						player.player.pitching.control;
+
+					// Consider fatigue in rating calculation
+					const fatigueMultiplier = 1 - player.fatigue.current / FATIGUE_MAX;
+					const staminaMultiplier = player.player.pitching.stamina / RATING_MAX;
+
+					return basePitchingRating * fatigueMultiplier * staminaMultiplier;
+				};
+
+				return getRating(b) - getRating(a);
+			},
+		);
+
+		// If no pitchers available, keep current pitcher
+		if (!availablePitchers.length) {
+			return false;
+		}
+
+		// Check if best available pitcher is actually better than current pitcher
+		const bestAvailablePitcher = availablePitchers[0];
+		const currentFatigueMultiplier =
+			1 - currentPitcher.fatigue.current / FATIGUE_MAX;
+		const currentEffectiveness =
+			(currentPitcher.player.pitching.stuff +
+				currentPitcher.player.pitching.movement +
+				currentPitcher.player.pitching.control) *
+			currentFatigueMultiplier;
+
+		const replacementFatigueMultiplier =
+			1 - bestAvailablePitcher.fatigue.current / FATIGUE_MAX;
+		const replacementEffectiveness =
+			(bestAvailablePitcher.player.pitching.stuff +
+				bestAvailablePitcher.player.pitching.movement +
+				bestAvailablePitcher.player.pitching.control) *
+			replacementFatigueMultiplier;
+
+		// Only substitute if replacement is significantly better
+		if (replacementEffectiveness > currentEffectiveness * 1.1) {
+			this.positions.p = bestAvailablePitcher.player.idPlayer;
+			return true;
+		}
+
+		return false;
+	}
 }
 
 export default GameSimTeamState;
@@ -383,3 +533,11 @@ const VInputGetPositionId = object({
 	position: VPicklistPositions,
 });
 type TInputGetPositionId = InferInput<typeof VInputGetPositionId>;
+
+const VInputShouldSubstitutePitcher = object({
+	maxFatiguePercentage: number(),
+	maxPitchesThrown: number(),
+});
+type TInputShouldSubstitutePitcher = InferInput<
+	typeof VInputShouldSubstitutePitcher
+>;

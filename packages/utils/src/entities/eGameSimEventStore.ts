@@ -1,4 +1,4 @@
-import { type InferInput, number, object, parse } from "valibot";
+import { type InferInput, number, object, parse, string } from "valibot";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -7,6 +7,7 @@ import {
 } from "../types/tGameSim";
 
 const VConstructorGameSimEventStore = object({
+	filePathSave: string(),
 	idGame: number(),
 });
 type TConstructorGameSimEventStore = InferInput<
@@ -14,12 +15,19 @@ type TConstructorGameSimEventStore = InferInput<
 >;
 
 export default class GameSimEventStore implements OGameSimObserver {
+	filePathSave =
+		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/eventStore";
 	idGame: number;
 
 	constructor(_input: TConstructorGameSimEventStore) {
 		const input = parse(VConstructorGameSimEventStore, _input);
+		// this.filePathSave = input.filePathSave;
 		this.idGame = input.idGame;
 	}
+
+	close = () => {
+		console.log("filePathSave", this.filePathSave);
+	};
 
 	notifyGameEvent(_input: TGameSimEvent) {
 		const [input, error] = handleValibotParse({

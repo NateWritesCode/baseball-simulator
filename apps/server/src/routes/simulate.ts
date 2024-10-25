@@ -284,7 +284,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
             inner join
                 personsMental on persons.idPerson = personsMental.idPerson
             inner join
-                personsPhysical on persons.idPerson = personsPhysical
+                personsPhysical on persons.idPerson = personsPhysical.idPerson
             inner join
                 coachesRatings on coaches.idCoach = coachesRatings.idCoach
             where
@@ -310,6 +310,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
                 cities.name as 'city.name',
                 parks.backstopDistance,
                 parks.capacityMax,
+                parks.idCity,
                 parks.idPark,
                 parks.idTeam,
                 parks.name,
@@ -365,6 +366,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
             select
                 height,
                 idPark,
+                idWallSegment,
                 segmentEndX,
                 segmentEndY,
                 segmentStartX,
@@ -431,8 +433,8 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
                         umpiresRatings.insideZone,
                         umpiresRatings.lowZone,
                         umpiresRatings.outsideZone,
-                        umpiresRatings.pitchFramingInfluence
-                        umpiresRatings.reactionTime,
+                        umpiresRatings.pitchFramingInfluence,
+                        umpiresRatings.reactionTime
                     from
                         umpires
                     inner join
@@ -449,7 +451,6 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
                         umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
                     limit 
                         4
-                    
                     ;
                 `;
 

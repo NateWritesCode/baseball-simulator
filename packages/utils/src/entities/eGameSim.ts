@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import {
 	type InferInput,
 	array,
@@ -47,8 +48,11 @@ export default class GameSim {
 	private coachStates: {
 		[key: number]: GameSimCoachState;
 	};
+	private eventStore: GameSimEventStore;
+	private idGame: number;
 	private isNeutralPark: boolean;
 	private isTopOfInning: boolean;
+	private log: GameSimLog;
 	private numBalls: number;
 	private numInning: number;
 	private numInningsInGame: number;
@@ -68,6 +72,8 @@ export default class GameSim {
 	private teamStates: {
 		[key: number]: GameSimTeamState;
 	};
+	// biome-ignore lint/suspicious/noExplicitAny: Need to allow for any possible value
+	testData: any;
 	private umpireHp: GameSimUmpireState;
 	private umpireFb: GameSimUmpireState;
 	private umpireSb: GameSimUmpireState;
@@ -76,8 +82,17 @@ export default class GameSim {
 	constructor(_input: TConstructorGameSim) {
 		const input = parse(VConstructorGameSim, _input);
 		this.coachStates = {};
+		this.eventStore = new GameSimEventStore({
+			filePathSave: import.meta.dir,
+			idGame: input.idGame,
+		});
+		this.idGame = input.idGame;
 		this.isNeutralPark = true;
 		this.isTopOfInning = true;
+		this.log = new GameSimLog({
+			filePathSave: import.meta.dir,
+			idGame: input.idGame,
+		});
 		this.numBalls = 0;
 		this.numInning = 1;
 		this.numInningsInGame = 9;
@@ -91,6 +106,7 @@ export default class GameSim {
 		});
 		this.playerStates = {};
 		this.teamStates = {};
+		this.testData = null;
 		this.umpireHp = new GameSimUmpireState({
 			umpire: input.umpires[0],
 		});
@@ -141,16 +157,8 @@ export default class GameSim {
 			}
 		}
 
-		this.observers.push(
-			new GameSimLog({
-				idGame: input.idGame,
-			}),
-		);
-		this.observers.push(
-			new GameSimEventStore({
-				idGame: input.idGame,
-			}),
-		);
+		this.observers.push(this.log);
+		this.observers.push(this.eventStore);
 	}
 
 	private _calculateDistanceToBoundary(
@@ -348,6 +356,7 @@ export default class GameSim {
 
 		// Base difficulty calculation based on position
 		let positionDifficulty = 0;
+		const distanceFromHome = Math.sqrt(finalX * finalX + finalY * finalY);
 
 		switch (position) {
 			case "c": {
@@ -456,10 +465,12 @@ export default class GameSim {
 					positionDifficulty += 0.4;
 				}
 
-				// Distance and speed factors
-				if (ballInPlay.distance < 150) {
+				// Depth-based difficulty adjustments
+				if (distanceFromHome < this.OUTFIELD_DEPTH * 0.6) {
+					// Shallow balls are harder for outfielders
 					positionDifficulty += 0.3;
-				} else if (ballInPlay.distance > 250) {
+				} else if (distanceFromHome > this.OUTFIELD_DEPTH * 1.2) {
+					// Deep balls are harder and arm strength becomes more important
 					positionDifficulty += 0.2 - armRating * 0.2;
 				}
 
@@ -486,13 +497,12 @@ export default class GameSim {
 			}
 		}
 
-		// Calculate trajectory difficulty (20% of total)
+		// Calculate trajectory and situational difficulty components
 		const trajectoryDifficulty = this._calculateTrajectoryDifficulty({
 			ballInPlay,
 			position,
 		});
 
-		// Calculate situational difficulty (20% of total)
 		const situationalDifficulty = this._calculateSituationalDifficulty({
 			ballInPlay,
 			fieldingPosition: fielderPosition,
@@ -503,9 +513,9 @@ export default class GameSim {
 
 		// Weight the components
 		const totalDifficulty =
-			positionDifficulty * 0.6 + // Position-specific: 60%
-			trajectoryDifficulty * 0.2 + // Trajectory: 20%
-			situationalDifficulty * 0.2; // Situational: 20%
+			positionDifficulty * 0.6 +
+			trajectoryDifficulty * 0.2 +
+			situationalDifficulty * 0.2;
 
 		return Math.min(Math.max(totalDifficulty, 0), 1);
 	}
@@ -570,15 +580,11 @@ export default class GameSim {
 		return baseSpin * contactQuality;
 	}
 
-	private _calculateTrajectory({
-		exitVelocity,
-		launchAngle,
-		spinRate,
-	}: {
-		exitVelocity: number;
-		launchAngle: number;
-		spinRate: number;
-	}) {
+	private _calculateTrajectory(_input: TInputCalculateTrajectory) {
+		const { initialVx, initialVy, spinRate, verticalVelocity } = parse(
+			VInputCalculateTrajectory,
+			_input,
+		);
 		const trajectory: Array<{ x: number; y: number; z: number }> = [];
 		const timeStep = 0.01; // seconds
 
@@ -587,38 +593,41 @@ export default class GameSim {
 		let y = 0;
 		let z = 2; // Starting height (approximate height of contact)
 
-		// Convert launch angle to radians
-		const theta = (launchAngle * Math.PI) / 180;
-
 		// Initial velocities
-		let vx = exitVelocity * Math.cos(theta);
-		let vy = exitVelocity * Math.sin(theta);
-		let vz = 0;
+		let vx = initialVx;
+		let vy = initialVy;
+		let vz = verticalVelocity;
 
 		// Magnus force coefficient based on spin
 		const magnusCoef = spinRate / 10000;
 
-		while (z > 0) {
-			// While ball is above ground
+		while (z > 0 && trajectory.length < 1000) {
 			// Update position
 			x += vx * timeStep;
 			y += vy * timeStep;
 			z += vz * timeStep;
 
-			// Calculate drag force
+			// Calculate drag force (now incorporating mass)
 			const velocity = Math.sqrt(vx * vx + vy * vy + vz * vz);
-			const dragForce =
-				-0.5 *
+			const dragCoefficient = 0.3; // Typical for a baseball
+			const crossSectionalArea = Math.PI * this.BALL_RADIUS * this.BALL_RADIUS;
+
+			// Force = 0.5 * density * velocity^2 * drag coefficient * area
+			const dragForceMagnitude =
+				0.5 *
 				this.AIR_DENSITY *
-				Math.PI *
-				this.BALL_RADIUS *
-				this.BALL_RADIUS *
-				velocity;
+				velocity *
+				velocity *
+				dragCoefficient *
+				crossSectionalArea;
+
+			// Convert force to acceleration by dividing by mass (F = ma)
+			const dragAcceleration = dragForceMagnitude / this.BALL_MASS;
 
 			// Update velocities including drag and magnus effect
-			vx += ((dragForce * vx) / velocity) * timeStep;
-			vy += ((dragForce * vy) / velocity + magnusCoef * vx) * timeStep;
-			vz += (this.GRAVITY + (dragForce * vz) / velocity) * timeStep;
+			vx += ((-dragAcceleration * vx) / velocity) * timeStep;
+			vy += ((-dragAcceleration * vy) / velocity + magnusCoef * vx) * timeStep;
+			vz += (this.GRAVITY + (-dragAcceleration * vz) / velocity) * timeStep;
 
 			trajectory.push({ x, y, z });
 		}
@@ -863,6 +872,7 @@ export default class GameSim {
 				ballInPlay.finalY * ballInPlay.finalY,
 		);
 		const isInfield = distanceFromHome <= this.INFIELD_DEPTH;
+		const isOutfield = distanceFromHome > this.OUTFIELD_DEPTH * 0.7; // Start outfield coverage earlier
 		const launchAngle = ballInPlay.launchAngle;
 
 		// Add pitcher for bunts and short grounders
@@ -884,8 +894,8 @@ export default class GameSim {
 			});
 		}
 
-		// Add infielders
-		if (isInfield || launchAngle > 45) {
+		// Add infielders for shallow balls
+		if (!isOutfield || launchAngle > 45) {
 			potentialFielders.push(
 				{
 					fielder: teamDefenseState.getFielderForPosition("fb"),
@@ -906,8 +916,8 @@ export default class GameSim {
 			);
 		}
 
-		// Add outfielders
-		if (!isInfield || launchAngle > 25) {
+		// Add outfielders for deeper balls or high flies
+		if (isOutfield || launchAngle > 25) {
 			potentialFielders.push(
 				{
 					fielder: teamDefenseState.getFielderForPosition("lf"),
@@ -935,8 +945,19 @@ export default class GameSim {
 					(ballInPlay.finalY - fielderPosition.y) ** 2,
 			);
 
+			// Adjust difficulty based on depth
+			let depthAdjustment = 0;
+			if (position.match(/lf|cf|rf/)) {
+				// Outfielders have more difficulty on shallow balls
+				depthAdjustment =
+					distanceFromHome < this.OUTFIELD_DEPTH * 0.8 ? 0.2 : 0;
+			} else if (position.match(/[fst]b|ss/)) {
+				// Infielders have more difficulty on deep balls
+				depthAdjustment = distanceFromHome > this.INFIELD_DEPTH * 1.5 ? 0.3 : 0;
+			}
+
 			// Calculate fielding difficulty using existing method
-			const difficulty = this._calculateFieldingDifficulty({
+			const baseDifficulty = this._calculateFieldingDifficulty({
 				ballInPlay,
 				fielder,
 				fielderPosition,
@@ -946,6 +967,8 @@ export default class GameSim {
 				parkState: this.parkState,
 				position,
 			});
+
+			const difficulty = Math.min(baseDifficulty + depthAdjustment, 1);
 
 			// Calculate reach time based on fielder speed and distance
 			const reachTime = distance / this._getFielderSpeed({ fielder });
@@ -964,7 +987,6 @@ export default class GameSim {
 		}
 
 		// Sort opportunities by a combination of reach time and difficulty
-		// This gives slight preference to more skilled fielders who might be slightly further away
 		return opportunities.sort((a, b) => {
 			const scoreA = a.reachTime * (1 + a.difficulty);
 			const scoreB = b.reachTime * (1 + b.difficulty);
@@ -978,33 +1000,37 @@ export default class GameSim {
 			_input,
 		);
 
-		// Convert ratings to 0-1 scale
-		const batterContact = playerHitter.player.batting.contact / RATING_MAX;
+		// Convert ratings to 0-1 scale but with adjusted floors to prevent extremely weak contact
+		const batterContact =
+			0.3 + (playerHitter.player.batting.contact / RATING_MAX) * 0.7; // Minimum 0.3
 		const batterWhiffResistance =
-			playerHitter.player.batting.avoidKs / RATING_MAX;
+			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.6; // Minimum 0.4
 		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
 
-		// Get base whiff rate for this pitch type
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName });
+		// Reduce pitcher influence on contact quality
+		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.5; // Halve the whiff factor's impact
 
-		// Location factor - pitches further from center of zone are harder to hit
+		// Make location less punishing
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
 				(pitchLocation.plateZ -
 					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
 					2,
 		);
-		const locationFactor = 1 - distanceFromCenter * 0.15;
+		const locationFactor = 1 - distanceFromCenter * 0.1; // Reduced from 0.15 to 0.1
 
-		// Calculate contact probability
-		const contactProbability =
+		// Calculate base contact quality with higher floor
+		const baseContactQuality =
 			batterContact *
 			batterWhiffResistance *
 			(1 - pitcherStuff * pitchWhiffFactor) *
 			locationFactor;
 
-		// Add some randomness
-		return contactProbability * (0.85 + Math.random() * 0.3);
+		// Scale the final contact quality to ensure more realistic outcomes
+		const scaledContactQuality = 0.6 + baseContactQuality * 0.4; // Minimum 0.6 contact quality
+
+		// Add less random variation
+		return scaledContactQuality * (0.95 + Math.random() * 0.1); // Smaller random range
 	}
 
 	private _determinePlayType({
@@ -1321,13 +1347,13 @@ export default class GameSim {
 				return { x: -37, y: 137 }; // Shortstop
 			}
 			case "lf": {
-				return { x: -100, y: 280 }; // Left field
+				return { x: -100, y: this.OUTFIELD_DEPTH }; // Left field
 			}
 			case "cf": {
-				return { x: 0, y: 300 }; // Center field
+				return { x: 0, y: this.OUTFIELD_DEPTH + 50 }; // Center field
 			}
 			case "rf": {
-				return { x: 100, y: 280 }; // Right field
+				return { x: 100, y: this.OUTFIELD_DEPTH }; // Right field
 			}
 			default: {
 				const exhaustiveCheck: never = position;
@@ -1514,6 +1540,12 @@ export default class GameSim {
 		return teamDefense;
 	}
 
+	private _getTeamDefenseState() {
+		const teamDefenseState =
+			this.teamStates[this.teams[this.numTeamDefense].idTeam];
+		return teamDefenseState;
+	}
+
 	private _getTeamId(_input: TInputGetTeamId) {
 		const input = parse(VInputGetTeamId, _input);
 
@@ -1523,6 +1555,12 @@ export default class GameSim {
 	private _getTeamOffense() {
 		const teamOffense = this.teamStates[this.teams[this.numTeamOffense].idTeam];
 		return teamOffense;
+	}
+
+	private _getTeamOffenseState() {
+		const teamOffenseState =
+			this.teamStates[this.teams[this.numTeamOffense].idTeam];
+		return teamOffenseState;
 	}
 
 	private _handleDouble() {
@@ -2013,25 +2051,43 @@ export default class GameSim {
 		x: number;
 		y: number;
 	}) {
-		// Calculate slopes of foul lines
-		const leftFoulLineSlope =
-			parkState.park.foulLineLeftFieldY / parkState.park.foulLineLeftFieldX;
-		const rightFoulLineSlope =
-			parkState.park.foulLineRightFieldY / parkState.park.foulLineRightFieldX;
-
-		// For left field (negative X), ball is fair if Y is greater than the left foul line Y at that X
-		// For right field (positive X), ball is fair if Y is greater than the right foul line Y at that X
-		if (x < 0) {
-			const foulLineY = leftFoulLineSlope * x;
-			return y < foulLineY;
-		}
-		if (x > 0) {
-			const foulLineY = rightFoulLineSlope * x;
-			return y < foulLineY;
+		// If the ball is behind home plate
+		if (y < 0) {
+			return true;
 		}
 
-		// If ballX is exactly 0, it's fair
-		return false;
+		// Get absolute values for comparison
+		const absX = Math.abs(x);
+
+		// Calculate total distance from home plate
+		const distance = Math.sqrt(x * x + y * y);
+
+		// Very short hits are foul
+		if (distance < 45) {
+			return true;
+		}
+
+		// Calculate angle from home plate (in degrees)
+		const angle = Math.abs(Math.atan2(absX, y) * (180 / Math.PI));
+
+		// Additional check for balls down the line
+		// If the ball is hit hard (high x value) but not deep enough,
+		// it's more likely to hook foul
+		if (absX > 80 && y < absX * 1.2) {
+			return true;
+		}
+
+		// Different thresholds based on distance from home plate
+		if (distance < 90) {
+			// Short hits (bunts, weak contact)
+			return angle > 25;
+		}
+		if (distance < 150) {
+			// Medium distance hits
+			return angle > 35;
+		}
+		// Long hits - use standard foul lines
+		return angle > 42; // Slightly less than 45 to account for some curve
 	}
 
 	private _notifyObservers = (input: TGameSimEvent) => {
@@ -2066,6 +2122,16 @@ export default class GameSim {
 		this._notifyObservers({
 			gameSimEvent: "gameEnd",
 		});
+
+		this.eventStore.close();
+		this.log.close();
+
+		if (this.testData) {
+			fs.writeFileSync(
+				`test/data/testData-${this.teams[0].idTeam}-${this.teams[1].idTeam}.json`,
+				JSON.stringify(this.testData, null, 2),
+			);
+		}
 	}
 
 	private _simulateAtBat() {
@@ -2084,6 +2150,10 @@ export default class GameSim {
 
 		this._notifyObservers({
 			gameSimEvent: "atBatEnd",
+			data: {
+				teamDefense: this._getTeamDefenseState(),
+				teamOffense: this._getTeamOffenseState(),
+			},
 		});
 	}
 
@@ -2093,11 +2163,26 @@ export default class GameSim {
 		const launchAngle = this._calculateLaunchAngle(input);
 		const spinRate = this._calculateSpinRate(input);
 
+		// Add a horizontal spray angle - this creates variation in the x-direction
+		const sprayAngle = ((Math.random() - 0.5) * Math.PI) / 2; // -45 to +45 degrees
+
+		// Calculate initial velocities
+		const verticalVelocity =
+			exitVelocity * Math.sin((launchAngle * Math.PI) / 180);
+		const horizontalVelocity =
+			exitVelocity * Math.cos((launchAngle * Math.PI) / 180);
+
+		// Initial velocities in x and y directions
+		const initialVx = horizontalVelocity * Math.sin(sprayAngle);
+		const initialVy = horizontalVelocity * Math.cos(sprayAngle);
+
 		const trajectory = this._calculateTrajectory({
-			exitVelocity,
-			launchAngle,
+			initialVx,
+			initialVy,
 			spinRate,
+			verticalVelocity,
 		});
+
 		const finalPosition = trajectory[trajectory.length - 1];
 
 		const isFoul = this._isFoulBall({
@@ -2105,17 +2190,15 @@ export default class GameSim {
 			x: finalPosition.x,
 			y: finalPosition.y,
 		});
-		const distance = Math.sqrt(
-			finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
-		);
-		const hangTime = trajectory.length * 0.01; // Based on our timeStep
 
 		return {
-			distance,
+			distance: Math.sqrt(
+				finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
+			),
 			exitVelocity,
 			finalX: finalPosition.x,
 			finalY: finalPosition.y,
-			hangTime,
+			hangTime: trajectory.length * 0.01,
 			isFoul,
 			launchAngle,
 			trajectory,
@@ -2208,6 +2291,15 @@ export default class GameSim {
 			VInputSimulateInPlayOutcome,
 			_input,
 		);
+
+		if (!this.testData) {
+			this.testData = [];
+		}
+
+		this.testData.push({
+			ballInPlay,
+			fieldingResult,
+		});
 
 		// First check if it's a potential home run (based on distance and wall height)
 		const wallInteraction = this._checkWallInteraction({
@@ -2435,7 +2527,11 @@ const VFieldingOpportunity = object({
 });
 type TFieldingOpportunity = InferInput<typeof VFieldingOpportunity>;
 
-const VPicklistFieldingPlayType = picklist(["flyOut", "groundOut", "lineOut"]);
+const VPicklistFieldingPlayType = picklist([
+	"flyBall",
+	"groundBall",
+	"lineDrive",
+]);
 
 const VBallInPlay = object({
 	launchAngle: number(),
@@ -2742,3 +2838,11 @@ const VInputHandleNonWallBallOutcome = object({
 type TInputHandleNonWallBallOutcome = InferInput<
 	typeof VInputHandleNonWallBallOutcome
 >;
+
+const VInputCalculateTrajectory = object({
+	initialVx: number(),
+	initialVy: number(),
+	verticalVelocity: number(),
+	spinRate: number(),
+});
+type TInputCalculateTrajectory = InferInput<typeof VInputCalculateTrajectory>;
