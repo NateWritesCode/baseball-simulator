@@ -2042,52 +2042,56 @@ export default class GameSim {
 		}
 	}
 
-	private _isFoulBall({
-		parkState,
-		x,
-		y,
-	}: {
-		parkState: GameSimParkState;
-		x: number;
-		y: number;
-	}) {
+	private _isFoulBall(_input: TInputIsFoulBall) {
+		const { parkState, x, y } = parse(VInputIsFoulBall, _input);
+		const {
+			foulLineLeftFieldX,
+			foulLineRightFieldX,
+			foulLineLeftFieldY,
+			foulLineRightFieldY,
+			homePlateX,
+			homePlateY,
+		} = parkState.park;
+
+		// Normalize coordinates relative to home plate
+		const relativeX = x - homePlateX;
+		const relativeY = y - homePlateY;
+
 		// If the ball is behind home plate
-		if (y < 0) {
+		if (relativeY < 0) {
 			return true;
 		}
 
-		// Get absolute values for comparison
-		const absX = Math.abs(x);
-
-		// Calculate total distance from home plate
-		const distance = Math.sqrt(x * x + y * y);
-
 		// Very short hits are foul
+		const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
 		if (distance < 45) {
 			return true;
 		}
 
-		// Calculate angle from home plate (in degrees)
-		const angle = Math.abs(Math.atan2(absX, y) * (180 / Math.PI));
+		// Calculate vectors for both foul lines from home plate
+		const leftLineX = foulLineLeftFieldX - homePlateX;
+		const leftLineY = foulLineLeftFieldY - homePlateY;
+		const rightLineX = foulLineRightFieldX - homePlateX;
+		const rightLineY = foulLineRightFieldY - homePlateY;
 
-		// Additional check for balls down the line
-		// If the ball is hit hard (high x value) but not deep enough,
-		// it's more likely to hook foul
-		if (absX > 80 && y < absX * 1.2) {
+		// Calculate cross products to determine which side of each line the ball is on
+		const leftCross = relativeX * leftLineY - relativeY * leftLineX;
+		const rightCross = relativeX * rightLineY - relativeY * rightLineX;
+
+		// Ball is fair if it's to the right of the left foul line (positive cross product)
+		// and to the left of the right foul line (negative cross product)
+		const isFair = leftCross >= 0 && rightCross <= 0;
+
+		// Additional check for balls hit hard down the line
+		if (
+			isFair &&
+			Math.abs(relativeX) > 80 &&
+			relativeY < Math.abs(relativeX) * 1.2
+		) {
 			return true;
 		}
 
-		// Different thresholds based on distance from home plate
-		if (distance < 90) {
-			// Short hits (bunts, weak contact)
-			return angle > 25;
-		}
-		if (distance < 150) {
-			// Medium distance hits
-			return angle > 35;
-		}
-		// Long hits - use standard foul lines
-		return angle > 42; // Slightly less than 45 to account for some curve
+		return !isFair;
 	}
 
 	private _notifyObservers = (input: TGameSimEvent) => {
@@ -2846,3 +2850,10 @@ const VInputCalculateTrajectory = object({
 	spinRate: number(),
 });
 type TInputCalculateTrajectory = InferInput<typeof VInputCalculateTrajectory>;
+
+const VInputIsFoulBall = object({
+	parkState: instance(GameSimParkState),
+	x: number(),
+	y: number(),
+});
+type TInputIsFoulBall = InferInput<typeof VInputIsFoulBall>;
