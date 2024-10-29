@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs, { statSync } from "node:fs";
 import { type InferInput, number, object, parse, string } from "valibot";
 import { handleValibotParse } from "../functions";
 import {
@@ -37,9 +37,20 @@ export default class GameSimEventStore implements OGameSimObserver {
 		const input = parse(VConstructorGameSimEventStore, _input);
 		// this.filePathSave = input.filePathSave;
 		this.idGame = input.idGame;
+	}
+
+	close = () => {
+		console.log("filePathSave", this.filePathSave);
+
+		const filePath = `${this.filePathSave}/2024.psv`;
+
+		if (!fs.existsSync(this.filePathSave)) {
+			fs.mkdirSync(this.filePathSave);
+		}
 
 		const keys = [
 			...new Set([
+				"idGame",
 				...Object.keys(VGameSimEventAtBatEnd.entries.data.entries),
 				// ...Object.keys(VGameSimEventAtBatStart.entries.data.entries),
 				...Object.keys(VGameSimEventDouble.entries.data.entries),
@@ -57,18 +68,27 @@ export default class GameSimEventStore implements OGameSimObserver {
 				...Object.keys(VGameSimWalk.entries.data.entries),
 			]),
 		];
-	}
 
-	close = () => {
-		console.log("filePathSave", this.filePathSave);
+		const isEmpty = statSync(filePath).size === 0;
 
-		const filePath = `${this.filePathSave}/${this.idGame}.psv`;
-
-		if (!fs.existsSync(this.filePathSave)) {
-			fs.mkdirSync(this.filePathSave);
+		if (isEmpty) {
+			fs.appendFileSync(filePath, `${keys.join("|")}\n`);
 		}
 
-		const file = Bun.file(`${this.filePathSave}/${this.idGame}.psv`);
+		const file = Bun.file(filePath);
+		const writer = file.write();
+
+		this.gameSimEvents.forEach((gameSimEvent) => {
+			const values = keys.map((key) => {
+				if (key === "idGame") {
+					return this.idGame;
+				}
+
+				return gameSimEvent.data[key];
+			});
+
+			writer.write(`${values.join("|")}\n`);
+		});
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {
