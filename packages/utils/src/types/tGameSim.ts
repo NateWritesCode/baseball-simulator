@@ -13,7 +13,7 @@ import GameSimPlayerState from "../entities/eGameSimPlayerState";
 import GameSimTeamState from "../entities/eGameSimTeamState";
 import { VPicklistPitchNames, VPicklistPitchOutcomes } from "./tPicklist";
 
-const VGameSimEventAtBatEnd = object({
+export const VGameSimEventAtBatEnd = object({
 	data: object({
 		teamDefense: instance(GameSimTeamState),
 		teamOffense: instance(GameSimTeamState),
@@ -21,12 +21,18 @@ const VGameSimEventAtBatEnd = object({
 	gameSimEvent: literal("atBatEnd"),
 });
 
-const VGameSimEventAtBatStart = object({
+export type TGameSimEventAtBatEnd = InferOutput<typeof VGameSimEventAtBatEnd>;
+
+export const VGameSimEventAtBatStart = object({
 	data: nullish(null_()),
 	gameSimEvent: literal("atBatStart"),
 });
 
-const VGameSimEventDouble = object({
+export type TGameSimEventAtBatStart = InferOutput<
+	typeof VGameSimEventAtBatStart
+>;
+
+export const VGameSimEventDouble = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -39,17 +45,23 @@ const VGameSimEventDouble = object({
 	gameSimEvent: literal("double"),
 });
 
-const VGameSimEventGameStart = object({
+export type TGameSimEventDouble = InferOutput<typeof VGameSimEventDouble>;
+
+export const VGameSimEventGameStart = object({
 	data: nullish(null_()),
 	gameSimEvent: literal("gameStart"),
 });
 
-const VGameSimEventGameEnd = object({
+export type TGameSimEventGameStart = InferOutput<typeof VGameSimEventGameStart>;
+
+export const VGameSimEventGameEnd = object({
 	data: nullish(null_()),
 	gameSimEvent: literal("gameEnd"),
 });
 
-const VGameSimEventHalfInningEnd = object({
+export type TGameSimEventGameEnd = InferOutput<typeof VGameSimEventGameEnd>;
+
+export const VGameSimEventHalfInningEnd = object({
 	data: object({
 		playerRunner1: nullable(instance(GameSimPlayerState)),
 		playerRunner2: nullable(instance(GameSimPlayerState)),
@@ -58,7 +70,11 @@ const VGameSimEventHalfInningEnd = object({
 	gameSimEvent: literal("halfInningEnd"),
 });
 
-const VGameSimEventHalfInningStart = object({
+export type TGameSimEventHalfInningEnd = InferOutput<
+	typeof VGameSimEventHalfInningEnd
+>;
+
+export const VGameSimEventHalfInningStart = object({
 	data: object({
 		teamDefense: instance(GameSimTeamState),
 		teamOffense: instance(GameSimTeamState),
@@ -66,7 +82,11 @@ const VGameSimEventHalfInningStart = object({
 	gameSimEvent: literal("halfInningStart"),
 });
 
-const VGameSimEventHomeRun = object({
+export type TGameSimEventHalfInningStart = InferOutput<
+	typeof VGameSimEventHalfInningStart
+>;
+
+export const VGameSimEventHomeRun = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -79,7 +99,9 @@ const VGameSimEventHomeRun = object({
 	gameSimEvent: literal("homeRun"),
 });
 
-const VGameSimEventOut = object({
+export type TGameSimEventHomeRun = InferOutput<typeof VGameSimEventHomeRun>;
+
+export const VGameSimEventOut = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -91,6 +113,8 @@ const VGameSimEventOut = object({
 	}),
 	gameSimEvent: literal("out"),
 });
+
+export type TGameSimEventOut = InferOutput<typeof VGameSimEventOut>;
 
 export const VGameSimEventPitchLocation = object({
 	ax: number(),
@@ -111,7 +135,11 @@ export const VGameSimEventPitchLocation = object({
 	vz0: number(),
 });
 
-const VGameSimEventPitch = object({
+export type TGameSimEventPitchLocation = InferOutput<
+	typeof VGameSimEventPitchLocation
+>;
+
+export const VGameSimEventPitch = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		pitchLocation: VGameSimEventPitchLocation,
@@ -124,7 +152,9 @@ const VGameSimEventPitch = object({
 	gameSimEvent: literal("pitch"),
 });
 
-const VGameSimEventRun = object({
+export type TGameSimEventPitch = InferOutput<typeof VGameSimEventPitch>;
+
+export const VGameSimEventRun = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -135,7 +165,9 @@ const VGameSimEventRun = object({
 	gameSimEvent: literal("run"),
 });
 
-const VGameSimEventSingle = object({
+export type TGameSimEventRun = InferOutput<typeof VGameSimEventRun>;
+
+export const VGameSimEventSingle = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -148,7 +180,9 @@ const VGameSimEventSingle = object({
 	gameSimEvent: literal("single"),
 });
 
-const VGameSimStrikeout = object({
+export type TGameSimEventSingle = InferOutput<typeof VGameSimEventSingle>;
+
+export const VGameSimStrikeout = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -158,7 +192,9 @@ const VGameSimStrikeout = object({
 	gameSimEvent: literal("strikeout"),
 });
 
-const VGameSimEventTriple = object({
+export type TGameSimStrikeout = InferOutput<typeof VGameSimStrikeout>;
+
+export const VGameSimEventTriple = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -171,7 +207,9 @@ const VGameSimEventTriple = object({
 	gameSimEvent: literal("triple"),
 });
 
-const VGameSimWalk = object({
+export type TGameSimEventTriple = InferOutput<typeof VGameSimEventTriple>;
+
+export const VGameSimWalk = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
 		playerPitcher: instance(GameSimPlayerState),
@@ -180,6 +218,8 @@ const VGameSimWalk = object({
 	}),
 	gameSimEvent: literal("walk"),
 });
+
+export type TGameSimWalk = InferOutput<typeof VGameSimWalk>;
 
 export const VGameSimEvent = variant("gameSimEvent", [
 	VGameSimEventAtBatEnd,
