@@ -1,4 +1,6 @@
 import {
+	PITCH_NAMES,
+	PITCH_OUTCOMES,
 	RATING_MAX,
 	RATING_MIN,
 	ROOF_TYPES,
@@ -89,6 +91,23 @@ try {
             name text not null,
             foreign key (idState) references states(idState)
         );
+
+		create table gameSimEvents (
+				gameSimEvent text not null,
+				idGame integer not null,
+				idGameSimEvent integer primary key autoincrement,
+				idPlayerHitter integer,
+				idPlayerPitcher integer,
+				idPlayerRunner integer,
+				idPlayerRunner1 integer,
+				idPlayerRunner2 integer,
+				idPlayerRunner3 integer,
+				idTeamDefense integer,
+				idTeamOffense integer,
+				pitchLocation text,
+				pitchName text check(pitchName in (${PITCH_NAMES.map((pitchName) => `'${pitchName}'`).join(", ")})),
+				pitchOutcome text check(pitchOutcome in (${PITCH_OUTCOMES.map((pitchOutcome) => `'${pitchOutcome}'`).join(", ")}))
+		);
 
         create table persons (
             dateOfBirth date not null,

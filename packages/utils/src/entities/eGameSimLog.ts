@@ -39,11 +39,7 @@ class GameSimLog implements OGameSimObserver {
 	};
 
 	logInfo = (info: string[]) => {
-		const shouldLog = false;
-
-		if (shouldLog) {
-			Logger.info.apply(null, info);
-		}
+		Logger.info.apply(null, info);
 		this.gameLog.push(info);
 	};
 
