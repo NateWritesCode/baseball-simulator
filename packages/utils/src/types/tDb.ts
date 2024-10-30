@@ -1,5 +1,9 @@
 import { nullable, number, object, pipe, regex, string } from "valibot";
-import { VPicklistRoofType, VPicklistSurfaceType } from "./tPicklist";
+import {
+	VPicklistPitchOutcomes,
+	VPicklistRoofType,
+	VPicklistSurfaceType,
+} from "./tPicklist";
 
 export const VDbCities = object({
 	idCity: number(),
@@ -38,6 +42,20 @@ export const VDbGames = object({
 	idGame: number(),
 	idTeamAway: number(),
 	idTeamHome: number(),
+});
+
+export const VDbGameSimEvents = object({
+	idGame: number(),
+	idGameSimEvent: number(),
+	idPlayerHitter: nullable(number()),
+	idPlayerPitcher: nullable(number()),
+	idPlayerRunner1: nullable(number()),
+	idPlayerRunner2: nullable(number()),
+	idPlayerRunner3: nullable(number()),
+	idTeamDefense: number(),
+	idTeamOffense: number(),
+	pitchName: nullable(string()),
+	pitchOutcome: nullable(VPicklistPitchOutcomes),
 });
 
 export const VDbPlayers = object({
