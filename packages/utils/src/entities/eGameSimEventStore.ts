@@ -1,6 +1,5 @@
 import { Database } from "bun:sqlite";
-import fs from "node:fs";
-import { type InferInput, number, object, parse, string } from "valibot";
+import { type InferInput, number, object, omit, parse, string } from "valibot";
 import { handleValibotParse } from "../functions";
 import { VDbGameSimEvents } from "../types";
 import {
@@ -9,7 +8,8 @@ import {
 	VGameSimEvent,
 } from "../types/tGameSim";
 
-const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
+const DB_PATH =
+	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
 
 const VConstructorGameSimEventStore = object({
 	filePathSave: string(),
@@ -30,17 +30,13 @@ export default class GameSimEventStore implements OGameSimObserver {
 	}
 
 	close = () => {
-		if (fs.existsSync(DB_PATH)) {
-			fs.unlinkSync(DB_PATH);
-		} else {
-			fs.writeFileSync(DB_PATH, "");
-		}
-
 		const db = new Database(DB_PATH, {
 			strict: true,
 		});
 
-		const keys = Object.keys(VDbGameSimEvents.entries);
+		const keys = Object.keys(
+			omit(VDbGameSimEvents, ["idGameSimEvent"]).entries,
+		);
 
 		const gameSimEvents: Record<string, string | number | null>[] = [];
 
@@ -177,9 +173,9 @@ export default class GameSimEventStore implements OGameSimObserver {
 			gameSimEvents.push(values);
 		}
 
-		const insertGameSimEvent = db.prepare(
-			`INSERT INTO gameSimEvent (${keys.join(", ")}) VALUES (${keys.map(() => "?").join(", ")})`,
-		);
+		const insertGameSimEvent = db.prepare(/*sql*/ `
+				insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
+			`);
 
 		const insertGameSimEvents = db.transaction(() => {
 			for (const gameSimEvent of gameSimEvents) {

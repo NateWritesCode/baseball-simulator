@@ -584,15 +584,15 @@ class GameSimPlayerState implements OGameSimObserver {
 					this.statistics.pitching.pitchesThrown++;
 
 					switch (pitchOutcome) {
-						case "BALL": {
+						case "ball": {
 							this.statistics.pitching.pitchesThrownBalls++;
 							break;
 						}
-						case "IN_PLAY": {
+						case "inPlay": {
 							this.statistics.pitching.pitchesThrownInPlay++;
 							break;
 						}
-						case "STRIKE": {
+						case "strike": {
 							this.statistics.pitching.pitchesThrownStrikes++;
 							break;
 						}

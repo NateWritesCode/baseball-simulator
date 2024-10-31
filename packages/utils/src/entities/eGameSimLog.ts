@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { Database } from "bun:sqlite";
 import { type InferInput, number, object, parse, string } from "valibot";
 import { handleValibotParse } from "../functions";
 import {
@@ -14,9 +14,10 @@ const VConstructorGameSimLog = object({
 });
 type TConstructorGameSimLog = InferInput<typeof VConstructorGameSimLog>;
 
+const DB_PATH =
+	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
+
 class GameSimLog implements OGameSimObserver {
-	filePathSave =
-		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/log";
 	gameLog: string[][] = [];
 	idGame: number;
 
@@ -27,10 +28,18 @@ class GameSimLog implements OGameSimObserver {
 	}
 
 	close = () => {
-		fs.writeFileSync(
-			`${this.filePathSave}/${this.idGame}.json`,
-			JSON.stringify(this.gameLog),
-		);
+		const db = new Database(DB_PATH, {
+			strict: true,
+		});
+
+		const insertGameSimLog = db.prepare(/*sql*/ `
+			insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
+		`);
+
+		insertGameSimLog.run({
+			gameSimLog: JSON.stringify(this.gameLog),
+			idGame: this.idGame,
+		});
 	};
 
 	logDanger = (info: string[]) => {

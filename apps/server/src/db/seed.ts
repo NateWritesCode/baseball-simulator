@@ -109,6 +109,11 @@ try {
 				pitchOutcome text check(pitchOutcome in (${PITCH_OUTCOMES.map((pitchOutcome) => `'${pitchOutcome}'`).join(", ")}))
 		);
 
+		create table gameSimLogs (
+			idGame integer primary key,
+			gameSimLog text not null
+		);
+
         create table persons (
             dateOfBirth date not null,
             firstName text not null,
@@ -355,6 +360,7 @@ try {
 		create table parks (
 			backstopDistance integer not null,
 			capacityMax integer not null,
+			centerFieldDirection integer check(centerFieldDirection between 0 and 359) not null,
 			idCity integer not null,
 			idPark integer primary key autoincrement,
 			idTeam integer,
@@ -1391,6 +1397,7 @@ try {
 			park: {
 				backstopDistance: 60,
 				capacityMax: 45000,
+				centerFieldDirection: 0,
 				idCity,
 				idTeam,
 				name: `${nickname.charAt(0).toUpperCase() + nickname.slice(1)} Park`,

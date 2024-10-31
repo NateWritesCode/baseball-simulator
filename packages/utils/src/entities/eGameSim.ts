@@ -1115,14 +1115,6 @@ export default class GameSim {
 	}
 
 	private _endAtBat() {
-		const teamStateOffense =
-			this.teamStates[
-				this._getTeamId({
-					teamIndex: this.numTeamOffense,
-				})
-			];
-		teamStateOffense.advanceLineupIndex();
-
 		this.numBalls = 0;
 		this.numStrikes = 0;
 	}
@@ -2390,7 +2382,7 @@ export default class GameSim {
 		});
 
 		switch (pitchOutcome) {
-			case "BALL": {
+			case "ball": {
 				this.numBalls++;
 
 				if (this.numBalls === 4) {
@@ -2400,7 +2392,7 @@ export default class GameSim {
 
 				break;
 			}
-			case "IN_PLAY": {
+			case "inPlay": {
 				if (contactQuality === null) {
 					throw new Error("Expected contactQuality to be a number");
 				}
@@ -2446,7 +2438,7 @@ export default class GameSim {
 
 				break;
 			}
-			case "STRIKE": {
+			case "strike": {
 				this.numStrikes++;
 
 				if (this.numStrikes === 3) {
@@ -2470,7 +2462,7 @@ export default class GameSim {
 			pitchOutcome: TPicklistPitchOutcomes;
 		} = {
 			contactQuality: null,
-			pitchOutcome: "BALL",
+			pitchOutcome: "ball",
 		};
 		const input = parse(VInputSimulatePitchOutcome, _input);
 		const isInStrikeZone = this._determineStrikeZone({
@@ -2485,7 +2477,7 @@ export default class GameSim {
 
 		if (!isBatterSwinging) {
 			if (isInStrikeZone) {
-				pitchOutcome.pitchOutcome = "STRIKE";
+				pitchOutcome.pitchOutcome = "strike";
 			}
 
 			return pitchOutcome;
@@ -2499,11 +2491,11 @@ export default class GameSim {
 		});
 
 		if (contactQuality < 0.25) {
-			pitchOutcome.pitchOutcome = "STRIKE";
+			pitchOutcome.pitchOutcome = "strike";
 		}
 
 		pitchOutcome.contactQuality = contactQuality;
-		pitchOutcome.pitchOutcome = "IN_PLAY";
+		pitchOutcome.pitchOutcome = "inPlay";
 
 		return pitchOutcome;
 	}
@@ -2660,32 +2652,6 @@ const VInputHandleFoulBall = object({
 	teamDefenseState: instance(GameSimTeamState),
 });
 type TInputHandleFoulBall = InferInput<typeof VInputHandleFoulBall>;
-
-const VInputCheckCornerInfielderFoulOpportunity = object({
-	ballInPlay: VBallInPlay,
-	teamDefenseState: instance(GameSimTeamState),
-});
-
-type TInputCheckCornerInfielderFoulOpportunity = InferInput<
-	typeof VInputCheckCornerInfielderFoulOpportunity
->;
-
-const VInputCalculateGroundFoulDifficulty = object({
-	ballInPlay: VBallInPlay,
-	fieldingRange: number(),
-	reactionTime: number(),
-});
-type TInputCalculateGroundFoulDifficulty = InferInput<
-	typeof VInputCalculateGroundFoulDifficulty
->;
-
-const VInputGetFoulBallFielderOpportunity = object({
-	ballInPlay: VBallInPlay,
-	teamDefenseState: instance(GameSimTeamState),
-});
-type TInputGetFoulBallFielderOpportunity = InferInput<
-	typeof VInputGetFoulBallFielderOpportunity
->;
 
 const VInputGetPotentialFoulBallFielders = object({
 	angle: number(),

@@ -1,6 +1,11 @@
 import { type InferInput, object, string } from "valibot";
 import { VFormSchemaExplore } from "./tFormSchema";
 
+export const VApiParamsGetIdGame = object({
+	idGame: string(),
+});
+export type TApiParamsGetGameId = InferInput<typeof VApiParamsGetIdGame>;
+
 export const VApiParamsGetIdPerson = object({
 	idPerson: string(),
 });

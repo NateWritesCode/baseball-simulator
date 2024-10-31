@@ -34,6 +34,10 @@ type TBattingStatistics = {
 	triples: number;
 };
 
+type TFieldingStatistics = {
+	e: number;
+};
+
 type TPitchingStatistics = {
 	battersFaced: number;
 	bb: number;
@@ -55,6 +59,7 @@ type TPitchingStatistics = {
 
 type TStatistics = {
 	batting: TBattingStatistics;
+	fielding: TFieldingStatistics;
 	pitching: TPitchingStatistics;
 };
 
@@ -111,16 +116,18 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 			{},
 		);
 
+		const { p, c, fb, sb, tb, ss, lf, cf, rf } = this._getStartingPlayers();
+
 		this.positions = {
-			p: this._setPlayerPosition("p"),
-			c: this._setPlayerPosition("c"),
-			fb: this._setPlayerPosition("fb"),
-			sb: this._setPlayerPosition("sb"),
-			tb: this._setPlayerPosition("tb"),
-			ss: this._setPlayerPosition("ss"),
-			lf: this._setPlayerPosition("lf"),
-			cf: this._setPlayerPosition("cf"),
-			rf: this._setPlayerPosition("rf"),
+			p,
+			c,
+			fb,
+			sb,
+			tb,
+			ss,
+			lf,
+			cf,
+			rf,
 		};
 
 		this.numLineupIndex = 0;
@@ -140,6 +147,9 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 				runs: 0,
 				singles: 0,
 				triples: 0,
+			},
+			fielding: {
+				e: 0,
 			},
 			pitching: {
 				battersFaced: 0,
@@ -163,7 +173,11 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 	}
 
 	public advanceLineupIndex() {
-		this.numLineupIndex = (this.numLineupIndex + 1) % this.lineup.length;
+		this.numLineupIndex++;
+
+		if (this.numLineupIndex >= this.lineup.length) {
+			this.numLineupIndex = 0;
+		}
 	}
 
 	public getCurrentHitterId() {
@@ -197,7 +211,11 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 		switch (gameSimEvent) {
 			case "atBatEnd": {
 				const { data } = input;
-				const { teamDefense } = data;
+				const { teamDefense, teamOffense } = data;
+
+				if (teamOffense.team.idTeam === this.team.idTeam) {
+					this.advanceLineupIndex();
+				}
 
 				if (teamDefense.team.idTeam === this.team.idTeam) {
 					const shouldSubstitutePitcher = this._shouldSubstitutePitcher({
@@ -294,10 +312,145 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 
 	private _getArrayOfAllPlayerStatesBench() {
 		const playersPositionIds = Object.values(this.positions || {});
+
 		return this._getArrayOfAllPlayerStates().filter(
 			(player) => !playersPositionIds.includes(player.player.idPlayer),
 		);
 	}
+
+	private _getStartingPlayers() {
+		const idsStartingPlayers = [];
+
+		const p = this._getStartingPitcher();
+
+		idsStartingPlayers.push(p);
+
+		const c = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "c",
+		});
+
+		idsStartingPlayers.push(c);
+
+		const fb = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "fb",
+		});
+
+		idsStartingPlayers.push(fb);
+
+		const sb = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "sb",
+		});
+
+		idsStartingPlayers.push(sb);
+
+		const tb = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "tb",
+		});
+
+		idsStartingPlayers.push(tb);
+
+		const ss = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "ss",
+		});
+
+		idsStartingPlayers.push(ss);
+
+		const lf = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "lf",
+		});
+
+		idsStartingPlayers.push(lf);
+
+		const cf = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "cf",
+		});
+
+		idsStartingPlayers.push(cf);
+
+		const rf = this._getStartingPositionPlayer({
+			idsStartingPlayers,
+			position: "rf",
+		});
+
+		idsStartingPlayers.push(rf);
+
+		return {
+			c,
+			cf,
+			fb,
+			lf,
+			p,
+			rf,
+			sb,
+			ss,
+			tb,
+		};
+	}
+
+	private _getStartingPitcher = () => {
+		const pitchers = this._getArrayOfAllPlayerStatesBench().toSorted((a, b) => {
+			const aRating =
+				a.player.pitching.stuff +
+				a.player.pitching.movement +
+				a.player.pitching.control +
+				a.player.pitching.stamina;
+			const bRating =
+				b.player.pitching.stuff +
+				b.player.pitching.movement +
+				b.player.pitching.control +
+				b.player.pitching.stamina;
+			return bRating - aRating;
+		});
+
+		if (!pitchers.length) {
+			throw new Error("No pitchers found");
+		}
+
+		return pitchers[0].player.idPlayer;
+	};
+
+	private _getStartingPositionPlayer = ({
+		idsStartingPlayers,
+		position,
+	}: {
+		idsStartingPlayers: number[];
+		position: Exclude<(typeof POSITIONS)[number], "p">;
+	}) => {
+		const players = this._getArrayOfAllPlayerStates()
+			.filter((player) => !idsStartingPlayers.includes(player.player.idPlayer))
+			.toSorted((a, b) => {
+				const aRating =
+					a.player.fielding[position] +
+					a.player.batting.contact +
+					a.player.batting.power +
+					a.player.batting.eye +
+					a.player.batting.gap +
+					a.player.batting.avoidKs;
+
+				const bRating =
+					a.player.fielding[position] +
+					b.player.batting.contact +
+					b.player.batting.power +
+					b.player.batting.eye +
+					b.player.batting.gap +
+					b.player.batting.avoidKs;
+
+				return bRating - aRating;
+			});
+
+		if (!players.length) {
+			throw new Error(`No ${position} found`);
+		}
+
+		return players[0].player.idPlayer;
+	};
 
 	private _setLineup() {
 		return this._getArrayOfAllPlayerStatesActive()

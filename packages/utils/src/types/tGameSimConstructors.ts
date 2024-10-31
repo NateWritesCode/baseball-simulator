@@ -158,6 +158,23 @@ export type TConstructorGameSimUmpire = InferInput<
 	typeof VConstructorGameSimUmpire
 >;
 
+export const VConstructorGameSimWeather = object({
+	dateTime: string(),
+	latitude: number(),
+	longitude: number(),
+	// cloudCover: number(),
+	// humidity: number(),
+	// precipitation: number(),
+	// snow: number(),
+	// temperature: number(),
+	// windDescription: string(),
+	// windDirection: picklist(["N", "NE", "E", "SE", "S", "SW", "W", "NW"]),
+	// windSpeed: number(),
+});
+export type TConstructorGameSimWeather = InferInput<
+	typeof VConstructorGameSimWeather
+>;
+
 export const VConstructorGameSim = object({
 	idGame: number(),
 	park: VConstructorGameSimPark,
@@ -168,6 +185,7 @@ export const VConstructorGameSim = object({
 		VConstructorGameSimUmpire,
 		VConstructorGameSimUmpire,
 	]),
+	weather: VConstructorGameSimWeather,
 });
 
 export type TConstructorGameSim = InferInput<typeof VConstructorGameSim>;

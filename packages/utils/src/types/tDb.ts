@@ -45,6 +45,7 @@ export const VDbGames = object({
 });
 
 export const VDbGameSimEvents = object({
+	gameSimEvent: string(),
 	idGame: number(),
 	idGameSimEvent: number(),
 	idPlayerHitter: nullable(number()),
@@ -67,6 +68,7 @@ export const VDbPlayers = object({
 export const VDParks = object({
 	backstopDistance: number(),
 	capacityMax: number(),
+	centerFieldDirection: number(),
 	idCity: number(),
 	idPark: number(),
 	idTeam: nullable(number()),

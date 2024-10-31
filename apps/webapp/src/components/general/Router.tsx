@@ -1,5 +1,6 @@
 import Explore from "@webapp/components/pages/Explore";
 import Home from "@webapp/components/pages/Home";
+import IdGame from "@webapp/components/pages/IdGame";
 import IdPerson from "@webapp/components/pages/IdPerson";
 import IdPlayer from "@webapp/components/pages/IdPlayer";
 import Person from "@webapp/components/pages/Person";
@@ -14,6 +15,7 @@ const Router = () => {
 			<Switch>
 				<Route path="/" component={Home} />
 				<Route path={"/explore"} component={Explore} />
+				<Route path={"/game/:idGame"} component={IdGame} />
 				<Route path={"/player"} component={Player} />
 				<Route path={"/player/:idPlayer"} component={IdPlayer} />
 				<Route path={"/person"} component={Person} />
