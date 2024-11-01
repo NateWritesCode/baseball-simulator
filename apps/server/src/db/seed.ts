@@ -303,14 +303,24 @@ try {
         create table games (
 			boxScore text,
             idGame integer primary key autoincrement,
+			idGameGroup integer not null,
             idTeamAway integer not null,
             idTeamHome integer not null,
             dateTime date not null,
+			
+			foreign key (idGameGroup) references gameGroups(idGameGroup),
             foreign key (idTeamAway) references teams(idTeam),
             foreign key (idTeamHome) references teams(idTeam),
 
             unique (idTeamAway, idTeamHome, dateTime)
         );
+
+		create table gameGroups (
+			idGameGroup integer primary key autoincrement,
+			idLeague integer not null,
+			name text not null,
+			foreign key (idLeague) references leagues(idLeague)
+		);
 
 		create table owners (
 			idOwner integer primary key autoincrement,
@@ -1358,6 +1368,26 @@ try {
 		},
 	);
 
+	const seedGameGroups = [
+		{
+			idGameGroup: 1,
+			idLeague: 1,
+			name: "2024 Regular Season",
+		},
+	];
+
+	const insertGameGroup = db.query(/*sql*/ `
+		insert into gameGroups (idGameGroup, idLeague, name) values ($idGameGroup, $idLeague, $name);
+	`);
+
+	const insertGameGroups = db.transaction(() => {
+		for (const seedGameGroup of seedGameGroups) {
+			insertGameGroup.run(seedGameGroup);
+		}
+	});
+
+	insertGameGroups(seedGameGroups);
+
 	const seedTeams = Object.values(seedTeamsCitiesSubLeagues)
 		.flat()
 		.map((team, i) => {
@@ -1577,6 +1607,7 @@ try {
 	const createGames = ({
 		dateStart,
 		dateEnd,
+		idGameGroup,
 		isInterleagueAllowed,
 		numGamesPerTeam,
 		numTypicalSeriesLength,
@@ -1584,6 +1615,7 @@ try {
 	}: {
 		dateStart: string;
 		dateEnd: string;
+		idGameGroup: number;
 		isInterleagueAllowed: boolean;
 		numGamesPerTeam: number;
 		numTypicalSeriesLength: number;
@@ -1616,6 +1648,7 @@ try {
 		const numTotalGames = (teams.length * numGamesPerTeam) / 2;
 
 		const games: {
+			idGameGroup: number;
 			idTeamAway: number;
 			idTeamHome: number;
 			dateTime: string;
@@ -1689,6 +1722,7 @@ try {
 				}
 
 				games.push({
+					idGameGroup,
 					idTeamAway: teamA,
 					idTeamHome: teamB,
 					dateTime: gameDate,
@@ -1730,6 +1764,7 @@ try {
 	const seedGames = createGames({
 		dateStart: "2024-04-01",
 		dateEnd: "2024-10-01",
+		idGameGroup: 1,
 		isInterleagueAllowed: true,
 		numGamesPerTeam: 162,
 		numTypicalSeriesLength: 3,
@@ -1737,7 +1772,7 @@ try {
 	});
 
 	const insertGame = db.query(/*sql*/ `
-                insert into games (idTeamAway, idTeamHome, dateTime) values ($idTeamAway, $idTeamHome, $dateTime);
+                insert into games (idGameGroup, idTeamAway, idTeamHome, dateTime) values ($idGameGroup, $idTeamAway, $idTeamHome, $dateTime);
          `);
 
 	const insertGames = db.transaction(() => {
