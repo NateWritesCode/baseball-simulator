@@ -48,9 +48,27 @@ const IdGame = () => {
 		return <PageNoDataFound />;
 	}
 
+	const boxScore = data.boxScore;
+
+	if (!boxScore) {
+		return <PageNoDataFound />;
+	}
+
 	return (
-		<div>
-			<pre>{JSON.stringify(data, null, 4)}</pre>
+		<div className="container mx-auto">
+			<div className="flex flex-col">
+				<div className="flex justify-between">
+					<div>
+						{boxScore.teamAway.city} {boxScore.teamAway.nickname}
+					</div>
+					<div>{boxScore.teamAway.runs}</div>
+					<div>Final</div>
+					<div>{boxScore.teamHome.runs}</div>
+					<div>
+						{boxScore.teamHome.city} {boxScore.teamHome.nickname}
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 };

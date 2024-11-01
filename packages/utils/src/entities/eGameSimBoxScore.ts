@@ -23,6 +23,8 @@ const DB_PATH =
 	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
 
 class GameSimBoxScore implements OGameSimObserver {
+	dateTimeEnd = "";
+	dateTimeStart = "";
 	idGame: number;
 	inningRuns: number[][];
 	isTopOfInning: boolean;
@@ -59,6 +61,8 @@ class GameSimBoxScore implements OGameSimObserver {
 			: this.teamAway.playerStates[this.teamAway.positions.p];
 
 		const boxScore = {
+			dateTimeEnd: this.dateTimeEnd,
+			dateTimeStart: this.dateTimeStart,
 			idGame: this.idGame,
 			inningRuns: this.inningRuns,
 			park: this.park.park.name,
@@ -71,6 +75,7 @@ class GameSimBoxScore implements OGameSimObserver {
 				name: `${pitcherWin.player.firstName} ${pitcherWin.player.lastName}`,
 			},
 			teamAway: {
+				abbreviation: this.teamAway.team.abbreviation,
 				city: this.teamAway.team.city.name,
 				errors: this.teamAway.statistics.fielding.e,
 				hits: this.teamAway.statistics.batting.h,
@@ -78,6 +83,7 @@ class GameSimBoxScore implements OGameSimObserver {
 				runs: this.teamAway.statistics.batting.runs,
 			},
 			teamHome: {
+				abbreviation: this.teamHome.team.abbreviation,
 				city: this.teamHome.team.city.name,
 				errors: this.teamHome.statistics.fielding.e,
 				hits: this.teamHome.statistics.batting.h,
@@ -85,6 +91,19 @@ class GameSimBoxScore implements OGameSimObserver {
 				runs: this.teamHome.statistics.batting.runs,
 			},
 		};
+
+		const query = /*sql*/ db.query(`
+			update games set boxScore = $boxScore where idGame = $idGame;
+		`);
+
+		query.run({
+			boxScore: JSON.stringify(boxScore),
+			idGame: this.idGame,
+		});
+
+		db.close();
+
+		return;
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {
@@ -110,9 +129,13 @@ class GameSimBoxScore implements OGameSimObserver {
 				break;
 			}
 			case "gameEnd": {
+				const data = input.data;
+				this.dateTimeEnd = data.dateTime;
 				break;
 			}
 			case "gameStart": {
+				const data = input.data;
+				this.dateTimeStart = data.dateTime;
 				break;
 			}
 			case "halfInningEnd": {

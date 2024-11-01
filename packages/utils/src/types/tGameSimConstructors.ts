@@ -59,6 +59,7 @@ export const VQueryConstructorGameSimPark = intersect([
 	object({
 		backstopDistance: number(),
 		capacityMax: number(),
+		centerFieldDirection: number(),
 		idCity: number(),
 		idPark: number(),
 		idTeam: nullable(number()),
@@ -112,7 +113,7 @@ export type TConstructorGameSimPlayer = InferInput<
 >;
 
 export const VConstructorGameSimTeam = intersect([
-	pick(VDbTeams, ["idTeam", "nickname"]),
+	pick(VDbTeams, ["abbreviation", "idTeam", "nickname"]),
 	object({
 		city: pick(VDbCities, ["name"]),
 		coaches: array(VConstructorGameSimCoach),
@@ -158,24 +159,8 @@ export type TConstructorGameSimUmpire = InferInput<
 	typeof VConstructorGameSimUmpire
 >;
 
-export const VConstructorGameSimWeather = object({
-	dateTime: string(),
-	latitude: number(),
-	longitude: number(),
-	// cloudCover: number(),
-	// humidity: number(),
-	// precipitation: number(),
-	// snow: number(),
-	// temperature: number(),
-	// windDescription: string(),
-	// windDirection: picklist(["N", "NE", "E", "SE", "S", "SW", "W", "NW"]),
-	// windSpeed: number(),
-});
-export type TConstructorGameSimWeather = InferInput<
-	typeof VConstructorGameSimWeather
->;
-
 export const VConstructorGameSim = object({
+	dateTime: string(),
 	idGame: number(),
 	park: VConstructorGameSimPark,
 	teams: tuple([VConstructorGameSimTeam, VConstructorGameSimTeam]),
@@ -185,7 +170,6 @@ export const VConstructorGameSim = object({
 		VConstructorGameSimUmpire,
 		VConstructorGameSimUmpire,
 	]),
-	weather: VConstructorGameSimWeather,
 });
 
 export type TConstructorGameSim = InferInput<typeof VConstructorGameSim>;

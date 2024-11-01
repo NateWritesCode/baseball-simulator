@@ -1,9 +1,53 @@
-import { nullable, number, object, pipe, regex, string } from "valibot";
+import {
+	array,
+	nullable,
+	number,
+	object,
+	pipe,
+	regex,
+	string,
+	transform,
+} from "valibot";
 import {
 	VPicklistPitchOutcomes,
 	VPicklistRoofType,
 	VPicklistSurfaceType,
 } from "./tPicklist";
+
+export const VGameSimBoxScore = object({
+	dateTimeEnd: string(),
+	dateTimeStart: string(),
+	idGame: number(),
+	inningRuns: object({
+		0: array(number()),
+		1: array(number()),
+	}),
+	park: string(),
+	pitcherLoss: object({
+		idPlayer: number(),
+		name: string(),
+	}),
+	pitcherWin: object({
+		idPlayer: number(),
+		name: string(),
+	}),
+	teamAway: object({
+		abbreviation: string(),
+		city: string(),
+		errors: number(),
+		hits: number(),
+		nickname: string(),
+		runs: number(),
+	}),
+	teamHome: object({
+		abbreviation: string(),
+		city: string(),
+		errors: number(),
+		hits: number(),
+		nickname: string(),
+		runs: number(),
+	}),
+});
 
 export const VDbCities = object({
 	idCity: number(),
@@ -37,7 +81,44 @@ export const VDbCountries = object({
 	name: string(),
 });
 
+// const boxScore = {
+// 	dateTimeEnd: this.dateTimeEnd,
+// 	dateTimeStart: this.dateTimeStart,
+// 	idGame: this.idGame,
+// 	inningRuns: this.inningRuns,
+// 	park: this.park.park.name,
+// 	pitcherLoss: {
+// 		idPlayer: pitcherLoss.player.idPlayer,
+// 		name: `${pitcherLoss.player.firstName} ${pitcherLoss.player.lastName}`,
+// 	},
+// 	pitcherWin: {
+// 		idPlayer: pitcherWin.player.idPlayer,
+// 		name: `${pitcherWin.player.firstName} ${pitcherWin.player.lastName}`,
+// 	},
+// 	teamAway: {
+// 		city: this.teamAway.team.city.name,
+// 		errors: this.teamAway.statistics.fielding.e,
+// 		hits: this.teamAway.statistics.batting.h,
+// 		nickname: this.teamAway.team.nickname,
+// 		runs: this.teamAway.statistics.batting.runs,
+// 	},
+// 	teamHome: {
+// 		city: this.teamHome.team.city.name,
+// 		errors: this.teamHome.statistics.fielding.e,
+// 		hits: this.teamHome.statistics.batting.h,
+// 		nickname: this.teamHome.team.nickname,
+// 		runs: this.teamHome.statistics.batting.runs,
+// 	},
+// };
+
 export const VDbGames = object({
+	boxScore: nullable(
+		pipe(
+			string(),
+			transform((input) => JSON.parse(input)),
+			VGameSimBoxScore,
+		),
+	),
 	dateTime: string(),
 	idGame: number(),
 	idTeamAway: number(),

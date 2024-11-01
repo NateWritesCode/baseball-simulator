@@ -24,7 +24,7 @@ import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
 import { array, intersect, object, omit, pick } from "valibot";
 
-const VGames = array(VDbGames);
+const VGames = array(omit(VDbGames, ["boxScore"]));
 
 const queryGames = /* sql */ `
     with myUniverse as (
@@ -51,7 +51,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		const db = c.var.db;
 
 		const [dataGames, errorGames] = handleValibotParse({
-			data: db.prepare(queryGames).all(),
+			data: db.query(queryGames).all(),
 			schema: VGames,
 		});
 
@@ -66,6 +66,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 		const queryTeams = /* sql */ `
             select
+                abbreviation,
                 idTeam,
                 cities.name as 'city.name',
                 nickname
@@ -78,13 +79,13 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
             ;
         `;
 
-		const prepareTeams = db.prepare(queryTeams);
+		const prepareTeams = db.query(queryTeams);
 
 		const [dataTeams, dataError] = handleValibotParse({
 			data: prepareTeams.all(...paramsTeams),
 			schema: array(
 				intersect([
-					pick(VDbTeams, ["idTeam", "nickname"]),
+					pick(VDbTeams, ["abbreviation", "idTeam", "nickname"]),
 					object({
 						city: pick(VDbCities, ["name"]),
 					}),
@@ -207,7 +208,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 `;
 
 		const [dataPlayers, errorPlayers] = handleValibotParse({
-			data: db.prepare(queryPlayers).all(...paramsTeams),
+			data: db.query(queryPlayers).all(...paramsTeams),
 			schema: array(
 				intersect([
 					pick(VDbPlayers, ["idPlayer", "idTeam"]),
@@ -293,7 +294,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
         `;
 
 		const [dataCoaches, errorCoaches] = handleValibotParse({
-			data: db.prepare(queryCoaches).all(...paramsTeams),
+			data: db.query(queryCoaches).all(...paramsTeams),
 			schema: array(VConstructorGameSimCoach),
 			shouldParseDotNotation: true,
 		});
@@ -310,6 +311,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
                 cities.name as 'city.name',
                 parks.backstopDistance,
                 parks.capacityMax,
+                parks.centerFieldDirection,
                 parks.idCity,
                 parks.idPark,
                 parks.idTeam,
@@ -353,7 +355,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
         `;
 
 		const [dataParks, errorParks] = handleValibotParse({
-			data: db.prepare(queryParks).all(...paramsTeams),
+			data: db.query(queryParks).all(...paramsTeams),
 			schema: array(VQueryConstructorGameSimPark),
 			shouldParseDotNotation: true,
 		});
@@ -380,7 +382,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 		const [dataParksWallSegments, errorParksWallSegments] = handleValibotParse({
 			data: db
-				.prepare(queryParksWallSegments)
+				.query(queryParksWallSegments)
 				.all(...dataParks.map((park) => park.idPark)),
 			schema: array(VDbParksWallSegments),
 			shouldParseDotNotation: true,
@@ -455,7 +457,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
                 `;
 
 			const [dataUmpires, errorUmpires] = handleValibotParse({
-				data: db.prepare(queryUmpires).all(),
+				data: db.query(queryUmpires).all(),
 				schema: array(VConstructorGameSimUmpire),
 				shouldParseDotNotation: true,
 			});
@@ -484,6 +486,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			}
 
 			const gameSim = new GameSim({
+				dateTime: game.dateTime,
 				idGame: game.idGame,
 				park: {
 					...park,

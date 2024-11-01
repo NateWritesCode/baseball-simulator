@@ -1,51 +1,62 @@
-import { parse } from "valibot";
-import {
-	type TConstructorGameSimWeather,
-	VConstructorGameSimWeather,
-} from "../types/tGameSimConstructors";
+import { type InferInput, intersect, parse, pick } from "valibot";
+import { VDbCities, VDbGames } from "../types";
+import type {
+	TGameSimWeatherConditions,
+	TPicklistGameSimWeatherWindDirection,
+} from "../types/tGameSim";
 
-type TWeatherConditions = {
-	cloudCover: number;
-	humidity: number;
-	precipitation: number;
-	snow: number;
-	temperature: number;
-	windDescription: string;
-	windDirection: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
-	windSpeed: number;
-};
+const VConstructorGameSimWeatherState = intersect([
+	pick(VDbCities, ["latitude", "longitude"]),
+	pick(VDbGames, ["dateTime"]),
+]);
+type TConstructorGameSimWeatherState = InferInput<
+	typeof VConstructorGameSimWeatherState
+>;
 
-class GameSimWeather {
+class GameSimWeatherState {
 	private dateTime: string;
-	private lastWeather: TWeatherConditions | null = null;
+	private lastWeather: TGameSimWeatherConditions | null = null;
+	private lastUpdateTime = 0;
 	private latitude: number;
 	private longitude: number;
 
-	constructor(_input: TConstructorGameSimWeather) {
-		const input = parse(VConstructorGameSimWeather, _input);
+	constructor(_input: TConstructorGameSimWeatherState) {
+		const input = parse(VConstructorGameSimWeatherState, _input);
 
 		this.dateTime = input.dateTime;
 		this.latitude = input.latitude;
 		this.longitude = input.longitude;
 	}
 
-	private _evolveWeather({
-		baseWeather,
-		timeDiffMinutes,
-	}: {
-		baseWeather: TWeatherConditions;
-		timeDiffMinutes: number;
-	}) {
+	private _limitWindDirectionChange(
+		current: number,
+		target: number,
+		maxDelta: number,
+	): number {
+		// Calculate the shortest distance between angles
+		let delta = ((target - current + 540) % 360) - 180;
+
+		// Limit the change to maxDelta
+		delta = Math.min(Math.abs(delta), maxDelta) * Math.sign(delta);
+
+		// Return new direction ensuring it stays in 0-359 range
+		return (current + delta + 360) % 360;
+	}
+
+	private _evolveWeather(
+		baseWeather: TGameSimWeatherConditions,
+		timeDiffMinutes: number,
+	): TGameSimWeatherConditions {
 		if (!this.lastWeather) return baseWeather;
 
 		// Maximum changes allowed per minute
 		const maxChanges = {
-			cloudCover: 0.5, // 0.5% per minute
-			humidity: 0.2, // 0.2% per minute
-			precipitation: 1, // 1% per minute
-			temperature: 0.05, // 0.05 degrees per minute
-			windDirection: 0.5, // 0.5 degrees per minute
-			windSpeed: 0.1, // 0.1 MPH per minute
+			cloudCover: 0.5,
+			humidity: 0.2,
+			precipitation: 1,
+			temperature: 0.05,
+			windDirection: 0.5,
+			windSpeed: 0.1,
 		};
 
 		// Calculate maximum allowed changes based on time passed
@@ -58,6 +69,12 @@ class GameSimWeather {
 				Math.min(Math.abs(delta), maxDelta) * Math.sign(delta);
 			return current + limitedDelta;
 		};
+
+		const newWindDirection = this._limitWindDirectionChange(
+			this.lastWeather.windDirection,
+			baseWeather.windDirection,
+			maxChange(maxChanges.windDirection),
+		);
 
 		return {
 			...baseWeather,
@@ -81,11 +98,8 @@ class GameSimWeather {
 				baseWeather.temperature,
 				maxChange(maxChanges.temperature),
 			),
-			windDirection: limitChange(
-				this.lastWeather.windDirection,
-				baseWeather.windDirection,
-				maxChange(maxChanges.windDirection),
-			),
+			windDirection: newWindDirection,
+			windDescription: this._getWindDescription(newWindDirection),
 			windSpeed: limitChange(
 				this.lastWeather.windSpeed,
 				baseWeather.windSpeed,
@@ -102,7 +116,6 @@ class GameSimWeather {
 		);
 		const hour = date.getHours();
 
-		// Temperature calculation
 		const latitudeTemp =
 			Math.cos((Math.abs(this.latitude) * Math.PI) / 180) * 40;
 		const seasonalEffect =
@@ -128,7 +141,7 @@ class GameSimWeather {
 		};
 	}
 
-	private _getGlobalWindPattern() {
+	private _getGlobalWindPattern(): { direction: number; name: string } {
 		if (this.latitude > 60) {
 			return { direction: 270, name: "Polar Easterlies" };
 		}
@@ -167,7 +180,7 @@ class GameSimWeather {
 		};
 	}
 
-	private _calculateWindDirection() {
+	private _calculateWindDirection(): number {
 		const globalWind = this._getGlobalWindPattern();
 		const localEffect = this._getLocalWindEffects();
 
@@ -179,7 +192,7 @@ class GameSimWeather {
 
 	private _getWindDescription(
 		degrees: number,
-	): "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" {
+	): TPicklistGameSimWeatherWindDirection {
 		const directions = [
 			{ min: 337.5, max: 360, name: "N" },
 			{ min: 0, max: 22.5, name: "N" },
@@ -190,20 +203,36 @@ class GameSimWeather {
 			{ min: 202.5, max: 247.5, name: "SW" },
 			{ min: 247.5, max: 292.5, name: "W" },
 			{ min: 292.5, max: 337.5, name: "NW" },
-		];
+		] as const;
 
-		return (directions.find(
-			(dir) =>
-				(degrees >= dir.min && degrees < dir.max) ||
-				(dir.name === "N" && degrees >= 337.5),
-		)?.name || "N") as "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+		return (
+			directions.find(
+				(dir) =>
+					(degrees >= dir.min && degrees < dir.max) ||
+					(dir.name === "N" && degrees >= 337.5),
+			)?.name || "N"
+		);
 	}
 
-	public getWeather() {
+	public getWeather({
+		dateTime,
+		forceUpdate = false,
+	}: { dateTime: string; forceUpdate?: boolean }): TGameSimWeatherConditions {
+		// Update internal dateTime
+		this.dateTime = dateTime;
+
+		const currentTime = new Date(this.dateTime).getTime();
+		const timeDiff = (currentTime - this.lastUpdateTime) / (1000 * 60); // Convert to minutes
+
+		// If it's been less than 5 minutes and we're not forcing an update, return last weather
+		if (this.lastWeather && timeDiff < 5 && !forceUpdate) {
+			return this.lastWeather;
+		}
+
 		const base = this._getBaseWeather();
 		const windDirection = this._calculateWindDirection();
 
-		const weather = {
+		let weather: TGameSimWeatherConditions = {
 			cloudCover:
 				Math.random() * 100 < base.cloudCoverChance
 					? Math.floor(30 + Math.random() * 70)
@@ -219,7 +248,7 @@ class GameSimWeather {
 					: 0,
 			temperature: Math.round(base.baseTemp + (Math.random() * 4 - 2)),
 			windDescription: this._getWindDescription(windDirection),
-			windDirection: windDirection,
+			windDirection,
 			windSpeed: Math.round(base.windSpeed + (Math.random() * 4 - 2)),
 		};
 
@@ -232,8 +261,17 @@ class GameSimWeather {
 			weather.cloudCover = Math.max(weather.cloudCover, 75);
 		}
 
+		// Evolve from previous weather if it exists
+		if (this.lastWeather) {
+			weather = this._evolveWeather(weather, timeDiff);
+		}
+
+		// Update last weather and time
+		this.lastWeather = weather;
+		this.lastUpdateTime = currentTime;
+
 		return weather;
 	}
 }
 
-export default GameSimWeather;
+export default GameSimWeatherState;

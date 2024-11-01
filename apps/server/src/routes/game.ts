@@ -1,7 +1,12 @@
-import { VApiParamsGetIdGame } from "@baseball-simulator/utils/types";
+import { handleValibotParse } from "@baseball-simulator/utils/functions";
+import {
+	VApiParamsGetIdGame,
+	VApiResponseGetIdGame,
+} from "@baseball-simulator/utils/types";
 import { vValidator } from "@hono/valibot-validator";
 import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 
 const game = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 	"/:idGame",
@@ -10,36 +15,29 @@ const game = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		const db = c.var.db;
 		const params = c.req.valid("json");
 
-		const query = db.prepare(/* sql */ `
-		select 
-			persons.firstName,
-			persons.lastName,
-			players.idPlayer
+		const query = db.query(/* sql */ `
+		select
+			boxScore,
+			idGame 
 		from 
-			players
-		inner join
-			persons
-		on
-			players.idPerson = persons.idPerson
+			games
 		where 
-			idPlayer = $idPlayer
+			idGame = $idGame
 		;
 	`);
 
-		// const [data, error] = handleValibotParse({
-		// 	data: query.get(params),
-		// 	schema: VApiResponseGetIdGame,
-		// });
+		const [data, error] = handleValibotParse({
+			data: query.get(params),
+			schema: VApiResponseGetIdGame,
+		});
 
-		// if (error) {
-		// 	throw new HTTPException(500, {
-		// 		message: "There was an error fetching the data",
-		// 	});
-		// }
+		if (error) {
+			throw new HTTPException(500, {
+				message: "There was an error fetching the data",
+			});
+		}
 
-		// return c.json(data);
-
-		return c.json({ message: "Hello, World!" });
+		return c.json(data);
 	},
 );
 

@@ -44,7 +44,7 @@ const player = new Hono<{ Variables: TMiddleware["Variables"] }>()
 		const db = c.var.db;
 		const params = c.req.valid("json");
 
-		const query = db.prepare(/* sql */ `
+		const query = db.query(/* sql */ `
 		select 
 			persons.firstName,
 			persons.lastName,

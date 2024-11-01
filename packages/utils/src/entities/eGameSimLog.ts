@@ -32,7 +32,7 @@ class GameSimLog implements OGameSimObserver {
 			strict: true,
 		});
 
-		const insertGameSimLog = db.prepare(/*sql*/ `
+		const insertGameSimLog = db.query(/*sql*/ `
 			insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
 		`);
 
@@ -40,6 +40,8 @@ class GameSimLog implements OGameSimObserver {
 			gameSimLog: JSON.stringify(this.gameLog),
 			idGame: this.idGame,
 		});
+
+		db.close();
 	};
 
 	logDanger = (info: string[]) => {

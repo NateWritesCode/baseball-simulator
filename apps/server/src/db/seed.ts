@@ -301,6 +301,7 @@ try {
         );
 
         create table games (
+			boxScore text,
             idGame integer primary key autoincrement,
             idTeamAway integer not null,
             idTeamHome integer not null,
@@ -431,7 +432,7 @@ try {
 		{ abbreviation: "SA", name: "South America" },
 	];
 
-	const insertContinent = db.prepare(/*sql*/ `
+	const insertContinent = db.query(/*sql*/ `
     insert into continents (abbreviation, name) values ($abbreviation, $name);
 `);
 
@@ -451,7 +452,7 @@ try {
 		},
 	];
 
-	const insertCountry = db.prepare(/*sql*/ `
+	const insertCountry = db.query(/*sql*/ `
     insert into countries (abbreviation, name, idContinent) values ($abbreviation, $name, $idContinent);
 `);
 
@@ -463,7 +464,7 @@ try {
 
 	insertCountries(seedCountries);
 
-	const insertState = db.prepare(/*sql*/ `
+	const insertState = db.query(/*sql*/ `
     insert into states (abbreviation, name, idCountry) values ($abbreviation, $name, $idCountry);
 `);
 
@@ -528,7 +529,7 @@ try {
 
 	insertStates(seedStates);
 
-	const insertCity = db.prepare(/*sql*/ `
+	const insertCity = db.query(/*sql*/ `
         insert into cities (idState, latitude, longitude, name) values ($idState, $latitude, $longitude, $name);
     `);
 
@@ -1154,7 +1155,7 @@ try {
 		},
 	];
 
-	const insertLeague = db.prepare(/*sql*/ `
+	const insertLeague = db.query(/*sql*/ `
      insert into leagues (abbreviation, name) values ($abbreviation, $name);
     `);
 
@@ -1181,7 +1182,7 @@ try {
 		},
 	];
 
-	const insertSubLeague = db.prepare(/*sql*/ `
+	const insertSubLeague = db.query(/*sql*/ `
         insert into subLeagues (idLeague, abbreviation, name) values ($idLeague, $abbreviation, $name);
     `);
 
@@ -1244,7 +1245,7 @@ try {
 		},
 	];
 
-	const insertDivision = db.prepare(/*sql*/ `
+	const insertDivision = db.query(/*sql*/ `
           insert into divisions (idDivision, idLeague, idSubLeague, abbreviation, direction, name) values ($idDivision, $idLeague, $idSubLeague, $abbreviation, $direction, $name);
      `);
 
@@ -1367,7 +1368,7 @@ try {
 			};
 		});
 
-	const insertTeam = db.prepare(/*sql*/ `
+	const insertTeam = db.query(/*sql*/ `
           insert into teams (abbreviation, colorPrimary, colorSecondary, nickname, idCity, idDivision, idLeague, idSubLeague, idTeam) values ($abbreviation, $colorPrimary, $colorSecondary, $nickname, $idCity, $idDivision, $idLeague, $idSubLeague, $idTeam);
      `);
 
@@ -1473,11 +1474,11 @@ try {
 		return genericPark;
 	});
 
-	const insertPark = db.prepare(/*sql*/ `
-		  insert into parks (backstopDistance, capacityMax, idCity, idTeam, name, roofType, surfaceType) values ($backstopDistance, $capacityMax, $idCity, $idTeam, $name, $roofType, $surfaceType);
+	const insertPark = db.query(/*sql*/ `
+		  insert into parks (backstopDistance, capacityMax, centerFieldDirection, idCity, idTeam, name, roofType, surfaceType) values ($backstopDistance, $capacityMax, $centerFieldDirection, $idCity, $idTeam, $name, $roofType, $surfaceType);
 	 `);
 
-	const insertFieldCoordinates = db.prepare(/*sql*/ `
+	const insertFieldCoordinates = db.query(/*sql*/ `
 	 		insert into parksFieldCoordinates (
 					basePath, 
 					batterLeftX, 
@@ -1540,7 +1541,7 @@ try {
 				);
 		)`);
 
-	const insertWallSegment = db.prepare(/*sql*/ `
+	const insertWallSegment = db.query(/*sql*/ `
 	   insert into parksWallSegments (
 		height,
 		idPark, 
@@ -1735,7 +1736,7 @@ try {
 		teams: seedTeams,
 	});
 
-	const insertGame = db.prepare(/*sql*/ `
+	const insertGame = db.query(/*sql*/ `
                 insert into games (idTeamAway, idTeamHome, dateTime) values ($idTeamAway, $idTeamHome, $dateTime);
          `);
 
@@ -1895,7 +1896,7 @@ try {
 		},
 	);
 
-	const insertPerson = db.prepare(/*sql*/ `
+	const insertPerson = db.query(/*sql*/ `
            insert into persons (dateOfBirth, firstName, idCityOfBirth, idPerson, lastName, middleName, nickname)
            values ($dateOfBirth, $firstName, $idCityOfBirth, $idPerson, $lastName, $middleName, $nickname);
        `);
@@ -1916,7 +1917,7 @@ try {
 
 	insertPersons(seedPersons);
 
-	const insertPersonAlignment = db.prepare(/*sql*/ `
+	const insertPersonAlignment = db.query(/*sql*/ `
              insert into personsAlignment (idPerson, chaotic, evil, good, lawful, neutralMorality, neutralOrder)
              values ($idPerson, $chaotic, $evil, $good, $lawful, $neutralMorality, $neutralOrder);
           `);
@@ -1937,7 +1938,7 @@ try {
 
 	insertPersonsAlignment(seedPersons);
 
-	const insertPersonMental = db.prepare(/*sql*/ `
+	const insertPersonMental = db.query(/*sql*/ `
              insert into personsMental (idPerson, charisma, constitution, intelligence, loyalty, wisdom, workEthic)
              values ($idPerson, $charisma, $constitution, $intelligence, $loyalty, $wisdom, $workEthic);
           `);
@@ -1958,7 +1959,7 @@ try {
 
 	insertPersonsMental(seedPersons);
 
-	const insertPersonMyersBriggs = db.prepare(/*sql*/ `
+	const insertPersonMyersBriggs = db.query(/*sql*/ `
              insert into personsMyersBriggs (idPerson, extroversion, feeling, intuition, introversion, judging, perceiving, sensing, thinking)
              values ($idPerson, $extroversion, $feeling, $intuition, $introversion, $judging, $perceiving, $sensing, $thinking);
           `);
@@ -1981,7 +1982,7 @@ try {
 
 	insertPersonsMyersBriggs(seedPersons);
 
-	const insertPersonPhysical = db.prepare(/*sql*/ `
+	const insertPersonPhysical = db.query(/*sql*/ `
              insert into personsPhysical (idPerson, height, weight)
              values ($idPerson, $height, $weight);
           `);
@@ -2011,11 +2012,11 @@ try {
 		NUM_PLAYERS + NUM_OWNERS + NUM_COACHES,
 	);
 
-	const insertCoach = db.prepare(/*sql*/ `
+	const insertCoach = db.query(/*sql*/ `
 		insert into coaches (idPerson, idTeam) values ($idPerson, $idTeam);
 	`);
 
-	const insertCoachRatings = db.prepare(/*sql*/ `
+	const insertCoachRatings = db.query(/*sql*/ `
 		insert into coachesRatings (ability, idCoach) values ($ability, $idCoach);
 	`);
 
@@ -2038,11 +2039,11 @@ try {
 
 	insertCoaches(seedPersonsCoaches);
 
-	const insertUmpire = db.prepare(/*sql*/ `
+	const insertUmpire = db.query(/*sql*/ `
 		insert into umpires (idPerson) values ($idPerson);
 	`);
 
-	const insertUmpireRatings = db.prepare(/*sql*/ `
+	const insertUmpireRatings = db.query(/*sql*/ `
 		insert into umpiresRatings (
 			balkAccuracy, 
 			checkSwingAccuracy, 
@@ -2100,7 +2101,7 @@ try {
 
 	insertUmpires(seedPersonsUmpires);
 
-	const insertOwner = db.prepare(/*sql*/ `
+	const insertOwner = db.query(/*sql*/ `
 			 insert into owners (idPerson, idTeam, numTokens) values ($idPerson, $idTeam, $numTokens);
 		  `);
 
@@ -2369,7 +2370,7 @@ try {
 		};
 	});
 
-	const insertPlayer = db.prepare(/*sql*/ `
+	const insertPlayer = db.query(/*sql*/ `
       insert into players (idPerson, idPlayer, idTeam) values ($idPerson, $idPlayer, $idTeam);
    `);
 
@@ -2385,7 +2386,7 @@ try {
 
 	insertPlayers(seedPlayers);
 
-	const insertPlayerBatting = db.prepare(/*sql*/ `
+	const insertPlayerBatting = db.query(/*sql*/ `
       insert into playersBatting (idPlayer, avoidKs, avoidKsVL, avoidKsVR, contact, contactVL, contactVR, eye, eyeVL, eyeVR, gap, gapVL, gapVR, power, powerVL, powerVR) values ($idPlayer, $avoidKs, $avoidKsVL, $avoidKsVR, $contact, $contactVL, $contactVR, $eye, $eyeVL, $eyeVR, $gap, $gapVL, $gapVR, $power, $powerVL, $powerVR);
    `);
 
@@ -2414,7 +2415,7 @@ try {
 
 	insertPlayersBatting(seedPlayers);
 
-	const insertPlayerFielding = db.prepare(/*sql*/ `
+	const insertPlayerFielding = db.query(/*sql*/ `
       insert into playersFielding (idPlayer, c, catcherAbility, catcherArm, catcherFraming, cf, fb, infieldArm, infieldDoublePlay, infieldError, infieldRange, lf, outfieldArm, outfieldError, outfieldRange, rf, sb, ss, tb) values ($idPlayer, $c, $catcherAbility, $catcherArm, $catcherFraming, $cf, $fb, $infieldArm, $infieldDoublePlay, $infieldError, $infieldRange, $lf, $outfieldArm, $outfieldError, $outfieldRange, $rf, $sb, $ss, $tb);
    `);
 
@@ -2446,7 +2447,7 @@ try {
 
 	insertPlayersFielding(seedPlayers);
 
-	const insertPlayerPitches = db.prepare(/*sql*/ `
+	const insertPlayerPitches = db.query(/*sql*/ `
       insert into playersPitches (idPlayer, changeup, curveball, cutter, eephus, fastball, forkball, knuckleball, knuckleCurve, screwball, sinker, slider, slurve, splitter, sweeper) values ($idPlayer, $changeup, $curveball, $cutter, $eephus, $fastball, $forkball, $knuckleball, $knuckleCurve, $screwball, $sinker, $slider, $slurve, $splitter, $sweeper);
    `);
 
@@ -2474,7 +2475,7 @@ try {
 
 	insertPlayersPitches(seedPlayers);
 
-	const insertPlayerPitching = db.prepare(/*sql*/ `
+	const insertPlayerPitching = db.query(/*sql*/ `
       insert into playersPitching (idPlayer, control, controlVL, controlVR, movement, movementVL, movementVR, stamina, stuff, stuffVL, stuffVR) values ($idPlayer, $control, $controlVL, $controlVR, $movement, $movementVL, $movementVR, $stamina, $stuff, $stuffVL, $stuffVR);
    `);
 
@@ -2498,7 +2499,7 @@ try {
 
 	insertPlayersPitching(seedPlayers);
 
-	const insertPlayerRunning = db.prepare(/*sql*/ `
+	const insertPlayerRunning = db.query(/*sql*/ `
       insert into playersRunning (idPlayer, baserunning, speed, stealing) values ($idPlayer, $baserunning, $speed, $stealing);
    `);
 
@@ -2515,7 +2516,7 @@ try {
 
 	insertPlayersRunning(seedPlayers);
 
-	const insertUniverse = db.prepare(/*sql*/ `
+	const insertUniverse = db.query(/*sql*/ `
 		insert into universe (dateTime) values ($dateTime);
 	`);
 

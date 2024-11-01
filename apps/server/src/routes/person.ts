@@ -40,7 +40,7 @@ const person = new Hono<{ Variables: TMiddleware["Variables"] }>()
 		const db = c.var.db;
 		const params = c.req.valid("json");
 
-		const query = db.prepare(/* sql */ `
+		const query = db.query(/* sql */ `
 		select 
 			cities.idCity as "birthplace.city.idCity",
 			cities.name as "birthplace.city.name",

@@ -7,11 +7,41 @@ import {
 	nullish,
 	number,
 	object,
+	picklist,
+	string,
 	variant,
 } from "valibot";
 import GameSimPlayerState from "../entities/eGameSimPlayerState";
 import GameSimTeamState from "../entities/eGameSimTeamState";
 import { VPicklistPitchNames, VPicklistPitchOutcomes } from "./tPicklist";
+
+export const VPicklistGameSimWeatherWindDirection = picklist([
+	"N",
+	"NE",
+	"E",
+	"SE",
+	"S",
+	"SW",
+	"W",
+	"NW",
+]);
+export type TPicklistGameSimWeatherWindDirection = InferOutput<
+	typeof VPicklistGameSimWeatherWindDirection
+>;
+
+export const VGameSimWeatherConditions = object({
+	cloudCover: number(),
+	humidity: number(),
+	precipitation: number(),
+	snow: number(),
+	temperature: number(),
+	windDescription: VPicklistGameSimWeatherWindDirection,
+	windDirection: number(),
+	windSpeed: number(),
+});
+export type TGameSimWeatherConditions = InferOutput<
+	typeof VGameSimWeatherConditions
+>;
 
 export const VGameSimEventAtBatEnd = object({
 	data: object({
@@ -48,14 +78,19 @@ export const VGameSimEventDouble = object({
 export type TGameSimEventDouble = InferOutput<typeof VGameSimEventDouble>;
 
 export const VGameSimEventGameStart = object({
-	data: nullish(null_()),
+	data: object({
+		dateTime: string(),
+		weather: VGameSimWeatherConditions,
+	}),
 	gameSimEvent: literal("gameStart"),
 });
 
 export type TGameSimEventGameStart = InferOutput<typeof VGameSimEventGameStart>;
 
 export const VGameSimEventGameEnd = object({
-	data: nullish(null_()),
+	data: object({
+		dateTime: string(),
+	}),
 	gameSimEvent: literal("gameEnd"),
 });
 

@@ -173,7 +173,7 @@ export default class GameSimEventStore implements OGameSimObserver {
 			gameSimEvents.push(values);
 		}
 
-		const insertGameSimEvent = db.prepare(/*sql*/ `
+		const insertGameSimEvent = db.query(/*sql*/ `
 				insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
 			`);
 
@@ -184,6 +184,8 @@ export default class GameSimEventStore implements OGameSimObserver {
 		});
 
 		insertGameSimEvents(gameSimEvents);
+
+		db.close();
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {

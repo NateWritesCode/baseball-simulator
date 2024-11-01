@@ -1,15 +1,16 @@
 import {
 	type InferInput,
+	type InferOutput,
 	array,
 	intersect,
 	object,
 	omit,
 	pick,
-	string,
 } from "valibot";
 import {
 	VDbCities,
 	VDbCountries,
+	VDbGames,
 	VDbPersons,
 	VDbPersonsAlignment,
 	VDbPersonsMental,
@@ -19,11 +20,11 @@ import {
 	VDbStates,
 } from "./tDb";
 
-export const VApiResponseGetIdGame = object({
-	message: string(),
-});
+export const VApiResponseGetIdGame = intersect([
+	pick(VDbGames, ["boxScore", "idGame"]),
+]);
 
-export type TApiResponseGetIdGame = InferInput<typeof VApiResponseGetIdGame>;
+export type TApiResponseGetIdGame = InferOutput<typeof VApiResponseGetIdGame>;
 
 export const VApiResponseGetPerson = array(
 	intersect([pick(VDbPersons, ["firstName", "idPerson", "lastName"])]),

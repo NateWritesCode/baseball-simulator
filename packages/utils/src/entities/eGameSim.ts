@@ -15,6 +15,7 @@ import { RATING_MAX } from "../constants";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
+	type TGameSimWeatherConditions,
 	VGameSimEventPitchLocation,
 } from "../types/tGameSim";
 import {
@@ -29,6 +30,7 @@ import {
 	VPicklistPitchNames,
 	VPicklistPositions,
 } from "../types/tPicklist";
+import GameSimBoxScore from "./eGameSimBoxScore";
 import GameSimCoachState from "./eGameSimCoachState";
 import GameSimEventStore from "./eGameSimEventStore";
 import GameSimLog from "./eGameSimLog";
@@ -36,6 +38,7 @@ import GameSimParkState from "./eGameSimParkState";
 import GameSimPlayerState from "./eGameSimPlayerState";
 import GameSimTeamState from "./eGameSimTeamState";
 import GameSimUmpireState from "./eGameSimUmpireState";
+import GameSimWeatherState from "./eGameSimWeatherState";
 
 export default class GameSim {
 	private readonly GRAVITY = -32.174; // ft/s^2
@@ -44,10 +47,15 @@ export default class GameSim {
 	private readonly BALL_RADIUS = 0.12; // ft
 	private readonly INFIELD_DEPTH = 90; // feet from home plate
 	private readonly OUTFIELD_DEPTH = 250; // typical outfield depth
+	private readonly AIR_DENSITY_SEA_LEVEL = 0.0765; // lb/ft^3 at 59°F
+	private readonly TEMPERATURE_REFERENCE = 59; // °F
+	private readonly WIND_EFFECT_FACTOR = 0.1; // How much wind affects ball flight
 
+	private boxScore: GameSimBoxScore;
 	private coachStates: {
 		[key: number]: GameSimCoachState;
 	};
+	private dateTime: string;
 	private eventStore: GameSimEventStore;
 	private idGame: number;
 	private isNeutralPark: boolean;
@@ -78,10 +86,13 @@ export default class GameSim {
 	private umpireFb: GameSimUmpireState;
 	private umpireSb: GameSimUmpireState;
 	private umpireTb: GameSimUmpireState;
+	private weatherState: GameSimWeatherState;
 
 	constructor(_input: TConstructorGameSim) {
 		const input = parse(VConstructorGameSim, _input);
+
 		this.coachStates = {};
+		this.dateTime = input.dateTime;
 		this.eventStore = new GameSimEventStore({
 			filePathSave: import.meta.dir,
 			idGame: input.idGame,
@@ -118,6 +129,12 @@ export default class GameSim {
 		});
 		this.umpireTb = new GameSimUmpireState({
 			umpire: input.umpires[3],
+		});
+
+		this.weatherState = new GameSimWeatherState({
+			dateTime: input.dateTime,
+			latitude: input.park.city.latitude,
+			longitude: input.park.city.longitude,
 		});
 
 		// team0 is the away team, team1 is the home team
@@ -157,8 +174,29 @@ export default class GameSim {
 			}
 		}
 
+		this.boxScore = new GameSimBoxScore({
+			idGame: input.idGame,
+			park: this.parkState,
+			teamAway: this.teamStates[this.teams[0].idTeam],
+			teamHome: this.teamStates[this.teams[1].idTeam],
+		});
+
 		this.observers.push(this.log);
 		this.observers.push(this.eventStore);
+		this.observers.push(this.boxScore);
+	}
+
+	private _advanceTime(seconds: number) {
+		this.dateTime = new Date(
+			new Date(this.dateTime).getTime() + seconds * 1000,
+		).toISOString();
+	}
+
+	private _calculateAirDensity(temperature: number, humidity: number): number {
+		// Air density decreases with temperature and humidity
+		const tempEffect = 1 - (temperature - this.TEMPERATURE_REFERENCE) * 0.002;
+		const humidityEffect = 1 - humidity * 0.0005;
+		return this.AIR_DENSITY_SEA_LEVEL * tempEffect * humidityEffect;
 	}
 
 	private _calculateDistanceToBoundary(
@@ -581,50 +619,39 @@ export default class GameSim {
 	}
 
 	private _calculateTrajectory(_input: TInputCalculateTrajectory) {
-		const { initialVx, initialVy, spinRate, verticalVelocity } = parse(
-			VInputCalculateTrajectory,
-			_input,
-		);
+		const { airDensity, initialVx, initialVy, spinRate, verticalVelocity } =
+			parse(VInputCalculateTrajectory, _input);
 		const trajectory: Array<{ x: number; y: number; z: number }> = [];
 		const timeStep = 0.01; // seconds
 
-		// Initial conditions
 		let x = 0;
 		let y = 0;
-		let z = 2; // Starting height (approximate height of contact)
-
-		// Initial velocities
+		let z = 2;
 		let vx = initialVx;
 		let vy = initialVy;
 		let vz = verticalVelocity;
-
-		// Magnus force coefficient based on spin
 		const magnusCoef = spinRate / 10000;
 
 		while (z > 0 && trajectory.length < 1000) {
-			// Update position
 			x += vx * timeStep;
 			y += vy * timeStep;
 			z += vz * timeStep;
 
-			// Calculate drag force (now incorporating mass)
 			const velocity = Math.sqrt(vx * vx + vy * vy + vz * vz);
-			const dragCoefficient = 0.3; // Typical for a baseball
+			const dragCoefficient = 0.3;
 			const crossSectionalArea = Math.PI * this.BALL_RADIUS * this.BALL_RADIUS;
 
-			// Force = 0.5 * density * velocity^2 * drag coefficient * area
+			// Use passed in airDensity instead of constant
 			const dragForceMagnitude =
 				0.5 *
-				this.AIR_DENSITY *
+				airDensity *
 				velocity *
 				velocity *
 				dragCoefficient *
 				crossSectionalArea;
 
-			// Convert force to acceleration by dividing by mass (F = ma)
 			const dragAcceleration = dragForceMagnitude / this.BALL_MASS;
 
-			// Update velocities including drag and magnus effect
 			vx += ((-dragAcceleration * vx) / velocity) * timeStep;
 			vy += ((-dragAcceleration * vy) / velocity + magnusCoef * vx) * timeStep;
 			vz += (this.GRAVITY + (-dragAcceleration * vz) / velocity) * timeStep;
@@ -1555,6 +1582,32 @@ export default class GameSim {
 		return teamOffenseState;
 	}
 
+	private _getWindAdjustedVelocity(
+		trajectory: Array<{ x: number; y: number; z: number }>,
+		weather: TGameSimWeatherConditions,
+		centerFieldDirection: number,
+	): Array<{ x: number; y: number; z: number }> {
+		// Convert meteorological wind direction to radians and adjust for park orientation
+		const windDirRadians =
+			((weather.windDirection + centerFieldDirection) % 360) * (Math.PI / 180);
+
+		// Decompose wind into x and y components
+		const windX = weather.windSpeed * Math.sin(windDirRadians);
+		const windY = weather.windSpeed * Math.cos(windDirRadians);
+
+		return trajectory.map((point) => {
+			// Wind effect increases with height (crude approximation)
+			const heightFactor = Math.min(point.z / 50, 1);
+			const windEffect = this.WIND_EFFECT_FACTOR * heightFactor;
+
+			return {
+				x: point.x + windX * windEffect,
+				y: point.y + windY * windEffect,
+				z: point.z, // Wind doesn't directly affect height
+			};
+		});
+	}
+
 	private _handleDouble() {
 		const playerHitter = this._getCurrentHitter({
 			teamIndex: this.numTeamOffense,
@@ -2096,6 +2149,12 @@ export default class GameSim {
 
 	public simulate() {
 		this._notifyObservers({
+			data: {
+				dateTime: this.dateTime,
+				weather: this.weatherState.getWeather({
+					dateTime: this.dateTime,
+				}),
+			},
 			gameSimEvent: "gameStart",
 		});
 
@@ -2116,9 +2175,13 @@ export default class GameSim {
 		);
 
 		this._notifyObservers({
+			data: {
+				dateTime: this.dateTime,
+			},
 			gameSimEvent: "gameEnd",
 		});
 
+		this.boxScore.close();
 		this.eventStore.close();
 		this.log.close();
 
@@ -2159,6 +2222,19 @@ export default class GameSim {
 		const launchAngle = this._calculateLaunchAngle(input);
 		const spinRate = this._calculateSpinRate(input);
 
+		// Get current weather conditions
+		const weather = this.weatherState.getWeather({ dateTime: this.dateTime });
+
+		// Adjust air density based on temperature and humidity
+		const airDensity = this._calculateAirDensity(
+			weather.temperature,
+			weather.humidity,
+		);
+
+		// Add drag effects from precipitation
+		const precipitationDrag =
+			1 + weather.precipitation * 0.1 + weather.snow * 0.2;
+
 		// Add a horizontal spray angle - this creates variation in the x-direction
 		const sprayAngle = ((Math.random() - 0.5) * Math.PI) / 2; // -45 to +45 degrees
 
@@ -2172,14 +2248,31 @@ export default class GameSim {
 		const initialVx = horizontalVelocity * Math.sin(sprayAngle);
 		const initialVy = horizontalVelocity * Math.cos(sprayAngle);
 
-		const trajectory = this._calculateTrajectory({
+		let trajectory = this._calculateTrajectory({
+			airDensity,
+			horizontalVelocity,
 			initialVx,
 			initialVy,
 			spinRate,
 			verticalVelocity,
 		});
 
+		trajectory = this._getWindAdjustedVelocity(
+			trajectory,
+			weather,
+			this.parkState.park.centerFieldDirection,
+		);
+
 		const finalPosition = trajectory[trajectory.length - 1];
+
+		// Temperature affects how far the ball carries
+		const temperatureFactor =
+			1 + (weather.temperature - this.TEMPERATURE_REFERENCE) * 0.002;
+
+		const distance =
+			Math.sqrt(
+				finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
+			) * temperatureFactor;
 
 		const isFoul = this._isFoulBall({
 			parkState: input.parkState,
@@ -2188,9 +2281,7 @@ export default class GameSim {
 		});
 
 		return {
-			distance: Math.sqrt(
-				finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
-			),
+			distance,
 			exitVelocity,
 			finalX: finalPosition.x,
 			finalY: finalPosition.y,
@@ -2336,6 +2427,7 @@ export default class GameSim {
 	}
 
 	private _simulatePitch() {
+		this._advanceTime(25);
 		let isAtBatOver = false;
 		const playerPitcher = this._getCurrentPitcher({
 			teamIndex: this.numTeamDefense,
@@ -2810,10 +2902,12 @@ type TInputHandleNonWallBallOutcome = InferInput<
 >;
 
 const VInputCalculateTrajectory = object({
+	airDensity: number(),
+	horizontalVelocity: number(),
 	initialVx: number(),
 	initialVy: number(),
-	verticalVelocity: number(),
 	spinRate: number(),
+	verticalVelocity: number(),
 });
 type TInputCalculateTrajectory = InferInput<typeof VInputCalculateTrajectory>;
 
