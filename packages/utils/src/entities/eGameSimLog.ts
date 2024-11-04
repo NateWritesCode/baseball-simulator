@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { type InferInput, number, object, parse, string } from "valibot";
+import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -13,9 +14,6 @@ const VConstructorGameSimLog = object({
 	idGame: number(),
 });
 type TConstructorGameSimLog = InferInput<typeof VConstructorGameSimLog>;
-
-const DB_PATH =
-	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
 
 class GameSimLog implements OGameSimObserver {
 	gameLog: string[][] = [];

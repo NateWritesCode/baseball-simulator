@@ -1,5 +1,19 @@
-import { type InferInput, instance, number, object, parse } from "valibot";
-import { FATIGUE_MAX, FATIGUE_MIN, RATING_MAX, RATING_MIN } from "../constants";
+import { Database } from "bun:sqlite";
+import {
+	type InferInput,
+	instance,
+	nullable,
+	number,
+	object,
+	parse,
+} from "valibot";
+import {
+	DB_PATH,
+	FATIGUE_MAX,
+	FATIGUE_MIN,
+	RATING_MAX,
+	RATING_MIN,
+} from "../constants";
 import { PITCHES_THROWN_STANDARD_MAX } from "../constants/cBaseball";
 import { handleValibotParse } from "../functions";
 import {
@@ -41,6 +55,7 @@ const BASE_FATIGUE = {
 } as const;
 
 type TBattingStatistics = {
+	ab: number;
 	bb: number;
 	doubles: number;
 	h: number;
@@ -84,6 +99,7 @@ type TStatistics = {
 };
 
 const VConstructorGameSimPlayerState = object({
+	idGameGroup: nullable(number()),
 	player: VConstructorGameSimPlayer,
 });
 type TConstructorGameSimPlayerState = InferInput<
@@ -95,16 +111,20 @@ class GameSimPlayerState implements OGameSimObserver {
 		accumulator: 0,
 		current: FATIGUE_MIN,
 	};
+	idGameGroup: number | null;
 	public player: TConstructorGameSimPlayer;
 	statistics: TStatistics;
 
 	constructor(_input: TConstructorGameSimPlayerState) {
 		const input = parse(VConstructorGameSimPlayerState, _input);
 
+		this.idGameGroup = input.idGameGroup;
+
 		this.player = input.player;
 
 		this.statistics = {
 			batting: {
+				ab: 0,
 				bb: 0,
 				doubles: 0,
 				h: 0,
@@ -474,6 +494,109 @@ class GameSimPlayerState implements OGameSimObserver {
 		return weightedPitches[0].pitch;
 	}
 
+	public close() {
+		if (this.idGameGroup) {
+			const db = new Database(DB_PATH, {
+				strict: true,
+			});
+			const queryStatisticsBatting = db.query(/*sql*/ `
+			insert into statisticsPlayerGameGroupBatting
+			(
+				ab, doubles, h, hr, idGameGroup, idPlayer, idTeam, 
+				k, lob, outs, rbi, runs, singles, triples
+			)
+			values (
+				$ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
+				$k, $lob, $outs, $rbi, $runs, $singles, $triples
+			)
+			on conflict (idGameGroup, idPlayer, idTeam) do update set
+				ab = statisticsPlayerGameGroupBatting.ab + $ab,
+				doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
+				h = statisticsPlayerGameGroupBatting.h + $h,
+				hr = statisticsPlayerGameGroupBatting.hr + $hr,
+				k = statisticsPlayerGameGroupBatting.k + $k,
+				lob = statisticsPlayerGameGroupBatting.lob + $lob,
+				outs = statisticsPlayerGameGroupBatting.outs + $outs,
+				rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
+				runs = statisticsPlayerGameGroupBatting.runs + $runs,
+				singles = statisticsPlayerGameGroupBatting.singles + $singles,
+				triples = statisticsPlayerGameGroupBatting.triples + $triples
+		`);
+
+			queryStatisticsBatting.run({
+				ab: this.statistics.batting.ab,
+				doubles: this.statistics.batting.doubles,
+				h: this.statistics.batting.h,
+				hr: this.statistics.batting.hr,
+				idGameGroup: this.idGameGroup,
+				idPlayer: this.player.idPlayer,
+				idTeam: this.player.idTeam,
+				k: this.statistics.batting.k,
+				lob: this.statistics.batting.lob,
+				outs: this.statistics.batting.outs,
+				rbi: this.statistics.batting.rbi,
+				runs: this.statistics.batting.runs,
+				singles: this.statistics.batting.singles,
+				triples: this.statistics.batting.triples,
+			});
+
+			const queryStatisticsPitching = db.query(/*sql*/ `
+			insert into statisticsPlayerGameGroupPitching
+			(
+				battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
+				k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
+				runs, runsEarned, singlesAllowed, triplesAllowed
+			)
+			values (
+				$battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
+				$k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
+				$runs, $runsEarned, $singlesAllowed, $triplesAllowed
+			)
+			on conflict (idGameGroup, idPlayer, idTeam) do update set
+				battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
+				bb = statisticsPlayerGameGroupPitching.bb + $bb,
+				doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
+				hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
+				hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
+				k = statisticsPlayerGameGroupPitching.k + $k,
+				lob = statisticsPlayerGameGroupPitching.lob + $lob,
+				outs = statisticsPlayerGameGroupPitching.outs + $outs,
+				pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
+				pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
+				pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
+				pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
+				runs = statisticsPlayerGameGroupPitching.runs + $runs,
+				runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
+				singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
+				triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
+		`);
+
+			queryStatisticsPitching.run({
+				battersFaced: this.statistics.pitching.battersFaced,
+				bb: this.statistics.pitching.bb,
+				doublesAllowed: this.statistics.pitching.doublesAllowed,
+				hitsAllowed: this.statistics.pitching.hitsAllowed,
+				hrsAllowed: this.statistics.pitching.hrsAllowed,
+				idGameGroup: this.idGameGroup,
+				idPlayer: this.player.idPlayer,
+				idTeam: this.player.idTeam,
+				k: this.statistics.pitching.k,
+				lob: this.statistics.pitching.lob,
+				outs: this.statistics.pitching.outs,
+				pitchesThrown: this.statistics.pitching.pitchesThrown,
+				pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
+				pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
+				pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
+				runs: this.statistics.pitching.runs,
+				runsEarned: this.statistics.pitching.runsEarned,
+				singlesAllowed: this.statistics.pitching.singlesAllowed,
+				triplesAllowed: this.statistics.pitching.triplesAllowed,
+			});
+
+			db.close();
+		}
+	}
+
 	notifyGameEvent(_input: TGameSimEvent) {
 		const [input, error] = handleValibotParse({
 			data: _input,
@@ -491,6 +614,12 @@ class GameSimPlayerState implements OGameSimObserver {
 				break;
 			}
 			case "atBatStart": {
+				const { playerHitter, playerPitcher } = input.data;
+
+				if (playerHitter.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.ab++;
+				}
+
 				break;
 			}
 			case "double": {

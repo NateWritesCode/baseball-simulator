@@ -121,6 +121,7 @@ export const VDbGames = object({
 	),
 	dateTime: string(),
 	idGame: number(),
+	idGameGroup: number(),
 	idTeamAway: number(),
 	idTeamHome: number(),
 });
@@ -328,6 +329,51 @@ export const VDbStates = object({
 	idCountry: number(),
 	idState: number(),
 	name: string(),
+});
+
+export const VDbStatisticsPlayerGameGroupBatting = object({
+	ab: number(),
+	doubles: number(),
+	h: number(),
+	hr: number(),
+	idGameGroup: number(),
+	idPlayer: number(),
+	idTeam: number(),
+	k: number(),
+	lob: number(),
+	outs: number(),
+	rbi: number(),
+	runs: number(),
+	singles: number(),
+	triples: number(),
+});
+
+export const VDbStatisticsPlayerGameGroupFielding = object({
+	errors: number(),
+	idGameGroup: number(),
+	idPlayer: number(),
+	idTeam: number(),
+});
+
+export const VDbStatisticsPlayerGameGroupPitching = object({
+	battersFaced: number(),
+	bb: number(),
+	doublesAllowed: number(),
+	hitsAllowed: number(),
+	hr: number(),
+	idGameGroup: number(),
+	idPlayer: number(),
+	idTeam: number(),
+	lob: number(),
+	outs: number(),
+	pitchesThrown: number(),
+	pitchesThrownBalls: number(),
+	pitchesThrownInPlay: number(),
+	pitchesThrownStrikes: number(),
+	runs: number(),
+	runsEarned: number(),
+	singlesAllowed: number(),
+	triplesAllowed: number(),
 });
 
 export const VDbTeams = object({

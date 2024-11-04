@@ -162,6 +162,7 @@ export type TConstructorGameSimUmpire = InferInput<
 export const VConstructorGameSim = object({
 	dateTime: string(),
 	idGame: number(),
+	idGameGroup: nullable(number()),
 	park: VConstructorGameSimPark,
 	teams: tuple([VConstructorGameSimTeam, VConstructorGameSimTeam]),
 	umpires: tuple([

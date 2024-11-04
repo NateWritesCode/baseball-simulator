@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { type InferInput, instance, number, object, parse } from "valibot";
+import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -18,9 +19,6 @@ const VConstructorGameSimBoxScore = object({
 type TConstructorGameSimBoxScore = InferInput<
 	typeof VConstructorGameSimBoxScore
 >;
-
-const DB_PATH =
-	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
 
 class GameSimBoxScore implements OGameSimObserver {
 	dateTimeEnd = "";

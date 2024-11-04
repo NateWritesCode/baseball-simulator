@@ -58,6 +58,7 @@ export default class GameSim {
 	private dateTime: string;
 	private eventStore: GameSimEventStore;
 	private idGame: number;
+	private idGameGroup: number | null;
 	private isNeutralPark: boolean;
 	private isTopOfInning: boolean;
 	private log: GameSimLog;
@@ -98,6 +99,7 @@ export default class GameSim {
 			idGame: input.idGame,
 		});
 		this.idGame = input.idGame;
+		this.idGameGroup = input.idGameGroup;
 		this.isNeutralPark = true;
 		this.isTopOfInning = true;
 		this.log = new GameSimLog({
@@ -149,6 +151,7 @@ export default class GameSim {
 			});
 			const playerStates = team.players.map((player) => {
 				const playerState = new GameSimPlayerState({
+					idGameGroup: this.idGameGroup,
 					player,
 				});
 				return playerState;
@@ -1237,6 +1240,10 @@ export default class GameSim {
 		return null;
 	}
 
+	private _getAllPlayerStates() {
+		return Object.values(this.playerStates);
+	}
+
 	private _getBallCharacteristicsDifficulty({
 		ballInPlay,
 	}: {
@@ -2185,6 +2192,12 @@ export default class GameSim {
 		this.eventStore.close();
 		this.log.close();
 
+		const playerStates = this._getAllPlayerStates();
+
+		for (const playerState of playerStates) {
+			playerState.close();
+		}
+
 		if (this.testData) {
 			fs.writeFileSync(
 				`test/data/testData-${this.teams[0].idTeam}-${this.teams[1].idTeam}.json`,
@@ -2196,6 +2209,16 @@ export default class GameSim {
 	private _simulateAtBat() {
 		this._notifyObservers({
 			gameSimEvent: "atBatStart",
+			data: {
+				playerHitter: this._getCurrentHitter({
+					teamIndex: this.numTeamOffense,
+				}),
+				playerPitcher: this._getCurrentPitcher({
+					teamIndex: this.numTeamDefense,
+				}),
+				teamDefense: this._getTeamDefenseState(),
+				teamOffense: this._getTeamOffenseState(),
+			},
 		});
 
 		let isAtBatOver = false;

@@ -2,9 +2,7 @@ import {
 	type InferOutput,
 	instance,
 	literal,
-	null_,
 	nullable,
-	nullish,
 	number,
 	object,
 	picklist,
@@ -54,7 +52,12 @@ export const VGameSimEventAtBatEnd = object({
 export type TGameSimEventAtBatEnd = InferOutput<typeof VGameSimEventAtBatEnd>;
 
 export const VGameSimEventAtBatStart = object({
-	data: nullish(null_()),
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
 	gameSimEvent: literal("atBatStart"),
 });
 

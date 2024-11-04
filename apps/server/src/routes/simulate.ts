@@ -36,6 +36,7 @@ const queryGames = /* sql */ `
     select
         dateTime,
         idGame,
+        idGameGroup,
         idTeamAway,
         idTeamHome
     from
@@ -488,6 +489,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			const gameSim = new GameSim({
 				dateTime: game.dateTime,
 				idGame: game.idGame,
+				idGameGroup: game.idGameGroup,
 				park: {
 					...park,
 					wallSegments: dataParksWallSegments,

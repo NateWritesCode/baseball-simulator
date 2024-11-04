@@ -259,6 +259,71 @@ try {
             foreign key (idPlayer) references players(idPlayer)            
         );
 
+
+		create table statisticsPlayerGameGroupBatting (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			ab integer not null,
+			doubles integer not null,
+			h integer not null,
+			hr integer not null,
+			k integer not null,
+			lob integer not null,
+			outs integer not null,
+			rbi integer not null,
+			runs integer not null,
+			singles integer not null,
+			triples integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
+		create table statisticsPlayerGameGroupFielding (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			errors integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
+		create table statisticsPlayerGameGroupPitching (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			battersFaced integer not null,
+			bb integer not null,
+			doublesAllowed integer not null,
+			k integer not null,
+			pitchesThrown integer not null,
+			pitchesThrownBalls integer not null,
+			pitchesThrownInPlay integer not null,
+			pitchesThrownStrikes integer not null,
+			hitsAllowed integer not null,
+			hrsAllowed integer not null,
+			lob integer not null,
+			outs integer not null,
+			runs integer not null,
+			runsEarned integer not null,
+			singlesAllowed integer not null,
+			triplesAllowed integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
         create table leagues (
             abbreviation text not null unique,
             idLeague integer primary key autoincrement,
@@ -319,6 +384,7 @@ try {
 			idGameGroup integer primary key autoincrement,
 			idLeague integer not null,
 			name text not null,
+			standings text,
 			foreign key (idLeague) references leagues(idLeague)
 		);
 
@@ -1368,26 +1434,6 @@ try {
 		},
 	);
 
-	const seedGameGroups = [
-		{
-			idGameGroup: 1,
-			idLeague: 1,
-			name: "2024 Regular Season",
-		},
-	];
-
-	const insertGameGroup = db.query(/*sql*/ `
-		insert into gameGroups (idGameGroup, idLeague, name) values ($idGameGroup, $idLeague, $name);
-	`);
-
-	const insertGameGroups = db.transaction(() => {
-		for (const seedGameGroup of seedGameGroups) {
-			insertGameGroup.run(seedGameGroup);
-		}
-	});
-
-	insertGameGroups(seedGameGroups);
-
 	const seedTeams = Object.values(seedTeamsCitiesSubLeagues)
 		.flat()
 		.map((team, i) => {
@@ -1419,6 +1465,52 @@ try {
 	});
 
 	insertTeams(seedTeams);
+
+	const seedGameGroups = [
+		{
+			idGameGroup: 1,
+			idLeague: 1,
+			name: "2024 Regular Season",
+			standings: JSON.stringify(
+				seedTeams.reduce(
+					(
+						acc: {
+							[key: number]: {
+								idDivision: number;
+								idLeague: number;
+								idSubLeague: number;
+								w: number;
+								l: number;
+							};
+						},
+						team,
+					) => {
+						acc[team.idTeam] = {
+							idDivision: team.idDivision,
+							idLeague: team.idLeague,
+							idSubLeague: team.idSubLeague,
+							w: 0,
+							l: 0,
+						};
+						return acc;
+					},
+					{},
+				),
+			),
+		},
+	];
+
+	const insertGameGroup = db.query(/*sql*/ `
+		insert into gameGroups (idGameGroup, idLeague, name, standings) values ($idGameGroup, $idLeague, $name, $standings);
+	`);
+
+	const insertGameGroups = db.transaction(() => {
+		for (const seedGameGroup of seedGameGroups) {
+			insertGameGroup.run(seedGameGroup);
+		}
+	});
+
+	insertGameGroups(seedGameGroups);
 
 	const seedParks = seedTeams.map((team) => {
 		const idCity = team.idCity;

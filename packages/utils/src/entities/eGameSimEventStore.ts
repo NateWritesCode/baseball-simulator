@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { type InferInput, number, object, omit, parse, string } from "valibot";
+import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import { VDbGameSimEvents } from "../types";
 import {
@@ -7,9 +8,6 @@ import {
 	type TGameSimEvent,
 	VGameSimEvent,
 } from "../types/tGameSim";
-
-const DB_PATH =
-	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db";
 
 const VConstructorGameSimEventStore = object({
 	filePathSave: string(),
