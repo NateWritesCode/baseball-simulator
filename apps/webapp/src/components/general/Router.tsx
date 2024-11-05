@@ -6,6 +6,7 @@ import IdPlayer from "@webapp/components/pages/IdPlayer";
 import Person from "@webapp/components/pages/Person";
 import Player from "@webapp/components/pages/Player";
 import Search from "@webapp/components/pages/Search";
+import Standings from "@webapp/components/pages/Standings";
 import Test from "@webapp/components/pages/Test";
 import { Route, Switch } from "wouter";
 
@@ -21,6 +22,7 @@ const Router = () => {
 				<Route path={"/person"} component={Person} />
 				<Route path={"/person/:idPerson"} component={IdPerson} />
 				<Route path={"/search"} component={Search} />
+				<Route path={"/standings/:idGameGroup"} component={Standings} />
 				<Route path={"/test"} component={Test} />
 				<Route>404: No such page!</Route>
 			</Switch>

@@ -1,4 +1,5 @@
 import {
+	DIRECTIONS,
 	PITCH_NAMES,
 	PITCH_OUTCOMES,
 	RATING_MAX,
@@ -340,7 +341,7 @@ try {
 
         create table divisions (
             abbreviation text not null,
-            direction text check(direction in ('N', 'S', 'E', 'W', 'NE', 'NW', 'SE', 'SW')),
+            direction text check(direction in (${DIRECTIONS.map((direction) => `'${direction}'`).join(", ")})),
             idDivision integer primary key autoincrement,
             idLeague integer not null,
             idSubLeague integer not null,

@@ -18,3 +18,8 @@ export type TApiParamsGetPlayerId = InferInput<typeof VApiParamsGetIdPlayer>;
 
 export const VApiParamsExplore = VFormSchemaExplore;
 export type TApiParamsExplore = InferInput<typeof VApiParamsExplore>;
+
+export const VApiParamsGetStandings = object({
+	idGameGroup: string(),
+});
+export type TApiParamsGetStandings = InferInput<typeof VApiParamsGetStandings>;

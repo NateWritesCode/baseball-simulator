@@ -10,6 +10,7 @@ import {
 import {
 	VDbCities,
 	VDbCountries,
+	VDbGameGroupsStandings,
 	VDbGames,
 	VDbPersons,
 	VDbPersonsAlignment,
@@ -19,6 +20,7 @@ import {
 	VDbPlayers,
 	VDbStates,
 } from "./tDb";
+import { VDbQueryStandingsTeams } from "./tDbQueries";
 
 export const VApiResponseGetIdGame = intersect([
 	pick(VDbGames, ["boxScore", "idGame"]),
@@ -80,4 +82,14 @@ export const VApiResponseGetIdPlayer = intersect([
 
 export type TApiResponseGetIdPlayer = InferInput<
 	typeof VApiResponseGetIdPlayer
+>;
+
+export const VApiResponseGetStandings = array(
+	intersect([
+		VDbQueryStandingsTeams.item,
+		pick(VDbGameGroupsStandings, ["w", "l"]),
+	]),
+);
+export type TApiResponseGetStandings = InferInput<
+	typeof VApiResponseGetStandings
 >;

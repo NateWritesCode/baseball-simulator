@@ -1,4 +1,5 @@
 import { type InferInput, picklist } from "valibot";
+import { DIRECTIONS } from "../constants";
 import {
 	PITCH_IN_PLAY_EVENTS,
 	PITCH_NAMES,
@@ -26,3 +27,6 @@ export type TPicklistRoofType = InferInput<typeof VPicklistRoofType>;
 
 export const VPicklistSurfaceType = picklist([...SURFACE_TYPES]);
 export type TPicklistSurfaceType = InferInput<typeof VPicklistSurfaceType>;
+
+export const VPicklistDirections = picklist([...DIRECTIONS]);
+export type TPicklistDirections = InferInput<typeof VPicklistDirections>;

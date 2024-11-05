@@ -4,15 +4,44 @@ import {
 	number,
 	object,
 	pipe,
+	record,
 	regex,
 	string,
 	transform,
 } from "valibot";
 import {
+	VPicklistDirections,
 	VPicklistPitchOutcomes,
 	VPicklistRoofType,
 	VPicklistSurfaceType,
 } from "./tPicklist";
+
+export const VDbGameGroupsStandings = object({
+	idDivision: nullable(number()),
+	idLeague: number(),
+	idSubLeague: nullable(number()),
+	l: number(),
+	w: number(),
+});
+
+export const VDbGameGroups = object({
+	idGameGroup: number(),
+	idLeague: number(),
+	name: string(),
+	standings: pipe(
+		nullable(string()),
+		transform((input) => {
+			console.log("input", input);
+
+			if (input) {
+				return JSON.parse(input);
+			}
+
+			return null;
+		}),
+		record(string(), VDbGameGroupsStandings),
+	),
+});
 
 export const VGameSimBoxScore = object({
 	dateTimeEnd: string(),
@@ -81,6 +110,15 @@ export const VDbCountries = object({
 	name: string(),
 });
 
+export const VDbDivisions = object({
+	abbreviation: string(),
+	direction: nullable(VPicklistDirections),
+	idDivision: number(),
+	idLeague: number(),
+	idSubLeague: number(),
+	name: string(),
+});
+
 // const boxScore = {
 // 	dateTimeEnd: this.dateTimeEnd,
 // 	dateTimeStart: this.dateTimeStart,
@@ -139,6 +177,12 @@ export const VDbGameSimEvents = object({
 	idTeamOffense: number(),
 	pitchName: nullable(string()),
 	pitchOutcome: nullable(VPicklistPitchOutcomes),
+});
+
+export const VDbLeagues = object({
+	abbreviation: string(),
+	idLeague: number(),
+	name: string(),
 });
 
 export const VDbPlayers = object({
@@ -374,6 +418,13 @@ export const VDbStatisticsPlayerGameGroupPitching = object({
 	runsEarned: number(),
 	singlesAllowed: number(),
 	triplesAllowed: number(),
+});
+
+export const VDbSubLeagues = object({
+	abbreviation: string(),
+	idLeague: number(),
+	idSubLeague: number(),
+	name: string(),
 });
 
 export const VDbTeams = object({
