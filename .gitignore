@@ -3,3 +3,4 @@ node_modules
 *.db
 bun.lockb
 dist
+apps/server/test/data/*
