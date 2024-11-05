@@ -1,9 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@webapp/components/ui/button";
 import { honoClient } from "@webapp/services/hono";
 import { Loader2, Play } from "lucide-react";
 
 const SimulateButton = () => {
+	const queryClient = useQueryClient();
 	const mutation = useMutation({
 		mutationFn: async () => {
 			try {
@@ -18,6 +19,9 @@ const SimulateButton = () => {
 				console.error("error", error);
 				throw new Error("There was an error fetching the data");
 			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries();
 		},
 	});
 

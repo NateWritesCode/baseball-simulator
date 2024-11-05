@@ -6,6 +6,7 @@ import {
 	RATING_MIN,
 	ROOF_TYPES,
 	SURFACE_TYPES,
+	TEAM_NAMES,
 } from "@baseball-simulator/utils/constants";
 import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
@@ -116,7 +117,7 @@ try {
 		);
 
         create table persons (
-            dateOfBirth date not null,
+            dateOfBirth text not null,
             firstName text not null,
             idCityOfBirth integer not null,
             idPerson integer primary key autoincrement,
@@ -372,7 +373,7 @@ try {
 			idGameGroup integer not null,
             idTeamAway integer not null,
             idTeamHome integer not null,
-            dateTime date not null,
+            dateTime text not null,
 			
 			foreign key (idGameGroup) references gameGroups(idGameGroup),
             foreign key (idTeamAway) references teams(idTeam),
@@ -493,7 +494,7 @@ try {
 		);
 
 		create table universe (
-			dateTime date not null
+			dateTime text not null
 		);
 
         pragma foreign_keys = on;
@@ -1409,6 +1410,8 @@ try {
 		return result;
 	}
 
+	const nicknamesToExclude: string[] = [];
+
 	const seedTeamsCitiesSubLeagues = Object.keys(seedTeamsCitiesBySubLeague).map(
 		(idSubLeague) => {
 			const cities = seedTeamsCitiesBySubLeague[idSubLeague];
@@ -1419,9 +1422,11 @@ try {
 			const citiesWithDivision = assignCitiesToDivisions(cities, divisions);
 
 			return citiesWithDivision.map((city) => {
-				const mascot = faker.word.noun();
-				const nickname =
-					`${mascot}s`.charAt(0).toUpperCase() + `${mascot}s`.slice(1);
+				const nicknamesToChooseFrom = TEAM_NAMES.filter(
+					(nickname) => !nicknamesToExclude.includes(nickname),
+				);
+				const nickname = faker.helpers.arrayElement(nicknamesToChooseFrom);
+				nicknamesToExclude.push(nickname);
 				const abbreviation = `${city.name.slice(0, 3).toUpperCase()}${nickname.slice(0, 3).toUpperCase()}`;
 
 				return {
@@ -1753,7 +1758,7 @@ try {
 
 		const gameDates: string[] = [];
 		for (let i = 0; i < totalDays; i++) {
-			gameDates.push(startDate.add(i, "day").format());
+			gameDates.push(startDate.add(i, "day").format("YYYY-MM-DD HH:mm:ss"));
 		}
 
 		const teamGamesPlayed = new Map(teams.map((team) => [team.idTeam, 0]));
@@ -2649,7 +2654,7 @@ try {
 	`);
 
 	insertUniverse.run({
-		dateTime: dayjs("2024-04-01").format(),
+		dateTime: "2024-04-01 00:00:00",
 	});
 } catch (error) {
 	console.error("Error: ", error);

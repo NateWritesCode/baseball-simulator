@@ -1,6 +1,4 @@
-import { Database } from "bun:sqlite";
 import { type InferInput, number, object, omit, parse, string } from "valibot";
-import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import { VDbGameSimEvents } from "../types";
 import {
@@ -28,9 +26,9 @@ export default class GameSimEventStore implements OGameSimObserver {
 	}
 
 	close = () => {
-		const db = new Database(DB_PATH, {
-			strict: true,
-		});
+		// const db = new Database(DB_PATH, {
+		// 	strict: true,
+		// });
 
 		const keys = Object.keys(
 			omit(VDbGameSimEvents, ["idGameSimEvent"]).entries,
@@ -171,19 +169,21 @@ export default class GameSimEventStore implements OGameSimObserver {
 			gameSimEvents.push(values);
 		}
 
-		const insertGameSimEvent = db.query(/*sql*/ `
-				insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
-			`);
+		// const insertGameSimEvent = db.query(/*sql*/ `
+		// 		insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
+		// 	`);
 
-		const insertGameSimEvents = db.transaction(() => {
-			for (const gameSimEvent of gameSimEvents) {
-				insertGameSimEvent.run(gameSimEvent);
-			}
-		});
+		// const insertGameSimEvents = db.transaction(() => {
+		// 	for (const gameSimEvent of gameSimEvents) {
+		// 		insertGameSimEvent.run(gameSimEvent);
+		// 	}
+		// });
 
-		insertGameSimEvents(gameSimEvents);
+		// insertGameSimEvents(gameSimEvents);
 
-		db.close();
+		// db.close();
+
+		return gameSimEvents;
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {

@@ -23,10 +23,8 @@ import PageNoDataFound from "../general/PageNoDataFound";
 type Team = TApiResponseGetStandings[number];
 
 type OrganizedTeams = {
-	[league: string]: {
-		[subLeague: string]: {
-			[division: string]: Team[];
-		};
+	[subLeague: string]: {
+		[division: string]: Team[];
 	};
 };
 
@@ -79,132 +77,113 @@ const Standings = () => {
 	}
 
 	const organized: OrganizedTeams = {};
+	let leagueName = "";
 
-	// First organize by league
+	// First organize by subLeague
 	for (const team of data) {
-		const leagueName = team.league.name;
+		leagueName = team.league.name;
 		const subLeagueName = team.subLeague.name;
 		const divisionName = team.division?.name || "No Division";
 
-		organized[leagueName] = organized[leagueName] || {};
-		organized[leagueName][subLeagueName] =
-			organized[leagueName][subLeagueName] || {};
-		organized[leagueName][subLeagueName][divisionName] =
-			organized[leagueName][subLeagueName][divisionName] || [];
+		organized[subLeagueName] = organized[subLeagueName] || {};
+		organized[subLeagueName][divisionName] =
+			organized[subLeagueName][divisionName] || [];
 
-		organized[leagueName][subLeagueName][divisionName].push(team);
+		organized[subLeagueName][divisionName].push(team);
 	}
 
 	// Sort divisions by direction if available (East to West, North to South)
 	const directionOrder = ["E", "NE", "N", "NW", "W", "SW", "S", "SE"];
 
 	// Sort teams within each division
-	for (const league in organized) {
-		for (const subLeague in organized[league]) {
-			const divisions = organized[league][subLeague];
+	for (const subLeague in organized) {
+		const divisions = organized[subLeague];
 
-			for (const division in divisions) {
-				divisions[division].sort((a, b) => {
-					// First sort by win percentage
-					const pctA = calculatePct(a.w, a.l);
-					const pctB = calculatePct(b.w, b.l);
+		for (const division in divisions) {
+			divisions[division].sort((a, b) => {
+				// First sort by win percentage
+				const pctA = calculatePct(a.w, a.l);
+				const pctB = calculatePct(b.w, b.l);
 
-					if (pctB !== pctA) return pctB - pctA;
+				if (pctB !== pctA) return pctB - pctA;
 
-					// If win percentages are equal, sort by city name
-					return a.city.name.localeCompare(b.city.name);
-				});
-			}
-
-			// Sort divisions by direction
-			const sortedDivisions: { [division: string]: Team[] } = {};
-			const divisionKeys = Object.keys(divisions).sort((a, b) => {
-				const aDir = divisions[a][0]?.division?.direction;
-				const bDir = divisions[b][0]?.division?.direction;
-				if (!aDir && !bDir) return a.localeCompare(b);
-				if (!aDir) return 1;
-				if (!bDir) return -1;
-				return directionOrder.indexOf(aDir) - directionOrder.indexOf(bDir);
+				// If win percentages are equal, sort by city name
+				return a.city.name.localeCompare(b.city.name);
 			});
-
-			for (const key of divisionKeys) {
-				sortedDivisions[key] = divisions[key];
-			}
-			organized[league][subLeague] = sortedDivisions;
 		}
+
+		// Sort divisions by direction
+		const sortedDivisions: { [division: string]: Team[] } = {};
+		const divisionKeys = Object.keys(divisions).sort((a, b) => {
+			const aDir = divisions[a][0]?.division?.direction;
+			const bDir = divisions[b][0]?.division?.direction;
+			if (!aDir && !bDir) return a.localeCompare(b);
+			if (!aDir) return 1;
+			if (!bDir) return -1;
+			return directionOrder.indexOf(aDir) - directionOrder.indexOf(bDir);
+		});
+
+		for (const key of divisionKeys) {
+			sortedDivisions[key] = divisions[key];
+		}
+		organized[subLeague] = sortedDivisions;
 	}
 
 	return (
 		<div className="container mx-auto">
+			<h2 className="text-2xl font-bold mb-6 text-center">{leagueName}</h2>
 			<div className="flex flex-col md:flex-row gap-8">
-				{Object.entries(organized).map(([leagueName, subLeagues]) => (
-					<div key={leagueName} className="flex-1">
+				{Object.entries(organized).map(([subLeagueName, divisions]) => (
+					<div key={subLeagueName} className="flex-1">
 						<Card>
 							<CardHeader>
-								<CardTitle>{leagueName}</CardTitle>
+								<CardTitle>{subLeagueName}</CardTitle>
 							</CardHeader>
 							<CardContent>
-								{Object.entries(subLeagues).map(
-									([subLeagueName, divisions]) => (
-										<div key={subLeagueName}>
-											<h3 className="text-lg font-semibold mb-4">
-												{subLeagueName}
-											</h3>
-											<div className="space-y-6">
-												{Object.entries(divisions).map(
-													([divisionName, teams]) => (
-														<div key={divisionName}>
-															<h4 className="text-sm font-medium mb-2">
-																{divisionName}{" "}
-																{teams[0]?.division?.direction
-																	? `(${teams[0].division.direction})`
-																	: ""}
-															</h4>
-															<Table>
-																<TableHeader>
-																	<TableRow>
-																		<TableHead>Team</TableHead>
-																		<TableHead className="text-right">
-																			W
-																		</TableHead>
-																		<TableHead className="text-right">
-																			L
-																		</TableHead>
-																		<TableHead className="text-right">
-																			PCT
-																		</TableHead>
-																	</TableRow>
-																</TableHeader>
-																<TableBody>
-																	{teams.map((team) => (
-																		<TableRow key={team.idTeam}>
-																			<TableCell className="font-medium">
-																				{team.city.name} {team.nickname}
-																			</TableCell>
-																			<TableCell className="text-right">
-																				{team.w}
-																			</TableCell>
-																			<TableCell className="text-right">
-																				{team.l}
-																			</TableCell>
-																			<TableCell className="text-right">
-																				{team.w + team.l === 0
-																					? ".000"
-																					: calculatePct(team.w, team.l)
-																							.toFixed(3)
-																							.substring(1)}
-																			</TableCell>
-																		</TableRow>
-																	))}
-																</TableBody>
-															</Table>
-														</div>
-													),
-												)}
-											</div>
+								<div className="space-y-6">
+									{Object.entries(divisions).map(([divisionName, teams]) => (
+										<div key={divisionName}>
+											<h4 className="text-sm font-medium mb-2">
+												{divisionName}{" "}
+												{teams[0]?.division?.direction
+													? `(${teams[0].division.direction})`
+													: ""}
+											</h4>
+											<Table>
+												<TableHeader>
+													<TableRow>
+														<TableHead>Team</TableHead>
+														<TableHead className="text-right">W</TableHead>
+														<TableHead className="text-right">L</TableHead>
+														<TableHead className="text-right">PCT</TableHead>
+													</TableRow>
+												</TableHeader>
+												<TableBody>
+													{teams.map((team) => (
+														<TableRow key={team.idTeam}>
+															<TableCell className="font-medium">
+																{team.city.name} {team.nickname}
+															</TableCell>
+															<TableCell className="text-right">
+																{team.w}
+															</TableCell>
+															<TableCell className="text-right">
+																{team.l}
+															</TableCell>
+															<TableCell className="text-right">
+																{team.w + team.l === 0
+																	? ".000"
+																	: calculatePct(team.w, team.l)
+																			.toFixed(3)
+																			.substring(1)}
+															</TableCell>
+														</TableRow>
+													))}
+												</TableBody>
+											</Table>
 										</div>
-									),
-								)}
+									))}
+								</div>
 							</CardContent>
 						</Card>
 					</div>

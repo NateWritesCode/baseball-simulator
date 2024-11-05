@@ -83,8 +83,6 @@ const standings = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 					};
 				});
 
-				console.log("returnData", returnData);
-
 				const [dataResponse, errorResponse] = handleValibotParse({
 					data: returnData,
 					schema: VApiResponseGetStandings,

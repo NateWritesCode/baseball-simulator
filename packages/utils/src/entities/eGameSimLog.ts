@@ -1,13 +1,10 @@
-import { Database } from "bun:sqlite";
 import { type InferInput, number, object, parse, string } from "valibot";
-import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
 	VGameSimEvent,
 } from "../types/tGameSim";
-import Logger from "./eLogger";
 
 const VConstructorGameSimLog = object({
 	filePathSave: string(),
@@ -26,29 +23,31 @@ class GameSimLog implements OGameSimObserver {
 	}
 
 	close = () => {
-		const db = new Database(DB_PATH, {
-			strict: true,
-		});
+		// 	const db = new Database(DB_PATH, {
+		// 		strict: true,
+		// 	});
 
-		const insertGameSimLog = db.query(/*sql*/ `
-			insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
-		`);
+		// 	const insertGameSimLog = db.query(/*sql*/ `
+		// 		insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
+		// 	`);
 
-		insertGameSimLog.run({
-			gameSimLog: JSON.stringify(this.gameLog),
-			idGame: this.idGame,
-		});
+		// 	insertGameSimLog.run({
+		// 		gameSimLog: JSON.stringify(this.gameLog),
+		// 		idGame: this.idGame,
+		// 	});
 
-		db.close();
+		// 	db.close();
+
+		return this.gameLog;
 	};
 
 	logDanger = (info: string[]) => {
-		Logger.danger.apply(null, info);
+		// Logger.danger.apply(null, info);
 		this.gameLog.push(info);
 	};
 
 	logInfo = (info: string[]) => {
-		Logger.info.apply(null, info);
+		// Logger.info.apply(null, info);
 		this.gameLog.push(info);
 	};
 

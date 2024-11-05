@@ -1,4 +1,3 @@
-import { Database } from "bun:sqlite";
 import fs from "node:fs";
 import {
 	type InferInput,
@@ -12,7 +11,7 @@ import {
 	picklist,
 	union,
 } from "valibot";
-import { DB_PATH, RATING_MAX } from "../constants";
+import { RATING_MAX } from "../constants";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
@@ -78,6 +77,7 @@ export default class GameSim {
 	private playerStates: {
 		[key: number]: GameSimPlayerState;
 	};
+	private result: any;
 	private teams: [TConstructorGameSimTeam, TConstructorGameSimTeam];
 	private teamStates: {
 		[key: number]: GameSimTeamState;
@@ -119,6 +119,7 @@ export default class GameSim {
 			park: input.park,
 		});
 		this.playerStates = {};
+		this.result = {};
 		this.teamStates = {};
 		this.testData = null;
 		this.umpireHp = new GameSimUmpireState({
@@ -884,43 +885,41 @@ export default class GameSim {
 	}
 
 	private _close = () => {
-		this.boxScore.close();
-		this.eventStore.close();
-		this.log.close();
-
+		const boxScore = this.boxScore.close();
+		this.result.boxScore = boxScore;
+		const gameSimEvents = this.eventStore.close();
+		this.result.gameSimEvents = gameSimEvents;
+		const log = this.log.close();
+		this.result.log = log;
 		const playerStates = this._getAllPlayerStates();
-
-		for (const playerState of playerStates) {
-			playerState.close();
-		}
+		this.result.players = playerStates.map((playerState) =>
+			playerState.close(),
+		);
 
 		if (this.idGameGroup) {
-			const db = new Database(DB_PATH, {
-				strict: true,
-			});
-
-			const query = db.query(
-				/*sql*/ `
-					update gameGroups 
-					set standings = json_patch(
-						coalesce(standings, '{}'),
-						json_object(
-							cast($idTeam as text), 
-							json_object(
-								cast($field as text),
-								coalesce(json_extract(standings, '$.' || $idTeam || '.' || $field), 0) + 1
-							)
-						)
-					)
-					where idgamegroup = $idGameGroup
-				`,
-			);
-
+			// const db = new Database(DB_PATH, {
+			// 	strict: true,
+			// });
+			// const query = db.query(
+			// 	/*sql*/ `
+			// 		update gameGroups
+			// 		set standings = json_patch(
+			// 			coalesce(standings, '{}'),
+			// 			json_object(
+			// 				cast($idTeam as text),
+			// 				json_object(
+			// 					cast($field as text),
+			// 					coalesce(json_extract(standings, '$.' || $idTeam || '.' || $field), 0) + 1
+			// 				)
+			// 			)
+			// 		)
+			// 		where idgamegroup = $idGameGroup
+			// 	`,
+			// );
 			const numRunsAway =
 				this.teamStates[this.teams[0].idTeam].statistics.batting;
 			const numRunsHome =
 				this.teamStates[this.teams[1].idTeam].statistics.batting;
-
 			const idWinningTeam =
 				numRunsAway.runs > numRunsHome.runs
 					? this.teams[0].idTeam
@@ -929,19 +928,20 @@ export default class GameSim {
 				numRunsAway.runs < numRunsHome.runs
 					? this.teams[0].idTeam
 					: this.teams[1].idTeam;
+			// query.run({
+			// 	idGameGroup: this.idGameGroup,
+			// 	idTeam: idWinningTeam,
+			// 	field: "w",
+			// });
+			// query.run({
+			// 	idGameGroup: this.idGameGroup,
+			// 	idTeam: idLosingTeam,
+			// 	field: "l",
+			// });
 
-			query.run({
-				idGameGroup: this.idGameGroup,
-				idTeam: idWinningTeam,
-				field: "w",
-			});
-			query.run({
-				idGameGroup: this.idGameGroup,
-				idTeam: idLosingTeam,
-				field: "l",
-			});
+			this.result.idLosingTeam = idLosingTeam;
+			this.result.idWinningTeam = idWinningTeam;
 		}
-
 		if (this.testData) {
 			fs.writeFileSync(
 				`test/data/testData-${this.teams[0].idTeam}-${this.teams[1].idTeam}.json`,
@@ -2257,6 +2257,8 @@ export default class GameSim {
 		});
 
 		this._close();
+
+		return this.result;
 	}
 
 	private _simulateAtBat() {

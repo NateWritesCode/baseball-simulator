@@ -31,8 +31,6 @@ export const VDbGameGroups = object({
 	standings: pipe(
 		nullable(string()),
 		transform((input) => {
-			console.log("input", input);
-
 			if (input) {
 				return JSON.parse(input);
 			}

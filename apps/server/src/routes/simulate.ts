@@ -1,4 +1,3 @@
-import { GameSim } from "@baseball-simulator/utils/entities";
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
 import {
 	VConstructorGameSimCoach,
@@ -22,34 +21,36 @@ import {
 } from "@baseball-simulator/utils/types";
 import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
+import { cpus } from "node:os";
 import { array, intersect, object, omit, pick } from "valibot";
+import type { WorkerData } from "./gameSimWorker";
 
 const VGames = array(omit(VDbGames, ["boxScore"]));
-
-const queryGames = /* sql */ `
-    with myUniverse as (
-        select
-            dateTime
-        from
-            universe
-    )
-    select
-        dateTime,
-        idGame,
-        idGameGroup,
-        idTeamAway,
-        idTeamHome
-    from
-        games
-    where
-        dateTime = (select dateTime from myUniverse)
-    ;
-`;
 
 const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 	"/simulate",
 	async (c) => {
 		const db = c.var.db;
+
+		const queryGames = /* sql */ `
+            with myUniverse as (
+                select
+                    dateTime
+                from
+                    universe
+            )
+            select
+                dateTime,
+                idGame,
+                idGameGroup,
+                idTeamAway,
+                idTeamHome
+            from
+                games
+            where
+                dateTime = (select dateTime from myUniverse)
+            ;
+        `;
 
 		const [dataGames, errorGames] = handleValibotParse({
 			data: db.query(queryGames).all(),
@@ -393,123 +394,163 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			return c.text("Internal Server Error", 500);
 		}
 
-		console.info("Starting simulation");
-		for (const game of dataGames.slice(0, 1)) {
-			const queryUmpires = /* sql */ `
-                    select
-                        persons.dateOfBirth,
-                        persons.firstName,
-                        persons.idPerson,
-                        persons.lastName,
-                        persons.middleName,
-                        persons.nickname,
-                        personsAlignment.chaotic as "alignment.chaotic",
-                        personsAlignment.evil as "alignment.evil",
-                        personsAlignment.good as "alignment.good",
-                        personsAlignment.lawful as "alignment.lawful",
-                        personsAlignment.neutralMorality as "alignment.neutralMorality",
-                        personsAlignment.neutralOrder as "alignment.neutralOrder",
-                        personsMyersBriggs.extroversion as "myersBriggs.extroversion",
-                        personsMyersBriggs.feeling as "myersBriggs.feeling",
-                        personsMyersBriggs.introversion as "myersBriggs.introversion",
-                        personsMyersBriggs.intuition as "myersBriggs.intuition",
-                        personsMyersBriggs.judging as "myersBriggs.judging",
-                        personsMyersBriggs.perceiving as "myersBriggs.perceiving",
-                        personsMyersBriggs.sensing as "myersBriggs.sensing",
-                        personsMyersBriggs.thinking as "myersBriggs.thinking",
-                        personsMental.charisma as "mental.charisma",
-                        personsMental.constitution as "mental.constitution",
-                        personsMental.intelligence as "mental.intelligence",
-                        personsMental.loyalty as "mental.loyalty",
-                        personsMental.wisdom as "mental.wisdom",
-                        personsMental.workEthic as "mental.workEthic",
-                        personsPhysical.height as "physical.height",
-                        personsPhysical.weight as "physical.weight",
-                        umpires.idUmpire,
-                        umpiresRatings.balkAccuracy,
-                        umpiresRatings.checkSwingAccuracy,
-                        umpiresRatings.consistency,
-                        umpiresRatings.expandedZone,
-                        umpiresRatings.favorFastballs,
-                        umpiresRatings.favorOffspeed,
-                        umpiresRatings.highZone,
-                        umpiresRatings.insideZone,
-                        umpiresRatings.lowZone,
-                        umpiresRatings.outsideZone,
-                        umpiresRatings.pitchFramingInfluence,
-                        umpiresRatings.reactionTime
-                    from
-                        umpires
-                    inner join
-                        persons on umpires.idPerson = persons.idPerson
-                    inner join
-                        personsAlignment on persons.idPerson = personsAlignment.idPerson
-                    inner join
-                        personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
-                    inner join
-                        personsMental on persons.idPerson = personsMental.idPerson
-                    inner join
-                        personsPhysical on persons.idPerson = personsPhysical.idPerson
-                    inner join
-                        umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
-                    limit 
-                        4
-                    ;
-                `;
+		const numCpus = Math.max(1, cpus().length - 1);
 
-			const [dataUmpires, errorUmpires] = handleValibotParse({
-				data: db.query(queryUmpires).all(),
-				schema: array(VConstructorGameSimUmpire),
-				shouldParseDotNotation: true,
-			});
+		console.log("numCpus", numCpus);
 
-			if (errorUmpires || !dataUmpires) {
-				return c.text("Internal Server Error", 500);
-			}
+		const workerPool: Worker[] = [];
 
-			const teams = dataTeams
-				.filter(
-					(t) => t.idTeam === game.idTeamAway || t.idTeam === game.idTeamHome,
-				)
-				.sort((a) => (a.idTeam === game.idTeamAway ? -1 : 1))
-				.map((team) => ({
-					...team,
-					coaches: dataCoaches.filter((coach) => coach.idTeam === team.idTeam),
-					players: dataPlayers.filter(
-						(player) => player.idTeam === team.idTeam,
-					),
-				}));
-
-			const park = dataParks.find((park) => park.idTeam === game.idTeamHome);
-
-			if (!park) {
-				return c.text("Internal Server Error", 500);
-			}
-
-			const gameSim = new GameSim({
-				dateTime: game.dateTime,
-				idGame: game.idGame,
-				idGameGroup: game.idGameGroup,
-				park: {
-					...park,
-					wallSegments: dataParksWallSegments,
-				},
-				teams: [teams[0], teams[1]],
-				umpires: [
-					dataUmpires[0],
-					dataUmpires[1],
-					dataUmpires[2],
-					dataUmpires[3],
-				],
-			});
-
-			gameSim.simulate();
+		for (let i = 0; i < numCpus; i++) {
+			const worker = new Worker(
+				"/home/nathanh81/Projects/baseball-simulator/apps/server/src/routes/gameSimWorker.ts",
+			);
+			workerPool.push(worker);
 		}
-		const timeEnd = performance.now();
 
-		console.info(
-			`Simulation took $timeEnd - timeStartms for ${dataGames.length} games`,
-		);
+		let nextWorker = 0;
+
+		const simulateGame = async (game: (typeof dataGames)[number]) => {
+			return new Promise((resolve, reject) => {
+				const worker = workerPool[nextWorker];
+				nextWorker = (nextWorker + 1) % workerPool.length;
+
+				const queryUmpires = /* sql */ `
+                        select
+                            persons.dateOfBirth,
+                            persons.firstName,
+                            persons.idPerson,
+                            persons.lastName,
+                            persons.middleName,
+                            persons.nickname,
+                            personsAlignment.chaotic as "alignment.chaotic",
+                            personsAlignment.evil as "alignment.evil",
+                            personsAlignment.good as "alignment.good",
+                            personsAlignment.lawful as "alignment.lawful",
+                            personsAlignment.neutralMorality as "alignment.neutralMorality",
+                            personsAlignment.neutralOrder as "alignment.neutralOrder",
+                            personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                            personsMyersBriggs.feeling as "myersBriggs.feeling",
+                            personsMyersBriggs.introversion as "myersBriggs.introversion",
+                            personsMyersBriggs.intuition as "myersBriggs.intuition",
+                            personsMyersBriggs.judging as "myersBriggs.judging",
+                            personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                            personsMyersBriggs.sensing as "myersBriggs.sensing",
+                            personsMyersBriggs.thinking as "myersBriggs.thinking",
+                            personsMental.charisma as "mental.charisma",
+                            personsMental.constitution as "mental.constitution",
+                            personsMental.intelligence as "mental.intelligence",
+                            personsMental.loyalty as "mental.loyalty",
+                            personsMental.wisdom as "mental.wisdom",
+                            personsMental.workEthic as "mental.workEthic",
+                            personsPhysical.height as "physical.height",
+                            personsPhysical.weight as "physical.weight",
+                            umpires.idUmpire,
+                            umpiresRatings.balkAccuracy,
+                            umpiresRatings.checkSwingAccuracy,
+                            umpiresRatings.consistency,
+                            umpiresRatings.expandedZone,
+                            umpiresRatings.favorFastballs,
+                            umpiresRatings.favorOffspeed,
+                            umpiresRatings.highZone,
+                            umpiresRatings.insideZone,
+                            umpiresRatings.lowZone,
+                            umpiresRatings.outsideZone,
+                            umpiresRatings.pitchFramingInfluence,
+                            umpiresRatings.reactionTime
+                        from
+                            umpires
+                        inner join
+                            persons on umpires.idPerson = persons.idPerson
+                        inner join
+                            personsAlignment on persons.idPerson = personsAlignment.idPerson
+                        inner join
+                            personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+                        inner join
+                            personsMental on persons.idPerson = personsMental.idPerson
+                        inner join
+                            personsPhysical on persons.idPerson = personsPhysical.idPerson
+                        inner join
+                            umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
+                        limit 
+                            4
+                        ;
+                    `;
+
+				const [dataUmpires, errorUmpires] = handleValibotParse({
+					data: db.query(queryUmpires).all(),
+					schema: array(VConstructorGameSimUmpire),
+					shouldParseDotNotation: true,
+				});
+
+				if (errorUmpires || !dataUmpires) {
+					return c.text("Internal Server Error", 500);
+				}
+
+				const teams = dataTeams
+					.filter(
+						(t) => t.idTeam === game.idTeamAway || t.idTeam === game.idTeamHome,
+					)
+					.sort((a) => (a.idTeam === game.idTeamAway ? -1 : 1))
+					.map((team) => ({
+						...team,
+						coaches: dataCoaches.filter(
+							(coach) => coach.idTeam === team.idTeam,
+						),
+						players: dataPlayers.filter(
+							(player) => player.idTeam === team.idTeam,
+						),
+					}));
+
+				const park = dataParks.find((park) => park.idTeam === game.idTeamHome);
+
+				if (!park) {
+					return c.text("Internal Server Error", 500);
+				}
+
+				worker.onmessage = (event) => resolve(event.data);
+				worker.onerror = reject;
+
+				const workerData: WorkerData = {
+					game,
+					teams,
+					park,
+					umpires: [
+						dataUmpires[0],
+						dataUmpires[1],
+						dataUmpires[2],
+						dataUmpires[3],
+					],
+					wallSegments: dataParksWallSegments,
+				};
+
+				worker.postMessage(workerData);
+			});
+		};
+
+		try {
+			const chunkSize = workerPool.length;
+			for (let i = 0; i < dataGames.length; i += chunkSize) {
+				const chunk = dataGames.slice(i, i + chunkSize);
+				await Promise.all(chunk.map(simulateGame));
+			}
+		} catch (error) {
+			console.error("Error during game simulation:", error);
+			return c.text("Internal Server Error", 500);
+		} finally {
+			// Clean up workers
+			for (const worker of workerPool) {
+				worker.terminate();
+			}
+		}
+
+		const dbQueryAdvanceDay = /* sql */ `
+            update universe
+            set
+                dateTime = datetime(dateTime, '+1 day');
+            ;
+        `;
+
+		db.query(dbQueryAdvanceDay).run();
 
 		return c.text("OK", 200);
 	},

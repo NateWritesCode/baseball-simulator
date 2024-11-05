@@ -1,6 +1,4 @@
-import { Database } from "bun:sqlite";
 import { type InferInput, instance, number, object, parse } from "valibot";
-import { DB_PATH } from "../constants";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -43,9 +41,9 @@ class GameSimBoxScore implements OGameSimObserver {
 	}
 
 	close = () => {
-		const db = new Database(DB_PATH, {
-			strict: true,
-		});
+		// const db = new Database(DB_PATH, {
+		// 	strict: true,
+		// });
 
 		const isHomeTeamWinner =
 			this.teamHome.statistics.batting.runs >
@@ -90,18 +88,20 @@ class GameSimBoxScore implements OGameSimObserver {
 			},
 		};
 
-		const query = /*sql*/ db.query(`
-			update games set boxScore = $boxScore where idGame = $idGame;
-		`);
+		// const query = /*sql*/ db.query(`
+		// 	update games set boxScore = $boxScore where idGame = $idGame;
+		// `);
 
-		query.run({
-			boxScore: JSON.stringify(boxScore),
-			idGame: this.idGame,
-		});
+		// query.run({
+		// 	boxScore: JSON.stringify(boxScore),
+		// 	idGame: this.idGame,
+		// });
 
-		db.close();
+		// db.close();
 
-		return;
+		return {
+			boxScore,
+		};
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {
