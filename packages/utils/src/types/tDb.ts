@@ -1,4 +1,5 @@
 import {
+	type InferOutput,
 	array,
 	nullable,
 	number,
@@ -45,24 +46,24 @@ export const VGameSimBoxScore = object({
 	dateTimeEnd: string(),
 	dateTimeStart: string(),
 	idGame: number(),
-	inningRuns: object({
-		0: array(number()),
-		1: array(number()),
-	}),
+	inningRuns: array(array(number())),
 	park: string(),
 	pitcherLoss: object({
 		idPlayer: number(),
-		name: string(),
+		firstName: string(),
+		lastName: string(),
 	}),
 	pitcherWin: object({
 		idPlayer: number(),
-		name: string(),
+		firstName: string(),
+		lastName: string(),
 	}),
 	teamAway: object({
 		abbreviation: string(),
 		city: string(),
 		errors: number(),
 		hits: number(),
+		idTeam: number(),
 		nickname: string(),
 		runs: number(),
 	}),
@@ -71,10 +72,13 @@ export const VGameSimBoxScore = object({
 		city: string(),
 		errors: number(),
 		hits: number(),
+		idTeam: number(),
 		nickname: string(),
 		runs: number(),
 	}),
 });
+
+export type TGameSimBoxScore = InferOutput<typeof VGameSimBoxScore>;
 
 export const VDbCities = object({
 	idCity: number(),

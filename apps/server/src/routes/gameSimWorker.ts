@@ -29,5 +29,6 @@ self.onmessage = (event: MessageEvent<WorkerData>) => {
 	});
 
 	const result = gameSim.simulate();
+
 	self.postMessage(result);
 };

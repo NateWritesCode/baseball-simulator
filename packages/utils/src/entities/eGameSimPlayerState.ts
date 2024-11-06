@@ -11,7 +11,9 @@ import { PITCHES_THROWN_STANDARD_MAX } from "../constants/cBaseball";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
+	type TGameSimBattingStatistics,
 	type TGameSimEvent,
+	type TGameSimPitchingStatistics,
 	VGameSimEvent,
 } from "../types/tGameSim";
 import {
@@ -47,48 +49,14 @@ const BASE_FATIGUE = {
 	FIELD_SPECTACULAR: 0.4, // Spectacular fielding play
 } as const;
 
-type TBattingStatistics = {
-	ab: number;
-	bb: number;
-	doubles: number;
-	h: number;
-	hr: number;
-	k: number;
-	lob: number;
-	outs: number;
-	rbi: number;
-	runs: number;
-	singles: number;
-	triples: number;
-};
-
-type TPitchingStatistics = {
-	battersFaced: number;
-	bb: number;
-	doublesAllowed: number;
-	k: number;
-	pitchesThrown: number;
-	pitchesThrownBalls: number;
-	pitchesThrownInPlay: number;
-	pitchesThrownStrikes: number;
-	hitsAllowed: number;
-	hrsAllowed: number;
-	lob: number;
-	outs: number;
-	runs: number;
-	runsEarned: number;
-	singlesAllowed: number;
-	triplesAllowed: number;
-};
-
 type TFatigue = {
 	accumulator: number;
 	current: number;
 };
 
 type TStatistics = {
-	batting: TBattingStatistics;
-	pitching: TPitchingStatistics;
+	batting: TGameSimBattingStatistics;
+	pitching: TGameSimPitchingStatistics;
 };
 
 const VConstructorGameSimPlayerState = object({
@@ -118,7 +86,6 @@ class GameSimPlayerState implements OGameSimObserver {
 		this.statistics = {
 			batting: {
 				ab: 0,
-				bb: 0,
 				doubles: 0,
 				h: 0,
 				hr: 0,
@@ -488,146 +455,141 @@ class GameSimPlayerState implements OGameSimObserver {
 	}
 
 	public close() {
-		if (this.idGameGroup) {
-			// 	const db = new Database(DB_PATH, {
-			// 		strict: true,
-			// 	});
-			// 	const queryStatisticsBatting = db.query(/*sql*/ `
-			// 	insert into statisticsPlayerGameGroupBatting
-			// 	(
-			// 		ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
-			// 		k, lob, outs, rbi, runs, singles, triples
-			// 	)
-			// 	values (
-			// 		$ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
-			// 		$k, $lob, $outs, $rbi, $runs, $singles, $triples
-			// 	)
-			// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
-			// 		ab = statisticsPlayerGameGroupBatting.ab + $ab,
-			// 		doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
-			// 		h = statisticsPlayerGameGroupBatting.h + $h,
-			// 		hr = statisticsPlayerGameGroupBatting.hr + $hr,
-			// 		k = statisticsPlayerGameGroupBatting.k + $k,
-			// 		lob = statisticsPlayerGameGroupBatting.lob + $lob,
-			// 		outs = statisticsPlayerGameGroupBatting.outs + $outs,
-			// 		rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
-			// 		runs = statisticsPlayerGameGroupBatting.runs + $runs,
-			// 		singles = statisticsPlayerGameGroupBatting.singles + $singles,
-			// 		triples = statisticsPlayerGameGroupBatting.triples + $triples
-			// `);
+		// 	const db = new Database(DB_PATH, {
+		// 		strict: true,
+		// 	});
+		// 	const queryStatisticsBatting = db.query(/*sql*/ `
+		// 	insert into statisticsPlayerGameGroupBatting
+		// 	(
+		// 		ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
+		// 		k, lob, outs, rbi, runs, singles, triples
+		// 	)
+		// 	values (
+		// 		$ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
+		// 		$k, $lob, $outs, $rbi, $runs, $singles, $triples
+		// 	)
+		// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
+		// 		ab = statisticsPlayerGameGroupBatting.ab + $ab,
+		// 		doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
+		// 		h = statisticsPlayerGameGroupBatting.h + $h,
+		// 		hr = statisticsPlayerGameGroupBatting.hr + $hr,
+		// 		k = statisticsPlayerGameGroupBatting.k + $k,
+		// 		lob = statisticsPlayerGameGroupBatting.lob + $lob,
+		// 		outs = statisticsPlayerGameGroupBatting.outs + $outs,
+		// 		rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
+		// 		runs = statisticsPlayerGameGroupBatting.runs + $runs,
+		// 		singles = statisticsPlayerGameGroupBatting.singles + $singles,
+		// 		triples = statisticsPlayerGameGroupBatting.triples + $triples
+		// `);
 
-			// 	queryStatisticsBatting.run({
-			// 		ab: this.statistics.batting.ab,
-			// 		doubles: this.statistics.batting.doubles,
-			// 		h: this.statistics.batting.h,
-			// 		hr: this.statistics.batting.hr,
-			// 		idGameGroup: this.idGameGroup,
-			// 		idPlayer: this.player.idPlayer,
-			// 		idTeam: this.player.idTeam,
-			// 		k: this.statistics.batting.k,
-			// 		lob: this.statistics.batting.lob,
-			// 		outs: this.statistics.batting.outs,
-			// 		rbi: this.statistics.batting.rbi,
-			// 		runs: this.statistics.batting.runs,
-			// 		singles: this.statistics.batting.singles,
-			// 		triples: this.statistics.batting.triples,
-			// 	});
+		// 	queryStatisticsBatting.run({
+		// 		ab: this.statistics.batting.ab,
+		// 		doubles: this.statistics.batting.doubles,
+		// 		h: this.statistics.batting.h,
+		// 		hr: this.statistics.batting.hr,
+		// 		idGameGroup: this.idGameGroup,
+		// 		idPlayer: this.player.idPlayer,
+		// 		idTeam: this.player.idTeam,
+		// 		k: this.statistics.batting.k,
+		// 		lob: this.statistics.batting.lob,
+		// 		outs: this.statistics.batting.outs,
+		// 		rbi: this.statistics.batting.rbi,
+		// 		runs: this.statistics.batting.runs,
+		// 		singles: this.statistics.batting.singles,
+		// 		triples: this.statistics.batting.triples,
+		// 	});
 
-			// 	const queryStatisticsPitching = db.query(/*sql*/ `
-			// 	insert into statisticsPlayerGameGroupPitching
-			// 	(
-			// 		battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
-			// 		k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
-			// 		runs, runsEarned, singlesAllowed, triplesAllowed
-			// 	)
-			// 	values (
-			// 		$battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
-			// 		$k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
-			// 		$runs, $runsEarned, $singlesAllowed, $triplesAllowed
-			// 	)
-			// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
-			// 		battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
-			// 		bb = statisticsPlayerGameGroupPitching.bb + $bb,
-			// 		doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
-			// 		hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
-			// 		hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
-			// 		k = statisticsPlayerGameGroupPitching.k + $k,
-			// 		lob = statisticsPlayerGameGroupPitching.lob + $lob,
-			// 		outs = statisticsPlayerGameGroupPitching.outs + $outs,
-			// 		pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
-			// 		pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
-			// 		pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
-			// 		pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
-			// 		runs = statisticsPlayerGameGroupPitching.runs + $runs,
-			// 		runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
-			// 		singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
-			// 		triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
-			// `);
+		// 	const queryStatisticsPitching = db.query(/*sql*/ `
+		// 	insert into statisticsPlayerGameGroupPitching
+		// 	(
+		// 		battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
+		// 		k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
+		// 		runs, runsEarned, singlesAllowed, triplesAllowed
+		// 	)
+		// 	values (
+		// 		$battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
+		// 		$k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
+		// 		$runs, $runsEarned, $singlesAllowed, $triplesAllowed
+		// 	)
+		// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
+		// 		battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
+		// 		bb = statisticsPlayerGameGroupPitching.bb + $bb,
+		// 		doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
+		// 		hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
+		// 		hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
+		// 		k = statisticsPlayerGameGroupPitching.k + $k,
+		// 		lob = statisticsPlayerGameGroupPitching.lob + $lob,
+		// 		outs = statisticsPlayerGameGroupPitching.outs + $outs,
+		// 		pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
+		// 		pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
+		// 		pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
+		// 		pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
+		// 		runs = statisticsPlayerGameGroupPitching.runs + $runs,
+		// 		runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
+		// 		singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
+		// 		triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
+		// `);
 
-			// 	queryStatisticsPitching.run({
-			// 		battersFaced: this.statistics.pitching.battersFaced,
-			// 		bb: this.statistics.pitching.bb,
-			// 		doublesAllowed: this.statistics.pitching.doublesAllowed,
-			// 		hitsAllowed: this.statistics.pitching.hitsAllowed,
-			// 		hrsAllowed: this.statistics.pitching.hrsAllowed,
-			// 		idGameGroup: this.idGameGroup,
-			// 		idPlayer: this.player.idPlayer,
-			// 		idTeam: this.player.idTeam,
-			// 		k: this.statistics.pitching.k,
-			// 		lob: this.statistics.pitching.lob,
-			// 		outs: this.statistics.pitching.outs,
-			// 		pitchesThrown: this.statistics.pitching.pitchesThrown,
-			// 		pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
-			// 		pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
-			// 		pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
-			// 		runs: this.statistics.pitching.runs,
-			// 		runsEarned: this.statistics.pitching.runsEarned,
-			// 		singlesAllowed: this.statistics.pitching.singlesAllowed,
-			// 		triplesAllowed: this.statistics.pitching.triplesAllowed,
-			// 	});
+		// 	queryStatisticsPitching.run({
+		// 		battersFaced: this.statistics.pitching.battersFaced,
+		// 		bb: this.statistics.pitching.bb,
+		// 		doublesAllowed: this.statistics.pitching.doublesAllowed,
+		// 		hitsAllowed: this.statistics.pitching.hitsAllowed,
+		// 		hrsAllowed: this.statistics.pitching.hrsAllowed,
+		// 		idGameGroup: this.idGameGroup,
+		// 		idPlayer: this.player.idPlayer,
+		// 		idTeam: this.player.idTeam,
+		// 		k: this.statistics.pitching.k,
+		// 		lob: this.statistics.pitching.lob,
+		// 		outs: this.statistics.pitching.outs,
+		// 		pitchesThrown: this.statistics.pitching.pitchesThrown,
+		// 		pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
+		// 		pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
+		// 		pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
+		// 		runs: this.statistics.pitching.runs,
+		// 		runsEarned: this.statistics.pitching.runsEarned,
+		// 		singlesAllowed: this.statistics.pitching.singlesAllowed,
+		// 		triplesAllowed: this.statistics.pitching.triplesAllowed,
+		// 	});
 
-			// db.close();
+		// db.close();
 
-			return {
-				batting: {
-					ab: this.statistics.batting.ab,
-					doubles: this.statistics.batting.doubles,
-					h: this.statistics.batting.h,
-					hr: this.statistics.batting.hr,
-					idGameGroup: this.idGameGroup,
-					idPlayer: this.player.idPlayer,
-					idTeam: this.player.idTeam,
-					k: this.statistics.batting.k,
-					lob: this.statistics.batting.lob,
-					outs: this.statistics.batting.outs,
-					rbi: this.statistics.batting.rbi,
-					runs: this.statistics.batting.runs,
-					singles: this.statistics.batting.singles,
-					triples: this.statistics.batting.triples,
-				},
-				pitching: {
-					battersFaced: this.statistics.pitching.battersFaced,
-					bb: this.statistics.pitching.bb,
-					doublesAllowed: this.statistics.pitching.doublesAllowed,
-					hitsAllowed: this.statistics.pitching.hitsAllowed,
-					hrsAllowed: this.statistics.pitching.hrsAllowed,
-					idGameGroup: this.idGameGroup,
-					idPlayer: this.player.idPlayer,
-					idTeam: this.player.idTeam,
-					k: this.statistics.pitching.k,
-					lob: this.statistics.pitching.lob,
-					outs: this.statistics.pitching.outs,
-					pitchesThrown: this.statistics.pitching.pitchesThrown,
-					pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
-					pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
-					pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
-					runs: this.statistics.pitching.runs,
-					runsEarned: this.statistics.pitching.runsEarned,
-					singlesAllowed: this.statistics.pitching.singlesAllowed,
-					triplesAllowed: this.statistics.pitching.triplesAllowed,
-				},
-			};
-		}
+		return {
+			batting: {
+				ab: this.statistics.batting.ab,
+				doubles: this.statistics.batting.doubles,
+				h: this.statistics.batting.h,
+				hr: this.statistics.batting.hr,
+				k: this.statistics.batting.k,
+				lob: this.statistics.batting.lob,
+				outs: this.statistics.batting.outs,
+				rbi: this.statistics.batting.rbi,
+				runs: this.statistics.batting.runs,
+				singles: this.statistics.batting.singles,
+				triples: this.statistics.batting.triples,
+			},
+			idGameGroup: this.idGameGroup,
+			idPlayer: this.player.idPlayer,
+			idTeam: this.player.idTeam,
+			pitching: {
+				battersFaced: this.statistics.pitching.battersFaced,
+				bb: this.statistics.pitching.bb,
+				doublesAllowed: this.statistics.pitching.doublesAllowed,
+				hitsAllowed: this.statistics.pitching.hitsAllowed,
+				hrsAllowed: this.statistics.pitching.hrsAllowed,
+				k: this.statistics.pitching.k,
+				lob: this.statistics.pitching.lob,
+				outs: this.statistics.pitching.outs,
+				pitchesThrown: this.statistics.pitching.pitchesThrown,
+				pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
+				pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
+				pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
+				runs: this.statistics.pitching.runs,
+				runsEarned: this.statistics.pitching.runsEarned,
+				singlesAllowed: this.statistics.pitching.singlesAllowed,
+				triplesAllowed: this.statistics.pitching.triplesAllowed,
+			},
+		};
 	}
 
 	notifyGameEvent(_input: TGameSimEvent) {
@@ -833,11 +795,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 
 			case "walk": {
-				const { playerHitter, playerPitcher } = input.data;
-
-				if (playerHitter.player.idPlayer === this.player.idPlayer) {
-					this.statistics.batting.bb++;
-				}
+				const { playerPitcher } = input.data;
 
 				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
 					this.statistics.pitching.bb++;

@@ -1,16 +1,23 @@
 import {
 	type InferOutput,
+	array,
 	instance,
+	intersect,
 	literal,
+	null_,
 	nullable,
 	number,
 	object,
+	pick,
 	picklist,
+	record,
 	string,
+	union,
 	variant,
 } from "valibot";
 import GameSimPlayerState from "../entities/eGameSimPlayerState";
 import GameSimTeamState from "../entities/eGameSimTeamState";
+import { VDbPlayers, VGameSimBoxScore } from "./tDb";
 import { VPicklistPitchNames, VPicklistPitchOutcomes } from "./tPicklist";
 
 export const VPicklistGameSimWeatherWindDirection = picklist([
@@ -282,3 +289,66 @@ export type TGameSimEvent = InferOutput<typeof VGameSimEvent>;
 export interface OGameSimObserver {
 	notifyGameEvent(input: TGameSimEvent): void;
 }
+
+const VGameSimBattingStatistics = object({
+	ab: number(),
+	doubles: number(),
+	h: number(),
+	hr: number(),
+	k: number(),
+	lob: number(),
+	outs: number(),
+	rbi: number(),
+	runs: number(),
+	singles: number(),
+	triples: number(),
+});
+
+export type TGameSimBattingStatistics = InferOutput<
+	typeof VGameSimBattingStatistics
+>;
+
+export const VGameSimPitchingStatistics = object({
+	battersFaced: number(),
+	bb: number(),
+	doublesAllowed: number(),
+	k: number(),
+	pitchesThrown: number(),
+	pitchesThrownBalls: number(),
+	pitchesThrownInPlay: number(),
+	pitchesThrownStrikes: number(),
+	hitsAllowed: number(),
+	hrsAllowed: number(),
+	lob: number(),
+	outs: number(),
+	runs: number(),
+	runsEarned: number(),
+	singlesAllowed: number(),
+	triplesAllowed: number(),
+});
+export type TGameSimPitchingStatistics = InferOutput<
+	typeof VGameSimPitchingStatistics
+>;
+
+export const VGameSimResult = object({
+	boxScore: VGameSimBoxScore,
+	gameSimEvents: array(record(string(), union([string(), number(), null_()]))),
+	idGame: number(),
+	idGameGroup: nullable(number()),
+	idTeamLosing: number(),
+	idTeamWinning: number(),
+	log: array(array(string())),
+	players: array(
+		intersect([
+			pick(VDbPlayers, ["idPlayer"]),
+			object({
+				batting: VGameSimBattingStatistics,
+				idGameGroup: nullable(number()),
+				idTeam: nullable(number()),
+				pitching: VGameSimPitchingStatistics,
+			}),
+		]),
+	),
+});
+
+export type TGameSimResult = InferOutput<typeof VGameSimResult>;

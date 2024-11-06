@@ -1,4 +1,5 @@
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
+import type { TGameSimResult } from "@baseball-simulator/utils/types";
 import {
 	VConstructorGameSimCoach,
 	VConstructorGameSimUmpire,
@@ -507,7 +508,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 					return c.text("Internal Server Error", 500);
 				}
 
-				worker.onmessage = (event) => resolve(event.data);
+				worker.onmessage = (event) => resolve(event.data as TGameSimResult);
 				worker.onerror = reject;
 
 				const workerData: WorkerData = {
@@ -527,11 +528,16 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			});
 		};
 
+		const results: TGameSimResult[] = [];
+
 		try {
 			const chunkSize = workerPool.length;
 			for (let i = 0; i < dataGames.length; i += chunkSize) {
 				const chunk = dataGames.slice(i, i + chunkSize);
-				await Promise.all(chunk.map(simulateGame));
+				const chunkResults = (await Promise.all(
+					chunk.map(simulateGame),
+				)) as TGameSimResult[];
+				results.push(...chunkResults);
 			}
 		} catch (error) {
 			console.error("Error during game simulation:", error);
@@ -543,16 +549,199 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			}
 		}
 
-		const dbQueryAdvanceDay = /* sql */ `
-            update universe
-            set
-                dateTime = datetime(dateTime, '+1 day');
-            ;
-        `;
+		// After all simulations complete, do database writes in a transaction
+		const saveResults = db.transaction(() => {
+			// Save all game results
+			for (const result of results) {
+				// Save any necessary game results to database
+				// Add your save logic here
 
-		db.query(dbQueryAdvanceDay).run();
+				const queryStandings = db.query(
+					/*sql*/ `
+					update gameGroups
+					set standings = json_patch(
+						coalesce(standings, '{}'),
+						json_object(
+							cast($idTeam as text),
+							json_object(
+								cast($field as text),
+								coalesce(json_extract(standings, '$.' || $idTeam || '.' || $field), 0) + 1
+							)
+						)
+					)
+					where idGameGroup = $idGameGroup
+				`,
+				);
 
-		return c.text("OK", 200);
+				queryStandings.run({
+					idGameGroup: result.idGameGroup,
+					idTeam: result.idTeamWinning,
+					field: "w",
+				});
+
+				queryStandings.run({
+					idGameGroup: result.idGameGroup,
+					idTeam: result.idTeamLosing,
+					field: "l",
+				});
+
+				const queryInsertGameLog = db.query(/*sql*/ `
+						insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
+					`);
+
+				queryInsertGameLog.run({
+					gameSimLog: JSON.stringify(result.log),
+					idGame: result.idGame,
+				});
+
+				const keys = Object.keys(result.gameSimEvents[0]);
+
+				const insertGameSimEvent = db.query(/*sql*/ `
+						insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
+					`);
+
+				const insertGameSimEvents = db.transaction(() => {
+					for (const gameSimEvent of result.gameSimEvents) {
+						insertGameSimEvent.run(gameSimEvent);
+					}
+				});
+
+				insertGameSimEvents(result.gameSimEvents);
+
+				const queryBoxScore = db.query(/*sql*/ `
+					update games set boxScore = $boxScore where idGame = $idGame;
+				`);
+
+				queryBoxScore.run({
+					boxScore: JSON.stringify(result.boxScore),
+					idGame: result.idGame,
+				});
+
+				const queryStatisticsBatting = db.query(/*sql*/ `
+                    insert into statisticsPlayerGameGroupBatting
+                    (
+                        ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
+                        k, lob, outs, rbi, runs, singles, triples
+                    )
+                    values (
+                        $ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
+                        $k, $lob, $outs, $rbi, $runs, $singles, $triples
+                    )
+                    on conflict (idGameGroup, idPlayer, idTeam) do update set
+                        ab = statisticsPlayerGameGroupBatting.ab + $ab,
+                        doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
+                        h = statisticsPlayerGameGroupBatting.h + $h,
+                        hr = statisticsPlayerGameGroupBatting.hr + $hr,
+                        k = statisticsPlayerGameGroupBatting.k + $k,
+                        lob = statisticsPlayerGameGroupBatting.lob + $lob,
+                        outs = statisticsPlayerGameGroupBatting.outs + $outs,
+                        rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
+                        runs = statisticsPlayerGameGroupBatting.runs + $runs,
+                        singles = statisticsPlayerGameGroupBatting.singles + $singles,
+                        triples = statisticsPlayerGameGroupBatting.triples + $triples
+		        `);
+
+				const queryStatisticsPitching = db.query(/*sql*/ `
+                    insert into statisticsPlayerGameGroupPitching
+                    (
+                        battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
+                        k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
+                        runs, runsEarned, singlesAllowed, triplesAllowed
+                    )
+                    values (
+                        $battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
+                        $k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
+                        $runs, $runsEarned, $singlesAllowed, $triplesAllowed
+                    )
+                    on conflict (idGameGroup, idPlayer, idTeam) do update set
+                        battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
+                        bb = statisticsPlayerGameGroupPitching.bb + $bb,
+                        doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
+                        hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
+                        hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
+                        k = statisticsPlayerGameGroupPitching.k + $k,
+                        lob = statisticsPlayerGameGroupPitching.lob + $lob,
+                        outs = statisticsPlayerGameGroupPitching.outs + $outs,
+                        pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
+                        pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
+                        pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
+                        pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
+                        runs = statisticsPlayerGameGroupPitching.runs + $runs,
+                        runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
+                        singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
+                        triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
+		        `);
+
+				const insertStatisticsBatting = db.transaction(() => {
+					for (const player of result.players) {
+						queryStatisticsBatting.run({
+							ab: player.batting.ab,
+							doubles: player.batting.doubles,
+							h: player.batting.h,
+							hr: player.batting.hr,
+							idGameGroup: result.idGameGroup,
+							idPlayer: player.idPlayer,
+							idTeam: player.idTeam,
+							k: player.batting.k,
+							lob: player.batting.lob,
+							outs: player.batting.outs,
+							rbi: player.batting.rbi,
+							runs: player.batting.runs,
+							singles: player.batting.singles,
+							triples: player.batting.triples,
+						});
+					}
+				});
+
+				const insertStatisticsPitching = db.transaction(() => {
+					for (const player of result.players) {
+						queryStatisticsPitching.run({
+							battersFaced: player.pitching.battersFaced,
+							bb: player.pitching.bb,
+							doublesAllowed: player.pitching.doublesAllowed,
+							hitsAllowed: player.pitching.hitsAllowed,
+							hrsAllowed: player.pitching.hrsAllowed,
+							idGameGroup: result.idGameGroup,
+							idPlayer: player.idPlayer,
+							idTeam: player.idTeam,
+							k: player.pitching.k,
+							lob: player.pitching.lob,
+							outs: player.pitching.outs,
+							pitchesThrown: player.pitching.pitchesThrown,
+							pitchesThrownBalls: player.pitching.pitchesThrownBalls,
+							pitchesThrownInPlay: player.pitching.pitchesThrownInPlay,
+							pitchesThrownStrikes: player.pitching.pitchesThrownStrikes,
+							runs: player.pitching.runs,
+							runsEarned: player.pitching.runsEarned,
+							singlesAllowed: player.pitching.singlesAllowed,
+							triplesAllowed: player.pitching.triplesAllowed,
+						});
+					}
+				});
+
+				insertStatisticsBatting();
+				insertStatisticsPitching();
+			}
+
+			// Advance the date only after all saves are complete
+			const dbQueryAdvanceData = /* sql */ `
+                        update universe
+                        set
+                            dateTime = datetime(dateTime, '+1 day')
+                    `;
+			db.query(dbQueryAdvanceData).run();
+		});
+
+		try {
+			saveResults();
+
+			console.log("Results saved successfully");
+
+			return c.text("OK", 200);
+		} catch (error) {
+			console.error("Error saving results:", error);
+			return c.text("Internal Server Error", 500);
+		}
 	},
 );
 

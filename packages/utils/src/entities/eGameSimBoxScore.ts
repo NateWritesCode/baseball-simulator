@@ -1,5 +1,6 @@
 import { type InferInput, instance, number, object, parse } from "valibot";
 import { handleValibotParse } from "../functions";
+import type { TGameSimBoxScore } from "../types/tDb";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
@@ -56,7 +57,7 @@ class GameSimBoxScore implements OGameSimObserver {
 			? this.teamHome.playerStates[this.teamHome.positions.p]
 			: this.teamAway.playerStates[this.teamAway.positions.p];
 
-		const boxScore = {
+		const boxScore: TGameSimBoxScore = {
 			dateTimeEnd: this.dateTimeEnd,
 			dateTimeStart: this.dateTimeStart,
 			idGame: this.idGame,
@@ -64,17 +65,20 @@ class GameSimBoxScore implements OGameSimObserver {
 			park: this.park.park.name,
 			pitcherLoss: {
 				idPlayer: pitcherLoss.player.idPlayer,
-				name: `${pitcherLoss.player.firstName} ${pitcherLoss.player.lastName}`,
+				firstName: pitcherLoss.player.firstName,
+				lastName: pitcherLoss.player.lastName,
 			},
 			pitcherWin: {
 				idPlayer: pitcherWin.player.idPlayer,
-				name: `${pitcherWin.player.firstName} ${pitcherWin.player.lastName}`,
+				firstName: pitcherWin.player.firstName,
+				lastName: pitcherWin.player.lastName,
 			},
 			teamAway: {
 				abbreviation: this.teamAway.team.abbreviation,
 				city: this.teamAway.team.city.name,
 				errors: this.teamAway.statistics.fielding.e,
 				hits: this.teamAway.statistics.batting.h,
+				idTeam: this.teamAway.team.idTeam,
 				nickname: this.teamAway.team.nickname,
 				runs: this.teamAway.statistics.batting.runs,
 			},
@@ -83,6 +87,7 @@ class GameSimBoxScore implements OGameSimObserver {
 				city: this.teamHome.team.city.name,
 				errors: this.teamHome.statistics.fielding.e,
 				hits: this.teamHome.statistics.batting.h,
+				idTeam: this.teamHome.team.idTeam,
 				nickname: this.teamHome.team.nickname,
 				runs: this.teamHome.statistics.batting.runs,
 			},
@@ -99,9 +104,7 @@ class GameSimBoxScore implements OGameSimObserver {
 
 		// db.close();
 
-		return {
-			boxScore,
-		};
+		return boxScore;
 	};
 
 	notifyGameEvent(_input: TGameSimEvent) {
