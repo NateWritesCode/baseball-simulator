@@ -77,6 +77,13 @@ class GameSimLog implements OGameSimObserver {
 				]);
 				break;
 			}
+			case "foul": {
+				const { playerHitter } = input.data;
+				this.logInfo([
+					`${playerHitter.player.firstName} ${playerHitter.player.lastName} hit a foul`,
+				]);
+				break;
+			}
 			case "gameEnd": {
 				this.logDanger(["Game Ended"]);
 				break;

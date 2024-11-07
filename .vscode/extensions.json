@@ -3,6 +3,7 @@
 		"biomejs.biome",
 		"thebearingedge.vscode-sql-lit",
 		"alexcvzz.vscode-sqlite",
-		"bradlc.vscode-tailwindcss"
+		"bradlc.vscode-tailwindcss",
+		"oven.bun-vscode"
 	]
 }

@@ -48,6 +48,9 @@ class GameSimUmpireState implements OGameSimObserver {
 			case "double": {
 				break;
 			}
+			case "foul": {
+				break;
+			}
 			case "gameEnd": {
 				break;
 			}

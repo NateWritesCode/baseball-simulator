@@ -28,5 +28,6 @@
 			"icon": "terminal-bash",
 			"args": ["-i"]
 		}
-	}
+	},
+	"bun.debugTerminal.stopOnEntry": false
 }

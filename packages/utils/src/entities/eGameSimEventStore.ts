@@ -68,6 +68,14 @@ export default class GameSimEventStore implements OGameSimObserver {
 					values.idPlayerRunner3 = data.playerRunner3?.player.idPlayer || null;
 					break;
 				}
+				case "foul": {
+					const data = _gameSimEvent.data;
+					values.idTeamDefense = data.teamDefense.team.idTeam;
+					values.idTeamOffense = data.teamOffense.team.idTeam;
+					values.idPlayerHitter = data.playerHitter.player.idPlayer;
+					values.idPlayerPitcher = data.playerPitcher.player.idPlayer;
+					break;
+				}
 				case "gameEnd": {
 					break;
 				}
@@ -169,20 +177,6 @@ export default class GameSimEventStore implements OGameSimObserver {
 			gameSimEvents.push(values);
 		}
 
-		// const insertGameSimEvent = db.query(/*sql*/ `
-		// 		insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
-		// 	`);
-
-		// const insertGameSimEvents = db.transaction(() => {
-		// 	for (const gameSimEvent of gameSimEvents) {
-		// 		insertGameSimEvent.run(gameSimEvent);
-		// 	}
-		// });
-
-		// insertGameSimEvents(gameSimEvents);
-
-		// db.close();
-
 		return gameSimEvents;
 	};
 
@@ -208,6 +202,9 @@ export default class GameSimEventStore implements OGameSimObserver {
 				break;
 			}
 			case "double": {
+				break;
+			}
+			case "foul": {
 				break;
 			}
 			case "gameEnd": {

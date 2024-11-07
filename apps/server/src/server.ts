@@ -45,6 +45,7 @@ export const client = hc<typeof routes>("");
 export type THonoClient = typeof routes;
 
 export default {
+	idleTimeout: 60,
 	port: 8080,
 	fetch: app.fetch,
 };

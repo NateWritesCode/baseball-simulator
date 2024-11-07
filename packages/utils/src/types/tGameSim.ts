@@ -17,7 +17,7 @@ import {
 } from "valibot";
 import GameSimPlayerState from "../entities/eGameSimPlayerState";
 import GameSimTeamState from "../entities/eGameSimTeamState";
-import { VDbPlayers, VGameSimBoxScore } from "./tDb";
+import { VDbPitchLocation, VDbPlayers, VGameSimBoxScore } from "./tDb";
 import { VPicklistPitchNames, VPicklistPitchOutcomes } from "./tPicklist";
 
 export const VPicklistGameSimWeatherWindDirection = picklist([
@@ -86,6 +86,16 @@ export const VGameSimEventDouble = object({
 });
 
 export type TGameSimEventDouble = InferOutput<typeof VGameSimEventDouble>;
+
+export const VGameSimEventFoul = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("foul"),
+});
 
 export const VGameSimEventGameStart = object({
 	data: object({
@@ -161,33 +171,10 @@ export const VGameSimEventOut = object({
 
 export type TGameSimEventOut = InferOutput<typeof VGameSimEventOut>;
 
-export const VGameSimEventPitchLocation = object({
-	ax: number(),
-	ay: number(),
-	az: number(),
-	pfxX: number(),
-	pfxZ: number(),
-	plateX: number(),
-	plateZ: number(),
-	releaseSpeed: number(),
-	releasePosX: number(),
-	releasePosY: number(),
-	releasePosZ: number(),
-	szBot: number(),
-	szTop: number(),
-	vx0: number(),
-	vy0: number(),
-	vz0: number(),
-});
-
-export type TGameSimEventPitchLocation = InferOutput<
-	typeof VGameSimEventPitchLocation
->;
-
 export const VGameSimEventPitch = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
-		pitchLocation: VGameSimEventPitchLocation,
+		pitchLocation: VDbPitchLocation,
 		pitchName: VPicklistPitchNames,
 		pitchOutcome: VPicklistPitchOutcomes,
 		playerPitcher: instance(GameSimPlayerState),
@@ -270,6 +257,7 @@ export const VGameSimEvent = variant("gameSimEvent", [
 	VGameSimEventAtBatEnd,
 	VGameSimEventAtBatStart,
 	VGameSimEventDouble,
+	VGameSimEventFoul,
 	VGameSimEventGameStart,
 	VGameSimEventGameEnd,
 	VGameSimEventHalfInningEnd,

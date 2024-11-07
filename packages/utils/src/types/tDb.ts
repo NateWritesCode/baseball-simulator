@@ -17,6 +17,27 @@ import {
 	VPicklistSurfaceType,
 } from "./tPicklist";
 
+export const VDbPitchLocation = object({
+	ax: number(),
+	ay: number(),
+	az: number(),
+	pfxX: number(),
+	pfxZ: number(),
+	plateX: number(),
+	plateZ: number(),
+	releaseSpeed: number(),
+	releasePosX: number(),
+	releasePosY: number(),
+	releasePosZ: number(),
+	szBot: number(),
+	szTop: number(),
+	vx0: number(),
+	vy0: number(),
+	vz0: number(),
+});
+
+export type TDbPitchLocation = InferOutput<typeof VDbPitchLocation>;
+
 export const VDbGameGroupsStandings = object({
 	idDivision: nullable(number()),
 	idLeague: number(),
@@ -177,6 +198,17 @@ export const VDbGameSimEvents = object({
 	idPlayerRunner3: nullable(number()),
 	idTeamDefense: number(),
 	idTeamOffense: number(),
+	pitchLocation: pipe(
+		nullable(string()),
+		transform((input) => {
+			if (input) {
+				return JSON.parse(input);
+			}
+
+			return null;
+		}),
+		nullable(VDbPitchLocation),
+	),
 	pitchName: nullable(string()),
 	pitchOutcome: nullable(VPicklistPitchOutcomes),
 });

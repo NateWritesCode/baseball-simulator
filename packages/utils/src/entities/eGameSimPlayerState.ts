@@ -139,116 +139,125 @@ class GameSimPlayerState implements OGameSimObserver {
 				((numPitchesThrown / PITCHES_THROWN_STANDARD_MAX) *
 					(RATING_MAX - pitcherStamina)) /
 					RATING_MAX;
+			const stuffFactor =
+				0.9 + (input.playerPitcher.player.pitching.stuff / RATING_MAX) * 0.2;
+
 			switch (pitchName) {
 				case "fastball":
-					return getRandomInRange(90, 100) * staminaFactor;
+					return getRandomInRange(92, 102) * staminaFactor * stuffFactor;
 				case "changeup":
-					return getRandomInRange(75, 85) * staminaFactor;
+					return getRandomInRange(82, 90) * staminaFactor * stuffFactor;
 				case "curveball":
-					return getRandomInRange(70, 80) * staminaFactor;
+					return getRandomInRange(76, 85) * staminaFactor * stuffFactor;
 				case "cutter":
-					return getRandomInRange(85, 95) * staminaFactor;
+					return getRandomInRange(86, 96) * staminaFactor * stuffFactor;
 				case "eephus":
-					return getRandomInRange(55, 70) * staminaFactor;
+					return getRandomInRange(55, 65) * staminaFactor;
 				case "forkball":
-					return getRandomInRange(75, 85) * staminaFactor;
+					return getRandomInRange(80, 88) * staminaFactor * stuffFactor;
 				case "knuckleball":
 					return getRandomInRange(65, 75) * staminaFactor;
 				case "knuckleCurve":
-					return getRandomInRange(65, 75) * staminaFactor;
+					return getRandomInRange(72, 82) * staminaFactor * stuffFactor;
 				case "screwball":
-					return getRandomInRange(70, 80) * staminaFactor;
+					return getRandomInRange(78, 86) * staminaFactor * stuffFactor;
 				case "sinker":
-					return getRandomInRange(88, 98) * staminaFactor;
+					return getRandomInRange(91, 98) * staminaFactor * stuffFactor;
 				case "slider":
-					return getRandomInRange(80, 90) * staminaFactor;
+					return getRandomInRange(82, 92) * staminaFactor * stuffFactor;
 				case "slurve":
-					return getRandomInRange(75, 85) * staminaFactor;
+					return getRandomInRange(78, 87) * staminaFactor * stuffFactor;
 				case "splitter":
-					return getRandomInRange(80, 90) * staminaFactor;
+					return getRandomInRange(83, 90) * staminaFactor * stuffFactor;
 				case "sweeper":
-					return getRandomInRange(78, 88) * staminaFactor;
+					return getRandomInRange(80, 88) * staminaFactor * stuffFactor;
 				default:
-					return getRandomInRange(75, 95) * staminaFactor;
+					return getRandomInRange(85, 92) * staminaFactor * stuffFactor;
 			}
 		};
 
 		const getPitchMovement = () => {
+			const stuffFactor =
+				0.8 + (input.playerPitcher.player.pitching.stuff / RATING_MAX) * 0.4;
+			const movementFactor =
+				0.8 + (input.playerPitcher.player.pitching.movement / RATING_MAX) * 0.4;
+			const combinedFactor = stuffFactor * movementFactor;
+
 			switch (pitchName) {
 				case "fastball":
 					return {
-						pfxX: getRandomInRange(-5, 5),
-						pfxZ: getRandomInRange(5, 15),
-					};
-				case "changeup":
-					return {
-						pfxX: getRandomInRange(-10, 10),
-						pfxZ: getRandomInRange(-5, 5),
-					};
-				case "curveball":
-					return {
-						pfxX: getRandomInRange(-15, 15),
-						pfxZ: getRandomInRange(-15, -5),
-					};
-				case "cutter":
-					return {
-						pfxX: getRandomInRange(-5, 5),
-						pfxZ: getRandomInRange(0, 10),
-					};
-				case "eephus":
-					return {
-						pfxX: getRandomInRange(-20, 20),
-						pfxZ: getRandomInRange(-20, 20),
-					};
-				case "forkball":
-					return {
-						pfxX: getRandomInRange(-5, 5),
-						pfxZ: getRandomInRange(-15, -5),
-					};
-				case "knuckleball":
-					return {
-						pfxX: getRandomInRange(-20, 20),
-						pfxZ: getRandomInRange(-20, 20),
-					};
-				case "knuckleCurve":
-					return {
-						pfxX: getRandomInRange(-15, 15),
-						pfxZ: getRandomInRange(-15, -5),
-					};
-				case "screwball":
-					return {
-						pfxX: getRandomInRange(5, 15),
-						pfxZ: getRandomInRange(-10, 0),
+						pfxX: getRandomInRange(-2, 3) * combinedFactor,
+						pfxZ: getRandomInRange(6, 12) * combinedFactor,
 					};
 				case "sinker":
 					return {
-						pfxX: getRandomInRange(-10, 10),
-						pfxZ: getRandomInRange(-10, 0),
+						pfxX: getRandomInRange(-8, -4) * combinedFactor,
+						pfxZ: getRandomInRange(-3, 0) * combinedFactor,
+					};
+				case "cutter":
+					return {
+						pfxX: getRandomInRange(1, 4) * combinedFactor,
+						pfxZ: getRandomInRange(3, 7) * combinedFactor,
 					};
 				case "slider":
 					return {
-						pfxX: getRandomInRange(-15, -5),
-						pfxZ: getRandomInRange(-5, 5),
+						pfxX: getRandomInRange(2, 6) * combinedFactor,
+						pfxZ: getRandomInRange(-2, 1) * combinedFactor,
 					};
-				case "slurve":
+				case "curveball":
 					return {
-						pfxX: getRandomInRange(-15, -5),
-						pfxZ: getRandomInRange(-10, 0),
+						pfxX: getRandomInRange(-4, 4) * combinedFactor,
+						pfxZ: getRandomInRange(-10, -6) * combinedFactor,
+					};
+				case "changeup":
+					return {
+						pfxX: getRandomInRange(-8, -4) * combinedFactor,
+						pfxZ: getRandomInRange(-6, -2) * combinedFactor,
 					};
 				case "splitter":
 					return {
-						pfxX: getRandomInRange(-5, 5),
-						pfxZ: getRandomInRange(-15, -5),
+						pfxX: getRandomInRange(-3, 0) * combinedFactor,
+						pfxZ: getRandomInRange(-8, -5) * combinedFactor,
 					};
 				case "sweeper":
 					return {
-						pfxX: getRandomInRange(-20, -10),
-						pfxZ: getRandomInRange(-5, 5),
+						pfxX: getRandomInRange(8, 14) * combinedFactor,
+						pfxZ: getRandomInRange(-2, 1) * combinedFactor,
 					};
-				default:
+				case "forkball":
+					return {
+						pfxX: getRandomInRange(-2, 2) * combinedFactor,
+						pfxZ: getRandomInRange(-10, -7) * combinedFactor,
+					};
+				case "knuckleball":
 					return {
 						pfxX: getRandomInRange(-10, 10),
 						pfxZ: getRandomInRange(-10, 10),
+					};
+				case "knuckleCurve":
+					return {
+						pfxX: getRandomInRange(-6, 6) * combinedFactor,
+						pfxZ: getRandomInRange(-8, -4) * combinedFactor,
+					};
+				case "screwball":
+					return {
+						pfxX: getRandomInRange(-8, -4) * combinedFactor,
+						pfxZ: getRandomInRange(-5, -2) * combinedFactor,
+					};
+				case "slurve":
+					return {
+						pfxX: getRandomInRange(3, 8) * combinedFactor,
+						pfxZ: getRandomInRange(-6, -2) * combinedFactor,
+					};
+				case "eephus":
+					return {
+						pfxX: getRandomInRange(-6, 6),
+						pfxZ: getRandomInRange(-20, -15) * combinedFactor,
+					};
+				default:
+					return {
+						pfxX: getRandomInRange(-4, 4) * combinedFactor,
+						pfxZ: getRandomInRange(-4, 4) * combinedFactor,
 					};
 			}
 		};
@@ -258,6 +267,19 @@ class GameSimPlayerState implements OGameSimObserver {
 
 		const szBot = 1.5 + (playerHitterHeight - 500) / 1000;
 		const szTop = szBot + 2 + (playerHitterHeight - 500) / 500;
+
+		const controlFactor = (this.player.pitching.control / RATING_MAX) * 0.5;
+
+		// Calculate intended and actual locations
+		const intendedPlateX = getRandomInRange(-0.8, 0.8); // Widened from -0.7, 0.7
+		const intendedPlateZ = getRandomInRange(szBot + 0.1, szTop - 0.1); // Widened window
+
+		// Add variance based on control and fatigue
+		const locationVariance = (1 - controlFactor) * 1.2 * fatigueMultiplier; // Reduced from 1.5
+		const actualPlateX =
+			intendedPlateX + getRandomInRange(-locationVariance, locationVariance);
+		const actualPlateZ =
+			intendedPlateZ + getRandomInRange(-locationVariance, locationVariance);
 
 		// x-axis: Runs horizontally from the catcher's left to right (third base to first base).
 		// y-axis: Runs from home plate to the pitcher's mound (towards second base).
@@ -280,8 +302,8 @@ class GameSimPlayerState implements OGameSimObserver {
 			// plateX, plateZ: Horizontal and vertical position of the pitch as it crosses home plate (ft)
 			// plateX range: -2.5 to 2.5 ft (0 is the center of the plate)
 			// plateZ range: 0 to 5 ft (height above ground)
-			plateX: getRandomInRange(-1.5, 1.5) * fatigueMultiplier,
-			plateZ: getRandomInRange(szBot, szTop) * fatigueMultiplier,
+			plateX: actualPlateX,
+			plateZ: actualPlateZ,
 			// releaseSpeed: Velocity of the pitch at release (mph)
 			// Range: Typically 70 to 105 mph
 			releaseSpeed: releaseSpeed * velocityMultiplier,
@@ -291,12 +313,12 @@ class GameSimPlayerState implements OGameSimObserver {
 			// Y: 50 to 55 ft (distance from home plate)
 			// Z: 5 to 7 ft (height)
 			releasePosX:
-				getRandomInRange(-2, 2) *
-				(1 + fatigueEffect.pitching.controlPenalty * 0.5),
-			releasePosY: getRandomInRange(50, 55),
+				getRandomInRange(-1.5, 1.5) *
+				(1 + fatigueEffect.pitching.controlPenalty * 0.25),
+			releasePosY: getRandomInRange(52.5, 54), // Tightened range
 			releasePosZ:
-				getRandomInRange(5, 7) *
-				(1 + fatigueEffect.pitching.controlPenalty * 0.5),
+				getRandomInRange(5, 6) *
+				(1 + fatigueEffect.pitching.controlPenalty * 0.25),
 			// szBot, szTop: Bottom and top of the strike zone for the batter (ft)
 			// Range: Typically between 1.5 to 4 ft, varies by batter
 			szBot,
@@ -306,9 +328,9 @@ class GameSimPlayerState implements OGameSimObserver {
 			// vx0: -20 to 20 ft/sec
 			// vy0: -150 to -110 ft/sec (negative because y-axis points towards batter)
 			// vz0: -10 to 10 ft/sec
-			vx0: getRandomInRange(-10, 10),
-			vy0: -releaseSpeed * 1.467,
-			vz0: getRandomInRange(-5, 10),
+			vx0: getRandomInRange(-3, 3), // Reduced from -5,5
+			vy0: -releaseSpeed * 1.467, // Keep this constant
+			vz0: getRandomInRange(-2, 4), // Reduced from -3,5
 		};
 	}
 
@@ -455,105 +477,6 @@ class GameSimPlayerState implements OGameSimObserver {
 	}
 
 	public close() {
-		// 	const db = new Database(DB_PATH, {
-		// 		strict: true,
-		// 	});
-		// 	const queryStatisticsBatting = db.query(/*sql*/ `
-		// 	insert into statisticsPlayerGameGroupBatting
-		// 	(
-		// 		ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
-		// 		k, lob, outs, rbi, runs, singles, triples
-		// 	)
-		// 	values (
-		// 		$ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
-		// 		$k, $lob, $outs, $rbi, $runs, $singles, $triples
-		// 	)
-		// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
-		// 		ab = statisticsPlayerGameGroupBatting.ab + $ab,
-		// 		doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
-		// 		h = statisticsPlayerGameGroupBatting.h + $h,
-		// 		hr = statisticsPlayerGameGroupBatting.hr + $hr,
-		// 		k = statisticsPlayerGameGroupBatting.k + $k,
-		// 		lob = statisticsPlayerGameGroupBatting.lob + $lob,
-		// 		outs = statisticsPlayerGameGroupBatting.outs + $outs,
-		// 		rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
-		// 		runs = statisticsPlayerGameGroupBatting.runs + $runs,
-		// 		singles = statisticsPlayerGameGroupBatting.singles + $singles,
-		// 		triples = statisticsPlayerGameGroupBatting.triples + $triples
-		// `);
-
-		// 	queryStatisticsBatting.run({
-		// 		ab: this.statistics.batting.ab,
-		// 		doubles: this.statistics.batting.doubles,
-		// 		h: this.statistics.batting.h,
-		// 		hr: this.statistics.batting.hr,
-		// 		idGameGroup: this.idGameGroup,
-		// 		idPlayer: this.player.idPlayer,
-		// 		idTeam: this.player.idTeam,
-		// 		k: this.statistics.batting.k,
-		// 		lob: this.statistics.batting.lob,
-		// 		outs: this.statistics.batting.outs,
-		// 		rbi: this.statistics.batting.rbi,
-		// 		runs: this.statistics.batting.runs,
-		// 		singles: this.statistics.batting.singles,
-		// 		triples: this.statistics.batting.triples,
-		// 	});
-
-		// 	const queryStatisticsPitching = db.query(/*sql*/ `
-		// 	insert into statisticsPlayerGameGroupPitching
-		// 	(
-		// 		battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
-		// 		k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
-		// 		runs, runsEarned, singlesAllowed, triplesAllowed
-		// 	)
-		// 	values (
-		// 		$battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
-		// 		$k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
-		// 		$runs, $runsEarned, $singlesAllowed, $triplesAllowed
-		// 	)
-		// 	on conflict (idGameGroup, idPlayer, idTeam) do update set
-		// 		battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
-		// 		bb = statisticsPlayerGameGroupPitching.bb + $bb,
-		// 		doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
-		// 		hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
-		// 		hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
-		// 		k = statisticsPlayerGameGroupPitching.k + $k,
-		// 		lob = statisticsPlayerGameGroupPitching.lob + $lob,
-		// 		outs = statisticsPlayerGameGroupPitching.outs + $outs,
-		// 		pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
-		// 		pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
-		// 		pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
-		// 		pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
-		// 		runs = statisticsPlayerGameGroupPitching.runs + $runs,
-		// 		runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
-		// 		singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
-		// 		triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
-		// `);
-
-		// 	queryStatisticsPitching.run({
-		// 		battersFaced: this.statistics.pitching.battersFaced,
-		// 		bb: this.statistics.pitching.bb,
-		// 		doublesAllowed: this.statistics.pitching.doublesAllowed,
-		// 		hitsAllowed: this.statistics.pitching.hitsAllowed,
-		// 		hrsAllowed: this.statistics.pitching.hrsAllowed,
-		// 		idGameGroup: this.idGameGroup,
-		// 		idPlayer: this.player.idPlayer,
-		// 		idTeam: this.player.idTeam,
-		// 		k: this.statistics.pitching.k,
-		// 		lob: this.statistics.pitching.lob,
-		// 		outs: this.statistics.pitching.outs,
-		// 		pitchesThrown: this.statistics.pitching.pitchesThrown,
-		// 		pitchesThrownBalls: this.statistics.pitching.pitchesThrownBalls,
-		// 		pitchesThrownInPlay: this.statistics.pitching.pitchesThrownInPlay,
-		// 		pitchesThrownStrikes: this.statistics.pitching.pitchesThrownStrikes,
-		// 		runs: this.statistics.pitching.runs,
-		// 		runsEarned: this.statistics.pitching.runsEarned,
-		// 		singlesAllowed: this.statistics.pitching.singlesAllowed,
-		// 		triplesAllowed: this.statistics.pitching.triplesAllowed,
-		// 	});
-
-		// db.close();
-
 		return {
 			batting: {
 				ab: this.statistics.batting.ab,
@@ -630,6 +553,9 @@ class GameSimPlayerState implements OGameSimObserver {
 					this.statistics.pitching.doublesAllowed++;
 				}
 
+				break;
+			}
+			case "foul": {
 				break;
 			}
 			case "gameEnd": {

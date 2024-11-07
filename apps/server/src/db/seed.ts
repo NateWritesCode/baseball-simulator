@@ -12,6 +12,7 @@ import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
 import fs from "node:fs";
+import type { TPicklistPitchNames } from "../../../../packages/utils/src/types/tPicklist";
 
 const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
 
@@ -2318,7 +2319,6 @@ try {
 			ss,
 			tb,
 		};
-
 		const assignPitches = () => {
 			const pitches = {
 				changeup: RATING_MIN,
@@ -2337,118 +2337,110 @@ try {
 				sweeper: RATING_MIN,
 			};
 
-			// 98% chance of having a fastball
-			if (Math.random() < 0.98) {
-				pitches.fastball = faker.number.int({
-					min: RATING_MIN + 1,
-					max: RATING_MAX,
-				});
-			}
+			// Every pitcher has a fastball - it's their primary pitch
+			pitches.fastball = faker.number.int({
+				min: Math.floor(RATING_MAX * 0.7),
+				max: RATING_MAX,
+			});
 
-			const pitchesCommon = [
-				"slider",
-				"curveball",
-				"changeup",
-				"sinker",
-			] as const;
-			const pitchesRare = ["knuckleball", "eephus"] as const;
-			const pitchesUncommon = [
-				"cutter",
-				"splitter",
-				"forkball",
-				"sweeper",
-				"slurve",
-				"knuckleCurve",
-				"screwball",
-			] as const;
+			const pitchGroups: Record<string, TPicklistPitchNames[]> = {
+				primary: ["fastball"], // Already handled above
+				common: ["slider", "changeup"], // ~60-70% of pitchers
+				secondary: ["curveball", "sinker"], // ~40-50% of pitchers
+				tertiary: ["cutter", "splitter", "sweeper"], // ~20-30% of pitchers
+				rare: ["forkball", "slurve", "knuckleCurve", "screwball"], // ~5-10% of pitchers
+				specialty: ["knuckleball", "eephus"], // ~1% of pitchers
+			};
 
-			function addPitchWithProbability({
-				pitch,
-				probability,
-			}: { pitch: keyof typeof pitches; probability: number }) {
-				if (Math.random() < probability) {
+			// Common pitches - most pitchers have at least one of these
+			for (const pitch of pitchGroups.common) {
+				if (Math.random() < 0.65) {
 					pitches[pitch] = faker.number.int({
-						min: RATING_MIN + 1,
+						min: Math.floor(RATING_MAX * 0.6),
 						max: RATING_MAX,
 					});
-					return true;
 				}
-				return false;
 			}
 
-			for (const pitch of pitchesCommon) {
-				addPitchWithProbability({ pitch, probability: 0.7 });
+			// Secondary pitches
+			for (const pitch of pitchGroups.secondary) {
+				if (Math.random() < 0.45) {
+					pitches[pitch] = faker.number.int({
+						min: Math.floor(RATING_MAX * 0.5),
+						max: RATING_MAX * 0.9,
+					});
+				}
 			}
 
-			for (const pitch of pitchesUncommon) {
-				addPitchWithProbability({ pitch, probability: 0.2 });
+			// Tertiary pitches
+			for (const pitch of pitchGroups.tertiary) {
+				if (Math.random() < 0.25) {
+					pitches[pitch] = faker.number.int({
+						min: Math.floor(RATING_MAX * 0.4),
+						max: RATING_MAX * 0.85,
+					});
+				}
 			}
 
-			for (const pitch of pitchesRare) {
-				addPitchWithProbability({ pitch, probability: 0.05 });
+			// Rare pitches
+			for (const pitch of pitchGroups.rare) {
+				if (Math.random() < 0.08) {
+					pitches[pitch] = faker.number.int({
+						min: Math.floor(RATING_MAX * 0.3),
+						max: RATING_MAX * 0.8,
+					});
+				}
 			}
 
-			// Ensure the pitcher has at least 2 pitches
-			let activePitches = Object.keys(pitches).filter(
-				(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
+			// Specialty pitches - very rare
+			for (const pitch of pitchGroups.specialty) {
+				if (Math.random() < 0.01) {
+					pitches[pitch] = faker.number.int({
+						min: Math.floor(RATING_MAX * 0.6),
+						max: RATING_MAX,
+					}); // If they have it, they specialize in it
+				}
+			}
+
+			// Ensure minimum of 3 pitches and maximum of 5 for starters, 2-4 for relievers
+			let activePitches = Object.entries(pitches).filter(
+				([, rating]) => rating > RATING_MIN,
 			);
+			const isStarter = Math.random() < 0.3; // 30% chance of being a starter
+			const minPitches = isStarter ? 3 : 2;
+			const maxPitches = isStarter ? 5 : 4;
 
-			while (activePitches.length < 2) {
-				const availablePitches = pitchesCommon.filter(
+			// Add pitches if below minimum
+			while (activePitches.length < minPitches) {
+				const availablePitches = pitchGroups.common.filter(
 					(pitch) => pitches[pitch] === RATING_MIN,
 				);
 				if (availablePitches.length > 0) {
-					const additionalPitch = faker.helpers.arrayElement(availablePitches);
-					pitches[additionalPitch] = faker.number.int({
-						min: RATING_MIN + 1,
-						max: RATING_MAX,
+					const addPitch = faker.helpers.arrayElement(availablePitches);
+					pitches[addPitch] = faker.number.int({
+						min: Math.floor(RATING_MAX * 0.5),
+						max: RATING_MAX * 0.8,
 					});
-				} else {
-					// If no common pitches are available, choose from uncommon
-					const uncommonAvailable = pitchesUncommon.filter(
-						(pitch) => pitches[pitch] === RATING_MIN,
-					);
-					if (uncommonAvailable.length > 0) {
-						const additionalPitch =
-							faker.helpers.arrayElement(uncommonAvailable);
-						pitches[additionalPitch] = faker.number.int({
-							min: RATING_MIN + 1,
-							max: RATING_MAX,
-						});
-					}
 				}
-				activePitches = Object.keys(pitches).filter(
-					(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
+				activePitches = Object.entries(pitches).filter(
+					([, rating]) => rating > RATING_MIN,
 				);
 			}
 
-			// Limit to a maximum of 6 pitches
-			while (Object.values(pitches).filter((v) => v > RATING_MIN).length > 6) {
-				const pitchesToRemove = (
-					Object.keys(pitches) as (keyof typeof pitches)[]
-				).filter(
-					(pitch) => pitches[pitch] > RATING_MIN && pitch !== "fastball",
-				);
-				if (pitchesToRemove.length > 0) {
-					const pitchToRemove = faker.helpers.arrayElement(pitchesToRemove);
-					pitches[pitchToRemove] = RATING_MIN;
-				} else {
-					break; // Prevent infinite loop if no pitches can be removed
+			// Remove pitches if above maximum
+			while (activePitches.length > maxPitches) {
+				const removablePitches = activePitches
+					.filter(
+						([pitch]) =>
+							pitch !== "fastball" && !pitchGroups.specialty.includes(pitch),
+					)
+					.sort((a, b) => a[1] - b[1]);
+				if (removablePitches.length > 0) {
+					pitches[removablePitches[0][0]] = RATING_MIN;
 				}
-			}
-
-			// Ensure at least one pitch has a high rating
-			activePitches = Object.keys(pitches).filter(
-				(pitch) => pitches[pitch as keyof typeof pitches] > RATING_MIN,
-			);
-			if (activePitches.length > 0) {
-				const primaryPitch = faker.helpers.arrayElement(
-					activePitches,
-				) as keyof typeof pitches;
-				pitches[primaryPitch] = faker.number.int({
-					min: Math.floor(RATING_MAX / 2),
-					max: RATING_MAX,
-				});
+				activePitches = Object.entries(pitches).filter(
+					([, rating]) => rating > RATING_MIN,
+				);
 			}
 
 			return pitches;

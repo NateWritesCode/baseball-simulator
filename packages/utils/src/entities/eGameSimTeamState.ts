@@ -236,6 +236,9 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 			case "double": {
 				break;
 			}
+			case "foul": {
+				break;
+			}
 			case "gameEnd": {
 				break;
 			}

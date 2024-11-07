@@ -12,12 +12,12 @@ import {
 } from "valibot";
 import { RATING_MAX } from "../constants";
 import { handleValibotParse } from "../functions";
+import { VDbPitchLocation } from "../types";
 import {
 	type OGameSimObserver,
 	type TGameSimEvent,
 	type TGameSimResult,
 	type TGameSimWeatherConditions,
-	VGameSimEventPitchLocation,
 	VGameSimResult,
 } from "../types/tGameSim";
 import {
@@ -567,11 +567,23 @@ export default class GameSim {
 	private _calculateLaunchAngle(input: TInputSimulateBallInPlay) {
 		const { contactQuality, pitchLocation } = input;
 
-		// Base angle affected by pitch height
-		const baseAngle = 10 + (pitchLocation.plateZ - pitchLocation.szBot) * 15;
+		// Chance for optimal launch angle on good contact
+		if (contactQuality > 0.8) {
+			if (Math.random() < 0.3) {
+				// Home run angles
+				return 25 + (Math.random() - 0.5) * 10;
+			}
+			if (Math.random() < 0.4) {
+				// Line drive angles
+				return 15 + (Math.random() - 0.5) * 10;
+			}
+		}
 
-		// Add variation based on contact quality
-		const angleVariation = (Math.random() - 0.5) * 20;
+		// Base angle affected by pitch height
+		const baseAngle = 5 + (pitchLocation.plateZ - pitchLocation.szBot) * 15;
+
+		// More variation for weaker contact
+		const angleVariation = (Math.random() - 0.5) * 30;
 		return baseAngle + angleVariation * (1 - contactQuality);
 	}
 
@@ -1083,38 +1095,32 @@ export default class GameSim {
 			VInputDetermineContactQuality,
 			_input,
 		);
-
-		// Convert ratings to 0-1 scale but with adjusted floors to prevent extremely weak contact
 		const batterContact =
-			0.3 + (playerHitter.player.batting.contact / RATING_MAX) * 0.7; // Minimum 0.3
+			0.3 + (playerHitter.player.batting.contact / RATING_MAX) * 0.5;
 		const batterWhiffResistance =
-			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.6; // Minimum 0.4
+			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.4;
 		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
 
-		// Reduce pitcher influence on contact quality
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.5; // Halve the whiff factor's impact
+		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.5; // Reduced more
 
-		// Make location less punishing
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
 				(pitchLocation.plateZ -
 					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
 					2,
 		);
-		const locationFactor = 1 - distanceFromCenter * 0.1; // Reduced from 0.15 to 0.1
 
-		// Calculate base contact quality with higher floor
+		const locationFactor = 1 - distanceFromCenter * 0.12; // Keep same
+
 		const baseContactQuality =
 			batterContact *
 			batterWhiffResistance *
 			(1 - pitcherStuff * pitchWhiffFactor) *
 			locationFactor;
 
-		// Scale the final contact quality to ensure more realistic outcomes
-		const scaledContactQuality = 0.6 + baseContactQuality * 0.4; // Minimum 0.6 contact quality
+		const scaledContactQuality = 0.3 + baseContactQuality * 0.7;
 
-		// Add less random variation
-		return scaledContactQuality * (0.95 + Math.random() * 0.1); // Smaller random range
+		return scaledContactQuality * (0.8 + Math.random() * 0.4);
 	}
 
 	private _determinePlayType({
@@ -1153,9 +1159,15 @@ export default class GameSim {
 			_input,
 		);
 
-		const baseSwingLikelihood = playerHitter.player.batting.eye / RATING_MAX;
+		// Base swing chance should be higher on pitches in zone
+		const isCloseToZone =
+			Math.abs(pitchLocation.plateX) < 1.0 &&
+			pitchLocation.plateZ > pitchLocation.szBot - 0.2 &&
+			pitchLocation.plateZ < pitchLocation.szTop + 0.2;
 
-		// Adjust based on how close to the zone the pitch is
+		// Better eye means better judgment on borderline pitches
+		const batterEye = playerHitter.player.batting.eye / RATING_MAX;
+
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
 				(pitchLocation.plateZ -
@@ -1163,12 +1175,17 @@ export default class GameSim {
 					2,
 		);
 
-		const adjustedLikelihood =
-			baseSwingLikelihood *
-			(1 - distanceFromCenter * 0.2) *
-			(playerPitcher.player.pitching.movement / RATING_MAX);
+		// Base likelihood modified by location and batter eye
+		let likelihood = isCloseToZone ? 0.7 : 0.2;
+		likelihood *= 1 - distanceFromCenter * (0.5 - batterEye * 0.3);
+		likelihood *= 1 - (1 - batterEye) * 0.3;
 
-		return Math.random() < adjustedLikelihood;
+		// Pitcher movement affects likelihood slightly
+		const movementEffect =
+			(playerPitcher.player.pitching.movement / RATING_MAX) * 0.2;
+		likelihood *= 1 - movementEffect;
+
+		return Math.random() < likelihood;
 	}
 
 	private _determineStrikeZone(_input: TInputDetermineStrikeZone) {
@@ -1177,25 +1194,58 @@ export default class GameSim {
 			_input,
 		);
 
-		const xInZone = Math.abs(pitchLocation.plateX) < 0.85; // Standard strike zone width
-		const zInZone =
-			pitchLocation.plateZ > pitchLocation.szBot &&
-			pitchLocation.plateZ < pitchLocation.szTop;
+		// Get relative position in strike zone
+		const horizontalPosition = Math.abs(pitchLocation.plateX);
+		const verticalPosition = pitchLocation.plateZ;
+		const verticalCenter = (pitchLocation.szTop + pitchLocation.szBot) / 2;
 
-		// Apply umpire tendencies
-		const xAdjustment =
-			pitchLocation.plateX > 0
-				? umpireHp.umpire.outsideZone / RATING_MAX
-				: umpireHp.umpire.insideZone / RATING_MAX;
-		const zAdjustment =
-			pitchLocation.plateZ > (pitchLocation.szTop + pitchLocation.szBot) / 2
-				? umpireHp.umpire.highZone / RATING_MAX
-				: umpireHp.umpire.lowZone / RATING_MAX;
+		// Core strike zone
+		const inStandardZone =
+			horizontalPosition < 0.7 &&
+			verticalPosition > pitchLocation.szBot &&
+			verticalPosition < pitchLocation.szTop;
 
-		return (
-			(xInZone || Math.random() < xAdjustment) &&
-			(zInZone || Math.random() < zAdjustment)
+		// Expanded zones based on umpire tendencies
+		const expandedZone = {
+			inside: umpireHp.umpire.insideZone / RATING_MAX,
+			outside: umpireHp.umpire.outsideZone / RATING_MAX,
+			high: umpireHp.umpire.highZone / RATING_MAX,
+			low: umpireHp.umpire.lowZone / RATING_MAX,
+		};
+
+		// How far outside the zone is the pitch?
+		const distanceFromZone = Math.max(
+			horizontalPosition - 0.7, // Horizontal distance
+			Math.max(
+				pitchLocation.szBot - verticalPosition, // Distance below zone
+				verticalPosition - pitchLocation.szTop, // Distance above zone
+			),
 		);
+
+		// If well outside zone, it's definitely a ball
+		if (distanceFromZone > 0.5) {
+			return false;
+		}
+
+		// If clearly in zone, it's definitely a strike
+		if (distanceFromZone < -0.2) {
+			return true;
+		}
+
+		// For borderline pitches, use umpire tendencies
+		const relevantZone =
+			horizontalPosition > 0.7
+				? expandedZone.outside
+				: horizontalPosition < -0.7
+					? expandedZone.inside
+					: verticalPosition > pitchLocation.szTop
+						? expandedZone.high
+						: expandedZone.low;
+
+		// Chance decreases as distance from zone increases
+		const callProbability = relevantZone * (1 - distanceFromZone);
+
+		return Math.random() < callProbability;
 	}
 
 	private _endAtBat() {
@@ -1789,34 +1839,56 @@ export default class GameSim {
 		if (ballInPlay.launchAngle < 10) {
 			// Ground ball
 			if (fieldingResult.isError) {
-				this._handleSingle();
-			} else if (fieldingResult.isSuccess) {
-				if (this.numOuts < 2 && this.playerRunner1) {
-					// Potential double play situation
-					this._handleOut();
-					this._handleOut();
-				} else {
-					this._handleOut();
-				}
-			} else {
-				this._handleSingle();
-			}
-		} else if (ballInPlay.launchAngle > 25) {
-			// Fly ball
-			if (fieldingResult.isError) {
-				const distance = Math.sqrt(
-					ballInPlay.finalX * ballInPlay.finalX +
-						ballInPlay.finalY * ballInPlay.finalY,
-				);
-				if (distance > 200) {
-					this._handleTriple();
-				} else {
+				// 20% chance for double on error
+				if (Math.random() < 0.2) {
 					this._handleDouble();
+				} else {
+					this._handleSingle();
 				}
 			} else if (fieldingResult.isSuccess) {
 				this._handleOut();
 			} else {
-				this._handleDouble();
+				// Reduce singles probability
+				if (Math.random() < 0.6) {
+					// Increased out probability
+					this._handleOut();
+				} else {
+					this._handleSingle();
+				}
+			}
+		} else if (ballInPlay.launchAngle > 25) {
+			// Fly ball - check for home run
+			const distance = Math.sqrt(
+				ballInPlay.finalX * ballInPlay.finalX +
+					ballInPlay.finalY * ballInPlay.finalY,
+			);
+
+			if (
+				distance > 350 &&
+				ballInPlay.launchAngle > 20 &&
+				ballInPlay.launchAngle < 35
+			) {
+				this._handleHomeRun();
+			} else if (fieldingResult.isError) {
+				if (distance > 300) {
+					if (Math.random() < 0.1) {
+						// 10% chance for triple
+						this._handleTriple();
+					} else {
+						this._handleDouble();
+					}
+				} else {
+					this._handleSingle();
+				}
+			} else if (fieldingResult.isSuccess) {
+				this._handleOut();
+			} else {
+				if (Math.random() < 0.7) {
+					// Increased out probability
+					this._handleOut();
+				} else {
+					this._handleSingle();
+				}
 			}
 		} else {
 			// Line drive
@@ -1837,7 +1909,8 @@ export default class GameSim {
 					ballInPlay.finalX * ballInPlay.finalX +
 						ballInPlay.finalY * ballInPlay.finalY,
 				);
-				if (distance > 200) {
+				if (distance > 250) {
+					// Make doubles require more distance
 					this._handleDouble();
 				} else {
 					this._handleSingle();
@@ -2344,6 +2417,20 @@ export default class GameSim {
 			y: finalPosition.y,
 		});
 
+		this._notifyObservers({
+			data: {
+				playerHitter: this._getCurrentHitter({
+					teamIndex: this.numTeamOffense,
+				}),
+				playerPitcher: this._getCurrentPitcher({
+					teamIndex: this.numTeamDefense,
+				}),
+				teamDefense: this._getTeamDefenseState(),
+				teamOffense: this._getTeamOffenseState(),
+			},
+			gameSimEvent: "foul",
+		});
+
 		return {
 			distance,
 			exitVelocity,
@@ -2620,11 +2707,20 @@ export default class GameSim {
 			contactQuality: null,
 			pitchOutcome: "ball",
 		};
+
 		const input = parse(VInputSimulatePitchOutcome, _input);
-		const isInStrikeZone = this._determineStrikeZone({
-			pitchLocation: input.pitchLocation,
-			umpireHp: input.umpireHp,
-		});
+
+		// First check: ~35% should be balls
+		if (
+			!this._determineStrikeZone({
+				pitchLocation: input.pitchLocation,
+				umpireHp: input.umpireHp,
+			})
+		) {
+			return pitchOutcome; // It's a ball
+		}
+
+		// At this point, we know it's in the strike zone
 		const isBatterSwinging = this._determineSwingLikelihood({
 			pitchLocation: input.pitchLocation,
 			playerHitter: input.playerHitter,
@@ -2632,10 +2728,7 @@ export default class GameSim {
 		});
 
 		if (!isBatterSwinging) {
-			if (isInStrikeZone) {
-				pitchOutcome.pitchOutcome = "strike";
-			}
-
+			pitchOutcome.pitchOutcome = "strike";
 			return pitchOutcome;
 		}
 
@@ -2646,8 +2739,10 @@ export default class GameSim {
 			playerPitcher: input.playerPitcher,
 		});
 
-		if (contactQuality < 0.25) {
+		// Of swings, about 40% should be strikes
+		if (contactQuality < 0.3) {
 			pitchOutcome.pitchOutcome = "strike";
+			return pitchOutcome;
 		}
 
 		pitchOutcome.contactQuality = contactQuality;
@@ -2739,7 +2834,7 @@ type TInputHandleRunnersAdvanceXBases = InferInput<
 	typeof VInputHandleRunnersAdvanceXBases
 >;
 const VInputSimulatePitchOutcome = object({
-	pitchLocation: VGameSimEventPitchLocation,
+	pitchLocation: VDbPitchLocation,
 	pitchName: VPicklistPitchNames,
 	playerHitter: instance(GameSimPlayerState),
 	playerPitcher: instance(GameSimPlayerState),
@@ -2750,13 +2845,13 @@ const VInputSimulatePitchOutcome = object({
 type TInputSimulatePitchOutcome = InferInput<typeof VInputSimulatePitchOutcome>;
 
 const VInputDetermineStrikeZone = object({
-	pitchLocation: VGameSimEventPitchLocation,
+	pitchLocation: VDbPitchLocation,
 	umpireHp: instance(GameSimUmpireState),
 });
 type TInputDetermineStrikeZone = InferInput<typeof VInputDetermineStrikeZone>;
 
 const VInputDetermineSwingLikelihood = object({
-	pitchLocation: VGameSimEventPitchLocation,
+	pitchLocation: VDbPitchLocation,
 	playerHitter: instance(GameSimPlayerState),
 	playerPitcher: instance(GameSimPlayerState),
 });
@@ -2765,7 +2860,7 @@ type TInputDetermineSwingLikelihood = InferInput<
 >;
 
 const VInputDetermineContactQuality = object({
-	pitchLocation: VGameSimEventPitchLocation,
+	pitchLocation: VDbPitchLocation,
 	pitchName: VPicklistPitchNames,
 	playerHitter: instance(GameSimPlayerState),
 	playerPitcher: instance(GameSimPlayerState),
@@ -2782,7 +2877,7 @@ type TInputGetPitchWhiffFactor = InferInput<typeof VInputGetPitchWhiffFactor>;
 const VInputSimulateBallInPlay = object({
 	contactQuality: number(),
 	parkState: instance(GameSimParkState),
-	pitchLocation: VGameSimEventPitchLocation,
+	pitchLocation: VDbPitchLocation,
 	pitchName: VPicklistPitchNames,
 	playerHitter: instance(GameSimPlayerState),
 	playerPitcher: instance(GameSimPlayerState),

@@ -129,6 +129,9 @@ class GameSimBoxScore implements OGameSimObserver {
 			case "double": {
 				break;
 			}
+			case "foul": {
+				break;
+			}
 			case "gameEnd": {
 				const data = input.data;
 				this.dateTimeEnd = data.dateTime;

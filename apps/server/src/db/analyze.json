@@ -1,0 +1,44 @@
+[
+  {
+    "analysisType": "Game Events",
+    "type": "out",
+    "count": 2066,
+    "percentage": 54.63
+  },
+  {
+    "analysisType": "Game Events",
+    "type": "strikeout",
+    "count": 940,
+    "percentage": 24.85
+  },
+  {
+    "analysisType": "Game Events",
+    "type": "single",
+    "count": 748,
+    "percentage": 19.78
+  },
+  {
+    "analysisType": "Game Events",
+    "type": "double",
+    "count": 28,
+    "percentage": 0.74
+  },
+  {
+    "analysisType": "Pitch Outcomes",
+    "type": "ball",
+    "count": 6292,
+    "percentage": 39.77
+  },
+  {
+    "analysisType": "Pitch Outcomes",
+    "type": "strike",
+    "count": 5760,
+    "percentage": 36.41
+  },
+  {
+    "analysisType": "Pitch Outcomes",
+    "type": "inPlay",
+    "count": 3767,
+    "percentage": 23.81
+  }
+]

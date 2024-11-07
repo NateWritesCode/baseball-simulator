@@ -4,6 +4,7 @@ import {
 	VConstructorGameSimCoach,
 	VConstructorGameSimUmpire,
 	VDbCities,
+	VDbGameSimEvents,
 	VDbGames,
 	VDbParksWallSegments,
 	VDbPersons,
@@ -397,8 +398,6 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 		const numCpus = Math.max(1, cpus().length - 1);
 
-		console.log("numCpus", numCpus);
-
 		const workerPool: Worker[] = [];
 
 		for (let i = 0; i < numCpus; i++) {
@@ -594,7 +593,9 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 					idGame: result.idGame,
 				});
 
-				const keys = Object.keys(result.gameSimEvents[0]);
+				const keys = Object.keys(
+					omit(VDbGameSimEvents, ["idGameSimEvent"]).entries,
+				);
 
 				const insertGameSimEvent = db.query(/*sql*/ `
 						insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
@@ -734,8 +735,6 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 		try {
 			saveResults();
-
-			console.log("Results saved successfully");
 
 			return c.text("OK", 200);
 		} catch (error) {
