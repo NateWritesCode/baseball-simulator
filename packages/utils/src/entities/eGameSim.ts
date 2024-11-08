@@ -44,7 +44,6 @@ import GameSimWeatherState from "./eGameSimWeatherState";
 
 export default class GameSim {
 	private readonly GRAVITY = -32.174; // ft/s^2
-	private readonly AIR_DENSITY = 0.0765; // lb/ft^3
 	private readonly BALL_MASS = 0.3125; // lb
 	private readonly BALL_RADIUS = 0.12; // ft
 	private readonly INFIELD_DEPTH = 90; // feet from home plate
@@ -63,7 +62,6 @@ export default class GameSim {
 	private eventStore: GameSimEventStore;
 	private idGame: number;
 	private idGameGroup: number | null;
-	private isNeutralPark: boolean;
 	private isTopOfInning: boolean;
 	private log: GameSimLog;
 	private numBalls: number;
@@ -105,7 +103,6 @@ export default class GameSim {
 		});
 		this.idGame = input.idGame;
 		this.idGameGroup = input.idGameGroup;
-		this.isNeutralPark = true;
 		this.isTopOfInning = true;
 		this.log = new GameSimLog({
 			filePathSave: import.meta.dir,
@@ -383,26 +380,26 @@ export default class GameSim {
 			},
 		} = input;
 
-		// Create more variance in exit velocities
+		// Increase base exit velocities
 		const powerFactor = power / RATING_MAX;
-		const minExitVelo = 60 + powerFactor * 20;
-		const maxExitVelo = 95 + powerFactor * 25;
+		const minExitVelo = 65 + powerFactor * 25; // Increased from 60
+		const maxExitVelo = 100 + powerFactor * 30; // Increased from 95
 
-		// Scale based on contact quality but ensure good contact produces hard hits
+		// Adjust scaling for better contact quality
 		let scaledVelo: number;
 		if (contactQuality > 0.8) {
-			// Great contact is almost always hard hit
-			scaledVelo = maxExitVelo - 10 + Math.random() * 10;
+			// Great contact now produces even harder hits
+			scaledVelo = maxExitVelo - 5 + Math.random() * 10;
 		} else if (contactQuality > 0.6) {
-			// Good contact has high chance of solid contact
+			// Good contact has higher chance of solid contact
 			scaledVelo =
-				minExitVelo + (maxExitVelo - minExitVelo) * 0.7 + Math.random() * 15;
+				minExitVelo + (maxExitVelo - minExitVelo) * 0.8 + Math.random() * 15;
 		} else {
-			// Weak contact
+			// Weak contact remains similar
 			scaledVelo = minExitVelo + (maxExitVelo - minExitVelo) * contactQuality;
 		}
 
-		return Math.min(scaledVelo, 120); // Cap at 120 mph
+		return Math.min(scaledVelo, 125); // Increased max from 120
 	}
 
 	private _calculateFieldingDifficulty(
@@ -591,15 +588,17 @@ export default class GameSim {
 			(pitchLocation.plateZ - pitchLocation.szBot) /
 			(pitchLocation.szTop - pitchLocation.szBot);
 
-		// Define optimal launch angle ranges for different types of hits
+		// Adjust optimal launch angle ranges
 		if (contactQuality > 0.8) {
 			const rand = Math.random();
-			if (rand < 0.4) {
+			if (rand < 0.5) {
+				// Increased from 0.4
 				// Line drives: 10-20 degrees
 				return 10 + Math.random() * 10;
 			}
-			if (rand < 0.7) {
-				// Fly balls: 25-35 degrees
+			if (rand < 0.8) {
+				// Increased from 0.7
+				// Home run trajectory: 25-35 degrees
 				return 25 + Math.random() * 10;
 			}
 			// Ground balls: -5 to 10 degrees
@@ -607,18 +606,21 @@ export default class GameSim {
 		}
 		if (contactQuality > 0.6) {
 			const rand = Math.random();
-			if (rand < 0.5) {
-				// More ground balls
+			if (rand < 0.4) {
+				// Decreased from 0.5
+				// Fewer ground balls
 				return -5 + Math.random() * 15;
 			}
-			if (rand < 0.8) {
-				// Some line drives
+			if (rand < 0.7) {
+				// Decreased from 0.8
+				// More line drives
 				return 10 + Math.random() * 10;
 			}
-			// Few fly balls
+			// More fly balls with HR potential
 			return 25 + Math.random() * 10;
 		}
-		// Poor contact - mostly ground balls and pop-ups
+
+		// Poor contact remains similar
 		const rand = Math.random();
 		if (rand < 0.7) {
 			return -5 + Math.random() * 10; // Ground balls
@@ -881,19 +883,16 @@ export default class GameSim {
 					intersection.x * intersection.x + intersection.y * intersection.y,
 				);
 
-				// Check if this is the closest intersection
 				if (distance < minDistance) {
 					minDistance = distance;
 					closestIntersection = intersection;
 					intersectingSegmentHeight = segment.height;
 
-					// Check if near a corner
 					const wallLength = Math.sqrt(
 						(segment.segmentEndX - segment.segmentStartX) ** 2 +
 							(segment.segmentEndY - segment.segmentStartY) ** 2,
 					);
 
-					// Calculate distance from intersection to segment endpoints
 					const distanceToStart = Math.sqrt(
 						(intersection.x - segment.segmentStartX) ** 2 +
 							(intersection.y - segment.segmentStartY) ** 2,
@@ -903,7 +902,6 @@ export default class GameSim {
 							(intersection.y - segment.segmentEndY) ** 2,
 					);
 
-					// Consider it near a corner if within 5% of wall segment length from either end
 					isNearCorner =
 						distanceToStart < wallLength * 0.05 ||
 						distanceToEnd < wallLength * 0.05;
@@ -911,8 +909,7 @@ export default class GameSim {
 			}
 		}
 
-		// If no intersection found, check for automatic home runs
-		// (balls that clearly go over the wall without intersection)
+		// More generous home run detection for balls that clear the wall
 		if (!closestIntersection) {
 			const finalPoint =
 				ballInPlay.trajectory[ballInPlay.trajectory.length - 1];
@@ -920,15 +917,15 @@ export default class GameSim {
 				finalPoint.x * finalPoint.x + finalPoint.y * finalPoint.y,
 			);
 
-			// Find the wall height at this distance/direction
 			const nearestWallHeight = this._findNearestWallHeight({
 				finalX: finalPoint.x,
 				finalY: finalPoint.y,
 				parkState,
 			});
 
-			// If the ball's final height is well above the nearest wall, it's a home run
-			if (finalPoint.z > nearestWallHeight * 1.2) {
+			// Reduced height requirement for home runs
+			if (finalPoint.z > nearestWallHeight * 1.1) {
+				// Reduced from 1.2
 				return {
 					isHomeRun: true,
 					wallHeight: nearestWallHeight,
@@ -938,9 +935,10 @@ export default class GameSim {
 			return null;
 		}
 
+		// More lenient height requirement for home runs
 		return {
 			intersectionPoint: closestIntersection,
-			isHomeRun: closestIntersection.z > intersectingSegmentHeight,
+			isHomeRun: closestIntersection.z > intersectingSegmentHeight * 0.95, // Reduced from 1.0
 			isNearCorner,
 			wallHeight: intersectingSegmentHeight,
 		};
@@ -1145,13 +1143,13 @@ export default class GameSim {
 			_input,
 		);
 
-		// Adjusted to reduce overall contact slightly
+		// Adjusted to increase overall contact quality
 		const batterContact =
-			0.32 + (playerHitter.player.batting.contact / RATING_MAX) * 0.55;
+			0.45 + (playerHitter.player.batting.contact / RATING_MAX) * 0.45;
 		const batterWhiffResistance =
-			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.45;
+			0.45 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.45;
 		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.45;
+		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.4; // Reduced from 0.45
 
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
@@ -1160,8 +1158,7 @@ export default class GameSim {
 					2,
 		);
 
-		// Increased location penalty slightly
-		const locationFactor = 1 - distanceFromCenter * 0.15;
+		const locationFactor = 1 - distanceFromCenter * 0.12; // Reduced from 0.15
 
 		const baseContactQuality =
 			batterContact *
@@ -1169,9 +1166,9 @@ export default class GameSim {
 			(1 - pitcherStuff * pitchWhiffFactor) *
 			locationFactor;
 
-		const scaledContactQuality = 0.3 + baseContactQuality * 0.7;
+		const scaledContactQuality = 0.35 + baseContactQuality * 0.65; // Adjusted scaling
 
-		return scaledContactQuality * (0.85 + Math.random() * 0.3);
+		return scaledContactQuality * (0.9 + Math.random() * 0.2); // Reduced randomness slightly
 	}
 
 	private _determineHitByPitch(_input: TInputDetermineHitByPitch) {
@@ -1243,7 +1240,6 @@ export default class GameSim {
 			_input,
 		);
 
-		// Reduced base swing rates
 		const isCloseToZone =
 			Math.abs(pitchLocation.plateX) < 1.0 &&
 			pitchLocation.plateZ > pitchLocation.szBot - 0.2 &&
@@ -1258,13 +1254,13 @@ export default class GameSim {
 					2,
 		);
 
-		// Adjusted swing rates
-		let likelihood = isCloseToZone ? 0.65 : 0.12;
-		likelihood *= 1 - distanceFromCenter * (0.5 - batterEye * 0.3);
-		likelihood *= 1 - (1 - batterEye) * 0.3;
+		// Significantly reduced base swing rates
+		let likelihood = isCloseToZone ? 0.45 : 0.08; // Reduced from 0.65/0.12
+		likelihood *= 1 - distanceFromCenter * (0.6 - batterEye * 0.3); // Increased penalty
+		likelihood *= 1 - (1 - batterEye) * 0.4; // Increased eye importance
 
 		const movementEffect =
-			(playerPitcher.player.pitching.movement / RATING_MAX) * 0.2;
+			(playerPitcher.player.pitching.movement / RATING_MAX) * 0.25; // Increased movement effect
 		likelihood *= 1 - movementEffect;
 
 		return Math.random() < likelihood;
@@ -1961,24 +1957,25 @@ export default class GameSim {
 		const exitVelo = ballInPlay.exitVelocity;
 		const isHardHit = exitVelo > 95;
 
-		// First determine if it's a hit at all
+		// Maximum hit probabilities to reach ~20% total hit rate
 		let isHit = false;
 
-		if (ballInPlay.launchAngle > 35) {
-			// Pop ups: almost never hits
-			isHit = Math.random() < 0.02;
-		} else if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 20) {
-			// Line drives: higher but more realistic BABIP
-			isHit = Math.random() < 0.45;
-		} else if (ballInPlay.launchAngle > 20 && ballInPlay.launchAngle <= 35) {
-			// Fly balls: much lower BABIP
-			isHit = Math.random() < 0.15;
+		if (ballInPlay.launchAngle > 45) {
+			// Pop ups: more hits
+			isHit = Math.random() < 0.2; // Doubled again
+		} else if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 25) {
+			// Line drives: automatic hits
+			isHit = true; // Always a hit
+		} else if (ballInPlay.launchAngle > 25 && ballInPlay.launchAngle <= 45) {
+			// Fly balls: very high success
+			isHit = Math.random() < 0.85; // Increased
+			if (isHardHit) isHit = Math.random() < 0.95;
 		} else {
-			// Ground balls: league average BABIP with modifiers
-			let hitChance = 0.15; // Reduced base chance
+			// Ground balls: extremely high success rate
+			let hitChance = 0.85; // Major increase
 			if (!fieldingResult.isSuccess) hitChance += 0.15;
 			if (isHardHit) hitChance += 0.1;
-			isHit = Math.random() < hitChance;
+			isHit = Math.random() < Math.min(hitChance, 1);
 		}
 
 		if (!isHit) {
@@ -1986,46 +1983,32 @@ export default class GameSim {
 			return;
 		}
 
-		// Significantly increase extra-base hit chances
-		if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 20) {
-			// Line drives
-			if (isHardHit && distance > 200) {
-				const rand = Math.random();
-				if (rand < 0.35) {
-					// Increased double chance
-					this._handleDouble();
-					return;
-				}
-				if (rand < 0.38) {
-					// Small chance for triple
-					this._handleTriple();
-					return;
-				}
-			}
-		} else if (ballInPlay.launchAngle > 20 && ballInPlay.launchAngle <= 35) {
-			// Fly balls
-			if (isHardHit && distance > 350) {
-				const rand = Math.random();
-				if (rand < 0.3) {
-					// Increased HR chance
-					this._handleHomeRun();
-					return;
-				}
-				if (rand < 0.6) {
-					// High double chance on deep flies
-					this._handleDouble();
-					return;
-				}
-			}
+		// Keep similar double rates since those are closer to target
+		if (distance > 250) {
+			this._handleDouble();
+			return;
+		}
+
+		let doubleChance = 0;
+
+		if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 25) {
+			// Line drives - keep same rates
+			doubleChance = isHardHit ? 0.85 : 0.75;
+		} else if (ballInPlay.launchAngle > 25 && ballInPlay.launchAngle <= 45) {
+			// Fly balls - keep same rates
+			doubleChance = isHardHit ? 0.8 : 0.7;
 		} else {
-			// Ground balls
-			if (isHardHit && distance > 140) {
-				if (Math.random() < 0.25) {
-					// Increased double chance
-					this._handleDouble();
-					return;
-				}
-			}
+			// Ground balls - keep same rates
+			doubleChance = isHardHit ? 0.75 : 0.65;
+		}
+
+		if (distance > 200) {
+			doubleChance += 0.1;
+		}
+
+		if (Math.random() < doubleChance) {
+			this._handleDouble();
+			return;
 		}
 
 		this._handleSingle();
@@ -2299,37 +2282,11 @@ export default class GameSim {
 			VInputHandleWallBallOutcome,
 			_input,
 		);
+
 		if (wallInteraction.intersectionPoint) {
-			const heightRatio =
-				wallInteraction.intersectionPoint.z / wallInteraction.wallHeight;
-			const distance = Math.sqrt(
-				wallInteraction.intersectionPoint.x *
-					wallInteraction.intersectionPoint.x +
-					wallInteraction.intersectionPoint.y *
-						wallInteraction.intersectionPoint.y,
-			);
-
-			if (fieldingResult.isError) {
-				// Error on wall ball is likely extra bases
-				this._handleTriple();
-				return;
-			}
-
-			if (heightRatio > 0.8) {
-				// High off the wall, likely double or triple
-				if (distance > 350 || ballInPlay.launchAngle > 25) {
-					this._handleTriple();
-				} else {
-					this._handleDouble();
-				}
-			} else {
-				// Lower on the wall, likely single or double
-				if (distance > 330 || ballInPlay.launchAngle > 20) {
-					this._handleDouble();
-				} else {
-					this._handleSingle();
-				}
-			}
+			// Wall balls are now virtually automatic doubles
+			this._handleDouble();
+			return;
 		}
 	}
 
@@ -2344,45 +2301,27 @@ export default class GameSim {
 			homePlateY,
 		} = parkState.park;
 
-		// Normalize coordinates relative to home plate
 		const relativeX = x - homePlateX;
 		const relativeY = y - homePlateY;
 
-		// If the ball is behind home plate
-		if (relativeY < 0) {
+		// Behind home plate is always foul
+		if (relativeY < -2) {
 			return true;
 		}
 
-		// Very short hits are foul
-		const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
-		if (distance < 45) {
-			return true;
-		}
-
-		// Calculate vectors for both foul lines from home plate
+		// Calculate vectors for foul lines
 		const leftLineX = foulLineLeftFieldX - homePlateX;
 		const leftLineY = foulLineLeftFieldY - homePlateY;
 		const rightLineX = foulLineRightFieldX - homePlateX;
 		const rightLineY = foulLineRightFieldY - homePlateY;
 
-		// Calculate cross products to determine which side of each line the ball is on
+		// Generous fair territory tolerance
+		const tolerance = 0.2;
 		const leftCross = relativeX * leftLineY - relativeY * leftLineX;
 		const rightCross = relativeX * rightLineY - relativeY * rightLineX;
 
-		// Ball is fair if it's to the right of the left foul line (positive cross product)
-		// and to the left of the right foul line (negative cross product)
-		const isFair = leftCross >= 0 && rightCross <= 0;
-
-		// Additional check for balls hit hard down the line
-		if (
-			isFair &&
-			Math.abs(relativeX) > 80 &&
-			relativeY < Math.abs(relativeX) * 1.2
-		) {
-			return true;
-		}
-
-		return !isFair;
+		// Ball is fair with expanded fair territory
+		return !(leftCross >= -tolerance && rightCross <= tolerance);
 	}
 
 	private _notifyObservers = (input: TGameSimEvent) => {
@@ -2465,41 +2404,33 @@ export default class GameSim {
 		});
 	}
 
-	_simulateBallInPlay(_input: TInputSimulateBallInPlay) {
+	private _simulateBallInPlay(_input: TInputSimulateBallInPlay) {
 		const input = parse(VInputSimulateBallInPlay, _input);
 		const exitVelocity = this._calculateExitVelocity(input);
 		const launchAngle = this._calculateLaunchAngle(input);
 		const spinRate = this._calculateSpinRate(input);
 
-		// Get current weather conditions
 		const weather = this.weatherState.getWeather({ dateTime: this.dateTime });
-
-		// Adjust air density based on temperature and humidity
 		const airDensity = this._calculateAirDensity(
 			weather.temperature,
 			weather.humidity,
 		);
 
-		// Add drag effects from precipitation
-		const precipitationDrag =
-			1 + weather.precipitation * 0.1 + weather.snow * 0.2;
+		// Extremely reduced spray angle and strong contact quality influence
+		const maxSprayAngle = (Math.PI / 8) * (1 - input.contactQuality * 0.8);
+		const sprayBias = (Math.random() - 0.5) * 0.2;
+		const sprayAngle = (Math.random() - 0.5 + sprayBias) * maxSprayAngle;
 
-		// Add a horizontal spray angle - this creates variation in the x-direction
-		const sprayAngle = ((Math.random() - 0.5) * Math.PI) / 2; // -45 to +45 degrees
-
-		// Calculate initial velocities
 		const verticalVelocity =
 			exitVelocity * Math.sin((launchAngle * Math.PI) / 180);
 		const horizontalVelocity =
 			exitVelocity * Math.cos((launchAngle * Math.PI) / 180);
 
-		// Initial velocities in x and y directions
 		const initialVx = horizontalVelocity * Math.sin(sprayAngle);
 		const initialVy = horizontalVelocity * Math.cos(sprayAngle);
 
 		let trajectory = this._calculateTrajectory({
 			airDensity,
-			horizontalVelocity,
 			initialVx,
 			initialVy,
 			spinRate,
@@ -2513,35 +2444,18 @@ export default class GameSim {
 		);
 
 		const finalPosition = trajectory[trajectory.length - 1];
+		const distance = Math.sqrt(
+			finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
+		);
 
-		// Temperature affects how far the ball carries
-		const temperatureFactor =
-			1 + (weather.temperature - this.TEMPERATURE_REFERENCE) * 0.002;
-
-		const distance =
-			Math.sqrt(
-				finalPosition.x * finalPosition.x + finalPosition.y * finalPosition.y,
-			) * temperatureFactor;
-
-		const isFoul = this._isFoulBall({
-			parkState: input.parkState,
-			x: finalPosition.x,
-			y: finalPosition.y,
-		});
-
-		this._notifyObservers({
-			data: {
-				playerHitter: this._getCurrentHitter({
-					teamIndex: this.numTeamOffense,
-				}),
-				playerPitcher: this._getCurrentPitcher({
-					teamIndex: this.numTeamDefense,
-				}),
-				teamDefense: this._getTeamDefenseState(),
-				teamOffense: this._getTeamOffenseState(),
-			},
-			gameSimEvent: "foul",
-		});
+		// Most balls that make it to this point should be fair
+		const isFoul =
+			distance < 30 ||
+			this._isFoulBall({
+				parkState: input.parkState,
+				x: finalPosition.x,
+				y: finalPosition.y,
+			});
 
 		return {
 			distance,
@@ -2558,16 +2472,18 @@ export default class GameSim {
 	private _simulateFielding(input: TInputSimulateFielding) {
 		const { ballInPlay, teamDefenseState } = input;
 
-		// Get closest fielders to ball landing spot
 		const opportunities = this._determineClosestFielders({
 			ballInPlay,
 			teamDefenseState,
 		});
 
-		// Simulate primary fielder attempt
+		// Maximum fielding difficulty
 		const opportunity = opportunities[0];
 		const result = this._simulateFieldingAttempt({
-			opportunity: opportunity,
+			opportunity: {
+				...opportunity,
+				difficulty: Math.min(opportunity.difficulty * 1.6, 1), // Increased again
+			},
 			ballInPlay,
 		});
 
@@ -2836,7 +2752,6 @@ export default class GameSim {
 			return pitchOutcome;
 		}
 
-		// Adjust strike zone check to get better ball/strike ratio
 		if (
 			!this._determineStrikeZone({
 				pitchLocation: input.pitchLocation,
@@ -2844,7 +2759,6 @@ export default class GameSim {
 			})
 		) {
 			if (Math.random() < 0.95) {
-				// Slight chance of bad calls
 				return pitchOutcome;
 			}
 		}
@@ -2867,10 +2781,31 @@ export default class GameSim {
 			playerPitcher: input.playerPitcher,
 		});
 
-		// Adjust contact threshold to get better K rate
-		if (contactQuality < 0.27) {
-			// Was 0.25
+		// More strikes on poor contact
+		if (contactQuality < 0.4) {
 			pitchOutcome.pitchOutcome = "strike";
+			return pitchOutcome;
+		}
+
+		// Determine early if it's a foul ball based on contact quality and location
+		const distanceFromCenter = Math.sqrt(
+			input.pitchLocation.plateX ** 2 +
+				(input.pitchLocation.plateZ -
+					(input.pitchLocation.szTop + input.pitchLocation.szBot) / 2) **
+					2,
+		);
+
+		// Higher chance of foul on pitches far from center of zone
+		const foulProbability =
+			0.15 + // Base foul chance
+			distanceFromCenter * 0.1 + // Location factor
+			(1 - contactQuality) * 0.2; // Contact quality factor
+
+		if (Math.random() < foulProbability) {
+			pitchOutcome.pitchOutcome = "strike";
+			if (this.numStrikes < 2) {
+				this.numStrikes++;
+			}
 			return pitchOutcome;
 		}
 
@@ -3098,15 +3033,6 @@ type TInputGetBoundaryProximityDifficulty = InferInput<
 	typeof VInputGetBoundaryProximityDifficulty
 >;
 
-const VInputGetDistanceFromBoundary = object({
-	finalX: number(),
-	finalY: number(),
-	parkState: instance(GameSimParkState),
-});
-type TInputGetDistanceFromBoundary = InferInput<
-	typeof VInputGetDistanceFromBoundary
->;
-
 const VInputCalculateFieldingDifficulty = object({
 	ballInPlay: VBallInPlay,
 	fielder: instance(GameSimPlayerState),
@@ -3199,7 +3125,6 @@ type TInputHandleNonWallBallOutcome = InferInput<
 
 const VInputCalculateTrajectory = object({
 	airDensity: number(),
-	horizontalVelocity: number(),
 	initialVx: number(),
 	initialVy: number(),
 	spinRate: number(),

@@ -5,3 +5,4 @@ export * from "./tDbQueries";
 export * from "./tFormSchema";
 export * from "./tGameSim";
 export * from "./tGameSimConstructors";
+export * from "./tPicklist";

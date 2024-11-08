@@ -1,5 +1,6 @@
 import {
 	DIRECTIONS,
+	GAME_SIM_EVENTS,
 	PITCH_NAMES,
 	PITCH_OUTCOMES,
 	RATING_MAX,
@@ -8,11 +9,11 @@ import {
 	SURFACE_TYPES,
 	TEAM_NAMES,
 } from "@baseball-simulator/utils/constants";
+import type { TPicklistPitchNames } from "@baseball-simulator/utils/types";
 import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
 import fs from "node:fs";
-import type { TPicklistPitchNames } from "../../../../packages/utils/src/types/tPicklist";
 
 const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
 
@@ -57,46 +58,86 @@ try {
 	}
 
 	const db = new Database(DB_PATH, {
-		safeIntegers: true,
 		strict: true,
 	});
 
-	db.exec(/*sql*/ `
-        pragma foreign_keys = off;
+	const sqlSchema = /*sql*/ `
+		pragma foreign_keys = off;
 
-        create table continents (
-            abbreviation text not null unique,
-            idContinent integer primary key autoincrement,
-            name text not null unique
-        );
+		create table cities (
+			idCity integer primary key autoincrement,
+			idState integer not null,
+			latitude real not null,
+			longitude real not null,
+			name text not null,
+			foreign key (idState) references states(idState)
+		);
 
-        create table countries (
-            abbreviation text not null unique,
-            idContinent integer not null,
-            idCountry integer primary key autoincrement,
-            name text not null unique,
-            foreign key (idContinent) references continents(idContinent)
-        );
+		create table coaches (
+			idCoach integer primary key autoincrement,
+			idPerson integer not null,
+			idTeam integer,
+			foreign key (idPerson) references persons(idPerson)
+			foreign key (idTeam) references teams(idTeam)
+		);
 
-        create table states (
-            abbreviation text not null,
-            idCountry integer not null,
-            idState integer primary key autoincrement,
-            name text not null,
-            foreign key (idCountry) references countries(idCountry)
-        );
+		create table coachesRatings (
+			ability integer not null,
+			idCoach integer primary key,
+			foreign key (idCoach) references coaches(idCoach)	
+		);
 
-        create table cities (
-            idCity integer primary key autoincrement,
-            idState integer not null,
-            latitude real not null,
-            longitude real not null,
-            name text not null,
-            foreign key (idState) references states(idState)
-        );
+		create table continents (
+			abbreviation text not null unique,
+			idContinent integer primary key autoincrement,
+			name text not null unique
+		);
+
+		create table countries (
+			abbreviation text not null unique,
+			idContinent integer not null,
+			idCountry integer primary key autoincrement,
+			name text not null unique,
+			foreign key (idContinent) references continents(idContinent)
+		);
+
+		create table divisions (
+			abbreviation text not null,
+			direction text check(direction in (${DIRECTIONS.map((direction) => `'${direction}'`).join(", ")})),
+			idDivision integer primary key autoincrement,
+			idLeague integer not null,
+			idSubLeague integer not null,
+			name text not null,
+			foreign key (idLeague) references leagues(idLeague),
+			foreign key (idSubLeague) references subLeagues(idSubLeague)
+		);
+
+		create table gameGroups (
+			idGameGroup integer primary key autoincrement,
+			idLeague integer not null,
+			name text not null,
+			standings text,
+			foreign key (idLeague) references leagues(idLeague)
+		);
+
+
+		create table games (
+			boxScore text,
+			idGame integer primary key autoincrement,
+			idGameGroup integer not null,
+			idTeamAway integer not null,
+			idTeamHome integer not null,
+			dateTime text not null,
+			
+			foreign key (idGameGroup) references gameGroups(idGameGroup),
+			foreign key (idTeamAway) references teams(idTeam),
+			foreign key (idTeamHome) references teams(idTeam),
+
+			unique (idTeamAway, idTeamHome, dateTime)
+		);
 
 		create table gameSimEvents (
-				gameSimEvent text not null,
+				gameSimEvent text not null check(gameSimEvent in (${GAME_SIM_EVENTS.map((gameSimEvent) => `'${gameSimEvent}'`).join(", ")})),
 				idGame integer not null,
 				idGameSimEvent integer primary key autoincrement,
 				idPlayerHitter integer,
@@ -117,278 +158,10 @@ try {
 			gameSimLog text not null
 		);
 
-        create table persons (
-            dateOfBirth text not null,
-            firstName text not null,
-            idCityOfBirth integer not null,
-            idPerson integer primary key autoincrement,
-            lastName text not null,
-            middleName text,
-            nickname text,
-            foreign key (idCityOfBirth) references cities(idCity)
-        );
-
-
-        create table personsAlignment (
-            chaotic integer not null,
-            evil integer not null,
-            good integer not null,
-            idPerson integer primary key,
-            lawful integer not null,
-            neutralMorality integer not null,
-            neutralOrder integer not null,
-            foreign key (idPerson) references persons(idPerson)
-        );
-
-        create table personsMyersBriggs (
-            extroversion integer not null,
-            feeling integer not null,
-            idPerson integer primary key,
-            introversion integer not null,
-            intuition integer not null,
-            judging integer not null,
-            perceiving integer not null,
-            sensing integer not null,
-            thinking integer not null,
-            foreign key (idPerson) references persons(idPerson)
-        );
-
-        create table personsMental (
-            charisma integer not null,
-            constitution integer not null,
-            idPerson integer primary key,
-            intelligence integer not null,
-            loyalty integer not null,
-            wisdom integer not null,
-            workEthic integer not null,
-            foreign key (idPerson) references persons(idPerson)
-        );
-
-        create table personsPhysical (
-            height integer not null,
-            idPerson integer primary key,
-            weight integer not null,
-            foreign key (idPerson) references persons(idPerson)
-        );
-
-        create table players (
-            idPlayer integer primary key,
-            idPerson integer not null,
-            idTeam integer
-        );
-
-        create table playersBatting(
-            avoidKs integer not null,
-            avoidKsVL integer not null,
-            avoidKsVR integer not null,
-            contact integer not null,
-            contactVL integer not null,
-            contactVR integer not null,
-            eye integer not null,
-            eyeVL integer not null,
-            eyeVR integer not null,
-            gap integer not null,
-            gapVL integer not null,
-            gapVR integer not null,
-            idPlayer integer primary key,
-            power integer not null,
-            powerVL integer not null,
-            powerVR integer not null,
-            foreign key (idPlayer) references players(idPlayer)
-        );
-
-        create table playersFielding(
-            c integer not null,
-            catcherAbility integer not null,
-            catcherArm integer not null,
-            catcherFraming integer not null,
-            cf integer not null,
-            fb integer not null,
-            idPlayer integer primary key,
-            infieldArm integer not null,
-            infieldError integer not null,
-            infieldRange integer not null,
-            infieldDoublePlay integer not null,
-            lf integer not null,
-            outfieldArm integer not null,
-            outfieldError integer not null,
-            outfieldRange integer not null,
-            rf integer not null,
-            sb integer not null,
-            ss integer not null,
-            tb integer not null,
-            foreign key (idPlayer) references players(idPlayer)
-        );
-
-        create table playersPitching(
-            control integer not null,
-            controlVL integer not null,
-            controlVR integer not null,
-            idPlayer integer primary key,
-            movement integer not null,
-            movementVL integer not null,
-            movementVR integer not null,
-            stamina integer not null,
-            stuff integer not null,
-            stuffVL integer not null,
-            stuffVR integer not null,
-            foreign key (idPlayer) references players(idPlayer)
-        );
-
-        create table playersPitches(
-            changeup integer not null,
-            curveball integer not null,
-            cutter integer not null,
-            eephus integer not null,
-            fastball integer not null,
-            forkball integer not null,
-            idPlayer integer not null,
-            knuckleball integer not null,
-            knuckleCurve integer not null,
-            screwball integer not null,
-            sinker integer not null,
-            slider integer not null,
-            slurve integer not null,
-            splitter integer not null,
-            sweeper integer not null,
-            foreign key (idPlayer) references players(idPlayer)
-        );
-
-        create table playersRunning(
-            baserunning integer not null,
-            idPlayer integer primary key,
-            speed integer not null,
-            stealing integer not null,
-            foreign key (idPlayer) references players(idPlayer)            
-        );
-
-
-		create table statisticsPlayerGameGroupBatting (
-			idPlayer integer not null,
-			idGameGroup integer not null,
-			idTeam integer not null,
-			ab integer not null,
-			doubles integer not null,
-			h integer not null,
-			hr integer not null,
-			k integer not null,
-			lob integer not null,
-			outs integer not null,
-			rbi integer not null,
-			runs integer not null,
-			singles integer not null,
-			triples integer not null,
-
-			foreign key (idPlayer) references players(idPlayer)
-			foreign key (idGameGroup) references gameGroups(idGameGroup)
-			foreign key (idTeam) references teams(idTeam)
-
-			primary key (idPlayer, idGameGroup, idTeam)
-		);
-
-		create table statisticsPlayerGameGroupFielding (
-			idPlayer integer not null,
-			idGameGroup integer not null,
-			idTeam integer not null,
-			errors integer not null,
-
-			foreign key (idPlayer) references players(idPlayer)
-			foreign key (idGameGroup) references gameGroups(idGameGroup)
-			foreign key (idTeam) references teams(idTeam)
-
-			primary key (idPlayer, idGameGroup, idTeam)
-		);
-
-		create table statisticsPlayerGameGroupPitching (
-			idPlayer integer not null,
-			idGameGroup integer not null,
-			idTeam integer not null,
-			battersFaced integer not null,
-			bb integer not null,
-			doublesAllowed integer not null,
-			k integer not null,
-			pitchesThrown integer not null,
-			pitchesThrownBalls integer not null,
-			pitchesThrownInPlay integer not null,
-			pitchesThrownStrikes integer not null,
-			hitsAllowed integer not null,
-			hrsAllowed integer not null,
-			lob integer not null,
-			outs integer not null,
-			runs integer not null,
-			runsEarned integer not null,
-			singlesAllowed integer not null,
-			triplesAllowed integer not null,
-
-			foreign key (idPlayer) references players(idPlayer)
-			foreign key (idGameGroup) references gameGroups(idGameGroup)
-			foreign key (idTeam) references teams(idTeam)
-
-			primary key (idPlayer, idGameGroup, idTeam)
-		);
-
-        create table leagues (
-            abbreviation text not null unique,
-            idLeague integer primary key autoincrement,
-            name text not null unique
-        );
-
-        create table subLeagues (
-            abbreviation text not null,
-            idLeague integer not null,
-            idSubLeague integer primary key autoincrement,
-            name text not null,
-            foreign key (idLeague) references leagues(idLeague)
-        );
-
-        create table divisions (
-            abbreviation text not null,
-            direction text check(direction in (${DIRECTIONS.map((direction) => `'${direction}'`).join(", ")})),
-            idDivision integer primary key autoincrement,
-            idLeague integer not null,
-            idSubLeague integer not null,
-            name text not null,
-            foreign key (idLeague) references leagues(idLeague),
-            foreign key (idSubLeague) references subLeagues(idSubLeague)
-        );
-
-        create table teams (
-            abbreviation text not null,
-            colorPrimary text not null,
-            colorSecondary text not null,
-            idCity integer not null,
-            idDivision integer,
-            idLeague integer not null,
-            idTeam integer primary key autoincrement,
-            idSubLeague integer not null,
-            nickname text not null,
-            foreign key (idCity) references cities(idCity),
-            foreign key (idDivision) references divisions(idDivision),
-            foreign key (idLeague) references leagues(idLeague),
-            foreign key (idSubLeague) references subLeagues(idSubLeague)
-        );
-
-        create table games (
-			boxScore text,
-            idGame integer primary key autoincrement,
-			idGameGroup integer not null,
-            idTeamAway integer not null,
-            idTeamHome integer not null,
-            dateTime text not null,
-			
-			foreign key (idGameGroup) references gameGroups(idGameGroup),
-            foreign key (idTeamAway) references teams(idTeam),
-            foreign key (idTeamHome) references teams(idTeam),
-
-            unique (idTeamAway, idTeamHome, dateTime)
-        );
-
-		create table gameGroups (
-			idGameGroup integer primary key autoincrement,
-			idLeague integer not null,
-			name text not null,
-			standings text,
-			foreign key (idLeague) references leagues(idLeague)
+		create table leagues (
+			abbreviation text not null unique,
+			idLeague integer primary key autoincrement,
+			name text not null unique
 		);
 
 		create table owners (
@@ -398,43 +171,6 @@ try {
 			numTokens integer not null,
 			foreign key (idPerson) references persons(idPerson)
 			foreign key (idTeam) references teams(idTeam)
-		);
-
-		create table coaches (
-			idCoach integer primary key autoincrement,
-			idPerson integer not null,
-			idTeam integer,
-			foreign key (idPerson) references persons(idPerson)
-			foreign key (idTeam) references teams(idTeam)
-		);
-
-		create table coachesRatings (
-			ability integer not null,
-			idCoach integer primary key,
-			foreign key (idCoach) references coaches(idCoach)	
-		);
-
-		create table umpires (
-			idPerson integer,
-			idUmpire integer primary key autoincrement,
-			foreign key (idPerson) references persons(idPerson)
-		);
-
-		create table umpiresRatings (
-			balkAccuracy integer not null,
-			checkSwingAccuracy integer not null,
-			consistency integer not null,
-			expandedZone integer not null,
-			favorFastballs integer not null,
-			favorOffspeed integer not null,
-			highZone integer not null,
-			idUmpire integer primary key autoincrement,
-			insideZone integer not null,
-			lowZone integer not null,
-			outsideZone integer not null,
-			pitchFramingInfluence integer not null,
-			reactionTime integer not null,
-			foreign key (idUmpire) references umpires(idUmpire)
 		);
 
 		create table parks (
@@ -494,12 +230,285 @@ try {
 			foreign key (idPark) references parks(idPark)
 		);
 
+
+		create table persons (
+			dateOfBirth text not null,
+			firstName text not null,
+			idCityOfBirth integer not null,
+			idPerson integer primary key autoincrement,
+			lastName text not null,
+			middleName text,
+			nickname text,
+			foreign key (idCityOfBirth) references cities(idCity)
+		);
+
+		create table personsAlignment (
+			chaotic integer not null,
+			evil integer not null,
+			good integer not null,
+			idPerson integer primary key,
+			lawful integer not null,
+			neutralMorality integer not null,
+			neutralOrder integer not null,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table personsMyersBriggs (
+			extroversion integer not null,
+			feeling integer not null,
+			idPerson integer primary key,
+			introversion integer not null,
+			intuition integer not null,
+			judging integer not null,
+			perceiving integer not null,
+			sensing integer not null,
+			thinking integer not null,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table personsMental (
+			charisma integer not null,
+			constitution integer not null,
+			idPerson integer primary key,
+			intelligence integer not null,
+			loyalty integer not null,
+			wisdom integer not null,
+			workEthic integer not null,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table personsPhysical (
+			height integer not null,
+			idPerson integer primary key,
+			weight integer not null,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table players (
+			idPlayer integer primary key,
+			idPerson integer not null,
+			idTeam integer
+		);
+
+		create table playersBatting(
+			avoidKs integer not null,
+			avoidKsVL integer not null,
+			avoidKsVR integer not null,
+			contact integer not null,
+			contactVL integer not null,
+			contactVR integer not null,
+			eye integer not null,
+			eyeVL integer not null,
+			eyeVR integer not null,
+			gap integer not null,
+			gapVL integer not null,
+			gapVR integer not null,
+			idPlayer integer primary key,
+			power integer not null,
+			powerVL integer not null,
+			powerVR integer not null,
+			foreign key (idPlayer) references players(idPlayer)
+		);
+
+		create table playersFielding(
+			c integer not null,
+			catcherAbility integer not null,
+			catcherArm integer not null,
+			catcherFraming integer not null,
+			cf integer not null,
+			fb integer not null,
+			idPlayer integer primary key,
+			infieldArm integer not null,
+			infieldError integer not null,
+			infieldRange integer not null,
+			infieldDoublePlay integer not null,
+			lf integer not null,
+			outfieldArm integer not null,
+			outfieldError integer not null,
+			outfieldRange integer not null,
+			rf integer not null,
+			sb integer not null,
+			ss integer not null,
+			tb integer not null,
+			foreign key (idPlayer) references players(idPlayer)
+		);
+
+		create table playersPitching(
+			control integer not null,
+			controlVL integer not null,
+			controlVR integer not null,
+			idPlayer integer primary key,
+			movement integer not null,
+			movementVL integer not null,
+			movementVR integer not null,
+			stamina integer not null,
+			stuff integer not null,
+			stuffVL integer not null,
+			stuffVR integer not null,
+			foreign key (idPlayer) references players(idPlayer)
+		);
+
+		create table playersPitches(
+			changeup integer not null,
+			curveball integer not null,
+			cutter integer not null,
+			eephus integer not null,
+			fastball integer not null,
+			forkball integer not null,
+			idPlayer integer not null,
+			knuckleball integer not null,
+			knuckleCurve integer not null,
+			screwball integer not null,
+			sinker integer not null,
+			slider integer not null,
+			slurve integer not null,
+			splitter integer not null,
+			sweeper integer not null,
+			foreign key (idPlayer) references players(idPlayer)
+		);
+
+		create table playersRunning(
+			baserunning integer not null,
+			idPlayer integer primary key,
+			speed integer not null,
+			stealing integer not null,
+			foreign key (idPlayer) references players(idPlayer)            
+		);
+
+		create table states (
+			abbreviation text not null,
+			idCountry integer not null,
+			idState integer primary key autoincrement,
+			name text not null,
+			foreign key (idCountry) references countries(idCountry)
+		);
+
+		create table statisticsPlayerGameGroupBatting (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			ab integer not null,
+			doubles integer not null,
+			h integer not null,
+			hr integer not null,
+			k integer not null,
+			lob integer not null,
+			outs integer not null,
+			rbi integer not null,
+			runs integer not null,
+			sb integer not null,
+			singles integer not null,
+			triples integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
+		create table statisticsPlayerGameGroupFielding (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			errors integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
+		create table statisticsPlayerGameGroupPitching (
+			idPlayer integer not null,
+			idGameGroup integer not null,
+			idTeam integer not null,
+			balks integer not null,
+			battersFaced integer not null,
+			bb integer not null,
+			doublesAllowed integer not null,
+			k integer not null,
+			pitchesThrown integer not null,
+			pitchesThrownBalls integer not null,
+			pitchesThrownInPlay integer not null,
+			pitchesThrownStrikes integer not null,
+			hitsAllowed integer not null,
+			hrsAllowed integer not null,
+			lob integer not null,
+			outs integer not null,
+			runs integer not null,
+			runsEarned integer not null,
+			singlesAllowed integer not null,
+			triplesAllowed integer not null,
+
+			foreign key (idPlayer) references players(idPlayer)
+			foreign key (idGameGroup) references gameGroups(idGameGroup)
+			foreign key (idTeam) references teams(idTeam)
+
+			primary key (idPlayer, idGameGroup, idTeam)
+		);
+
+		create table subLeagues (
+			abbreviation text not null,
+			idLeague integer not null,
+			idSubLeague integer primary key autoincrement,
+			name text not null,
+			foreign key (idLeague) references leagues(idLeague)
+		);
+
+		create table teams (
+			abbreviation text not null,
+			colorPrimary text not null,
+			colorSecondary text not null,
+			idCity integer not null,
+			idDivision integer,
+			idLeague integer not null,
+			idTeam integer primary key autoincrement,
+			idSubLeague integer not null,
+			nickname text not null,
+			foreign key (idCity) references cities(idCity),
+			foreign key (idDivision) references divisions(idDivision),
+			foreign key (idLeague) references leagues(idLeague),
+			foreign key (idSubLeague) references subLeagues(idSubLeague)
+		);
+
+		create table umpires (
+			idPerson integer,
+			idUmpire integer primary key autoincrement,
+			foreign key (idPerson) references persons(idPerson)
+		);
+
+		create table umpiresRatings (
+			balkAccuracy integer not null,
+			checkSwingAccuracy integer not null,
+			consistency integer not null,
+			expandedZone integer not null,
+			favorFastballs integer not null,
+			favorOffspeed integer not null,
+			highZone integer not null,
+			idUmpire integer primary key autoincrement,
+			insideZone integer not null,
+			lowZone integer not null,
+			outsideZone integer not null,
+			pitchFramingInfluence integer not null,
+			reactionTime integer not null,
+			foreign key (idUmpire) references umpires(idUmpire)
+		);
+
 		create table universe (
 			dateTime text not null
 		);
 
-        pragma foreign_keys = on;
-    `);
+		pragma foreign_keys = on;
+	`;
+
+	db.exec(sqlSchema);
+
+	await Bun.write(
+		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/schema.sql",
+		sqlSchema,
+	);
 
 	const seedContinents = [
 		{ abbreviation: "AF", name: "Africa" },
@@ -2432,9 +2441,10 @@ try {
 				const removablePitches = activePitches
 					.filter(
 						([pitch]) =>
-							pitch !== "fastball" && !pitchGroups.specialty.includes(pitch),
+							pitch !== "fastball" &&
+							!pitchGroups.specialty.includes(pitch as keyof typeof pitches),
 					)
-					.sort((a, b) => a[1] - b[1]);
+					.sort((a, b) => a[1] - b[1]) as [keyof typeof pitches, number][];
 				if (removablePitches.length > 0) {
 					pitches[removablePitches[0][0]] = RATING_MIN;
 				}

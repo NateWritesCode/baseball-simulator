@@ -45,6 +45,15 @@ class GameSimCoachState implements OGameSimObserver {
 			case "atBatStart": {
 				break;
 			}
+			case "balk": {
+				break;
+			}
+			case "ball": {
+				break;
+			}
+			case "catcherInterference": {
+				break;
+			}
 			case "double": {
 				break;
 			}
@@ -79,6 +88,21 @@ class GameSimCoachState implements OGameSimObserver {
 				break;
 			}
 			case "single": {
+				break;
+			}
+			case "steal": {
+				break;
+			}
+			case "stealAttempt": {
+				break;
+			}
+			case "stealCaught": {
+				break;
+			}
+			case "strikeCalled": {
+				break;
+			}
+			case "strikeSwinging": {
 				break;
 			}
 			case "strikeout": {

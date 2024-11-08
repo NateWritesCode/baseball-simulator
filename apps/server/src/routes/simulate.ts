@@ -58,6 +58,9 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 			case "oneWeek": {
 				return 7;
 			}
+			case "oneHalfWeek": {
+				return 3;
+			}
 			case "oneMonth": {
 				return 30;
 			}

@@ -1,6 +1,7 @@
 import { type InferInput, picklist } from "valibot";
 import { DIRECTIONS, SIMULATION_LENGTH_OPTIONS } from "../constants";
 import {
+	GAME_SIM_EVENTS,
 	PITCH_IN_PLAY_EVENTS,
 	PITCH_NAMES,
 	PITCH_OUTCOMES,
@@ -37,3 +38,6 @@ export const VPicklistSimuationLengthOptions = picklist([
 export type TPicklistSimuationLengthOptions = InferInput<
 	typeof VPicklistSimuationLengthOptions
 >;
+
+export const VPicklistGameSimEvents = picklist([...GAME_SIM_EVENTS]);
+export type TPicklistGameSimEvents = InferInput<typeof VPicklistGameSimEvents>;

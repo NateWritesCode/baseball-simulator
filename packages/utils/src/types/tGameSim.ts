@@ -72,6 +72,44 @@ export type TGameSimEventAtBatStart = InferOutput<
 	typeof VGameSimEventAtBatStart
 >;
 
+export const VGameSimEventBalk = object({
+	data: object({
+		playerPitcher: instance(GameSimPlayerState),
+		playerRunner1: nullable(instance(GameSimPlayerState)),
+		playerRunner2: nullable(instance(GameSimPlayerState)),
+		playerRunner3: nullable(instance(GameSimPlayerState)),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("balk"),
+});
+export type TGameSimEventBalk = InferOutput<typeof VGameSimEventBalk>;
+
+export const VGameSimEventBall = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("ball"),
+});
+
+export type TGameSimEventBall = InferOutput<typeof VGameSimEventBall>;
+
+export const VGameSimCatcherInterference = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("catcherInterference"),
+});
+export type TGameSimCatcherInterference = InferOutput<
+	typeof VGameSimCatcherInterference
+>;
+
 export const VGameSimEventDouble = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
@@ -224,6 +262,68 @@ export const VGameSimEventSingle = object({
 
 export type TGameSimEventSingle = InferOutput<typeof VGameSimEventSingle>;
 
+export const VGameSimEventStealAttempt = object({
+	data: object({
+		playerRunner: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("stealAttempt"),
+});
+export type TGameSimEventStealAttempt = InferOutput<
+	typeof VGameSimEventStealAttempt
+>;
+
+export const VGameSimEventSteal = object({
+	data: object({
+		playerRunner: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("steal"),
+});
+export type TGameSimEventSteal = InferOutput<typeof VGameSimEventSteal>;
+
+export const VGameSimEventStealCaught = object({
+	data: object({
+		playerRunner: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("stealCaught"),
+});
+
+export type TGameSimEventStealCaught = InferOutput<
+	typeof VGameSimEventStealCaught
+>;
+
+export const VGameSimEventStrikeCalled = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("strikeCalled"),
+});
+export type TGameSimEventStrikeCalled = InferOutput<
+	typeof VGameSimEventStrikeCalled
+>;
+
+export const VGameSimEventStrikeSwinging = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("strikeSwinging"),
+});
+
+export type TGameSimEventStrikeSwinging = InferOutput<
+	typeof VGameSimEventStrikeSwinging
+>;
+
 export const VGameSimStrikeout = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
@@ -266,6 +366,9 @@ export type TGameSimWalk = InferOutput<typeof VGameSimWalk>;
 export const VGameSimEvent = variant("gameSimEvent", [
 	VGameSimEventAtBatEnd,
 	VGameSimEventAtBatStart,
+	VGameSimEventBalk,
+	VGameSimEventBall,
+	VGameSimCatcherInterference,
 	VGameSimEventDouble,
 	VGameSimEventFoul,
 	VGameSimEventGameStart,
@@ -278,6 +381,11 @@ export const VGameSimEvent = variant("gameSimEvent", [
 	VGameSimEventPitch,
 	VGameSimEventRun,
 	VGameSimEventSingle,
+	VGameSimEventStealAttempt,
+	VGameSimEventSteal,
+	VGameSimEventStealCaught,
+	VGameSimEventStrikeCalled,
+	VGameSimEventStrikeSwinging,
 	VGameSimStrikeout,
 	VGameSimEventTriple,
 	VGameSimWalk,
@@ -299,6 +407,7 @@ const VGameSimBattingStatistics = object({
 	outs: number(),
 	rbi: number(),
 	runs: number(),
+	sb: number(),
 	singles: number(),
 	triples: number(),
 });
@@ -308,6 +417,7 @@ export type TGameSimBattingStatistics = InferOutput<
 >;
 
 export const VGameSimPitchingStatistics = object({
+	balks: number(),
 	battersFaced: number(),
 	bb: number(),
 	doublesAllowed: number(),

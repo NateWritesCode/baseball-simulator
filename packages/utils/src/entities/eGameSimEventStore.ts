@@ -57,6 +57,15 @@ export default class GameSimEventStore implements OGameSimObserver {
 				case "atBatStart": {
 					break;
 				}
+				case "balk": {
+					break;
+				}
+				case "ball": {
+					break;
+				}
+				case "catcherInterference": {
+					break;
+				}
 				case "double": {
 					const data = _gameSimEvent.data;
 					values.idTeamDefense = data.teamDefense.team.idTeam;
@@ -149,6 +158,21 @@ export default class GameSimEventStore implements OGameSimObserver {
 					values.idPlayerRunner3 = data.playerRunner3?.player.idPlayer || null;
 					break;
 				}
+				case "steal": {
+					break;
+				}
+				case "stealAttempt": {
+					break;
+				}
+				case "stealCaught": {
+					break;
+				}
+				case "strikeCalled": {
+					break;
+				}
+				case "strikeSwinging": {
+					break;
+				}
 				case "strikeout": {
 					const data = _gameSimEvent.data;
 					values.idTeamDefense = data.teamDefense.team.idTeam;
@@ -209,6 +233,15 @@ export default class GameSimEventStore implements OGameSimObserver {
 			case "atBatStart": {
 				break;
 			}
+			case "balk": {
+				break;
+			}
+			case "ball": {
+				break;
+			}
+			case "catcherInterference": {
+				break;
+			}
 			case "double": {
 				break;
 			}
@@ -243,6 +276,21 @@ export default class GameSimEventStore implements OGameSimObserver {
 				break;
 			}
 			case "single": {
+				break;
+			}
+			case "steal": {
+				break;
+			}
+			case "stealAttempt": {
+				break;
+			}
+			case "stealCaught": {
+				break;
+			}
+			case "strikeCalled": {
+				break;
+			}
+			case "strikeSwinging": {
 				break;
 			}
 			case "strikeout": {

@@ -70,6 +70,27 @@ class GameSimLog implements OGameSimObserver {
 			case "atBatStart": {
 				break;
 			}
+			case "balk": {
+				const { playerPitcher } = input.data;
+				this.logInfo([
+					`${playerPitcher.player.firstName} ${playerPitcher.player.lastName} balked`,
+				]);
+				break;
+			}
+			case "ball": {
+				const { playerPitcher } = input.data;
+				this.logInfo([
+					`${playerPitcher.player.firstName} ${playerPitcher.player.lastName} threw a ball`,
+				]);
+				break;
+			}
+			case "catcherInterference": {
+				const { playerHitter } = input.data;
+				this.logInfo([
+					`${playerHitter.player.firstName} ${playerHitter.player.lastName} had catcher interference`,
+				]);
+				break;
+			}
 			case "double": {
 				const { playerHitter } = input.data;
 				this.logInfo([
@@ -146,6 +167,47 @@ class GameSimLog implements OGameSimObserver {
 				const { playerHitter } = input.data;
 				this.logInfo([
 					`${playerHitter.player.firstName} ${playerHitter.player.lastName} hit a single`,
+				]);
+				break;
+			}
+			case "steal": {
+				const { playerRunner, teamOffense } = input.data;
+
+				this.logInfo([
+					`${teamOffense.team.nickname} ${playerRunner.player.firstName} ${playerRunner.player.lastName} stole a base`,
+				]);
+
+				break;
+			}
+			case "stealAttempt": {
+				const { playerRunner, teamOffense } = input.data;
+
+				this.logInfo([
+					`${teamOffense.team.nickname} ${playerRunner.player.firstName} ${playerRunner.player.lastName} attempted to steal a base`,
+				]);
+
+				break;
+			}
+			case "stealCaught": {
+				const { playerRunner, teamDefense } = input.data;
+
+				this.logInfo([
+					`${teamDefense.team.nickname} caught ${playerRunner.player.firstName} ${playerRunner.player.lastName} stealing a base`,
+				]);
+
+				break;
+			}
+			case "strikeCalled": {
+				const { playerHitter } = input.data;
+				this.logInfo([
+					`${playerHitter.player.firstName} ${playerHitter.player.lastName} struck out looking`,
+				]);
+				break;
+			}
+			case "strikeSwinging": {
+				const { playerHitter } = input.data;
+				this.logInfo([
+					`${playerHitter.player.firstName} ${playerHitter.player.lastName} struck out swinging`,
 				]);
 				break;
 			}

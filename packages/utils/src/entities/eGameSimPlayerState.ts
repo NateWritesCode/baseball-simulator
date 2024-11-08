@@ -98,10 +98,12 @@ class GameSimPlayerState implements OGameSimObserver {
 				outs: 0,
 				rbi: 0,
 				runs: 0,
+				sb: 0,
 				singles: 0,
 				triples: 0,
 			},
 			pitching: {
+				balks: 0,
 				battersFaced: 0,
 				bb: 0,
 				doublesAllowed: 0,
@@ -454,6 +456,7 @@ class GameSimPlayerState implements OGameSimObserver {
 				outs: this.statistics.batting.outs,
 				rbi: this.statistics.batting.rbi,
 				runs: this.statistics.batting.runs,
+				sb: this.statistics.batting.sb,
 				singles: this.statistics.batting.singles,
 				triples: this.statistics.batting.triples,
 			},
@@ -461,6 +464,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			idPlayer: this.player.idPlayer,
 			idTeam: this.player.idTeam,
 			pitching: {
+				balks: this.statistics.pitching.balks,
 				battersFaced: this.statistics.pitching.battersFaced,
 				bb: this.statistics.pitching.bb,
 				doublesAllowed: this.statistics.pitching.doublesAllowed,
@@ -504,6 +508,21 @@ class GameSimPlayerState implements OGameSimObserver {
 					this.statistics.batting.ab++;
 				}
 
+				break;
+			}
+			case "balk": {
+				const { playerPitcher } = input.data;
+
+				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
+					this.statistics.pitching.balks++;
+				}
+
+				break;
+			}
+			case "ball": {
+				break;
+			}
+			case "catcherInterference": {
 				break;
 			}
 			case "double": {
@@ -653,6 +672,28 @@ class GameSimPlayerState implements OGameSimObserver {
 					this.statistics.batting.runs++;
 				}
 
+				break;
+			}
+			case "steal": {
+				const { playerRunner } = input.data;
+
+				if (playerRunner.player.idPlayer === this.player.idPlayer) {
+					this.statistics.batting.sb++;
+				}
+
+				break;
+			}
+			case "stealAttempt": {
+				break;
+			}
+			case "stealCaught": {
+				break;
+			}
+
+			case "strikeCalled": {
+				break;
+			}
+			case "strikeSwinging": {
 				break;
 			}
 

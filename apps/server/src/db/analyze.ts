@@ -1,144 +1,142 @@
 import { Database } from "bun:sqlite";
 
-const db = new Database("./baseball-simulator.db", {
-	strict: true,
-});
+export default async () => {
+	const db = new Database(
+		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/baseball-simulator.db",
+		{
+			strict: true,
+		},
+	);
 
-const toJson = db
-	.query(/*sql*/ `
-with gameEvents as (
-    select count(*) as totalGameEvents
-    from gameSimEvents 
-    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk', 'hitByPitch')
+	const toJson = db
+		.query(/*sql*/ `
+with game_count as (
+   select count(*) as totalGames
+   from gameSimEvents
+   where gameSimEvent = 'gameStart'
 ),
-pitchEvents as (
-    select count(*) as totalPitchEvents
-    from gameSimEvents 
-    where gameSimEvent = 'pitch' and pitchOutcome is not null
+plate_appearances as (
+   select count(*) as totalPa
+   from gameSimEvents
+   where gameSimEvent in ('double', 'out', 'strikeout', 'walk', 'single', 'hitByPitch', 'homeRun', 'triple')
 ),
-plateAppearances as (
-    select count(distinct idGame || idPlayerHitter) as totalPAs
-    from gameSimEvents 
-    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk')
+total_pitches as (
+   select count(*) as totalPitches
+   from gameSimEvents
+   where gameSimEvent = 'pitch'
 ),
-atBats as (
-    select count(distinct idGame || idPlayerHitter) as totalABs
-    from gameSimEvents 
-    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple')
+batting_outcomes as (
+   select 
+       'battingOutcomes' as analysisType,
+       gameSimEvent as type,
+       count(*) as count,
+       round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentage,
+       round(cast(count(*) as float) / (select totalGames from game_count), 2) as perGame
+   from gameSimEvents
+   where gameSimEvent in ('double', 'foul', 'hitByPitch', 'homeRun', 'out', 'run', 'single', 'strikeout', 'triple', 'walk')
+   group by gameSimEvent
 ),
-battedBallEvents as (
-    select count(*) as totalBattedBalls
-    from gameSimEvents 
-    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'popout', 'single', 'triple')
+key_metrics as (
+   select 
+       'keyMetrics' as analysisType,
+       'onBasePercentage' as type,
+       round(1000 * cast(count(*) as float) / sum(case when gameSimEvent in ('double', 'out', 'strikeout', 'walk', 'single', 'hitByPitch', 'homeRun', 'triple') then 1 else 0 end), 0) as count,
+       null as percentage,
+       null as perGame
+   from gameSimEvents
+   where gameSimEvent in ('walk', 'single', 'double', 'hitByPitch', 'homeRun', 'triple')
+
+   union all
+
+   select 
+       'keyMetrics',
+       'battingAverage',
+       round(1000 * cast(count(*) as float) / sum(case when gameSimEvent in ('double', 'out', 'strikeout', 'single', 'homeRun', 'triple') then 1 else 0 end), 0),
+       null,
+       null
+   from gameSimEvents
+   where gameSimEvent in ('single', 'double', 'homeRun', 'triple')
+
+   union all
+
+   select 
+       'keyMetrics',
+       'pitchesPerPlateAppearance',
+       round(cast(totalPitches as float) / totalPa, 2),
+       null,
+       null
+   from total_pitches, plate_appearances
+),
+pitch_outcomes as (
+   select 
+       'pitchOutcomes' as analysisType,
+       pitchOutcome as type,
+       count(*) as count,
+       round(count(*) * 100.0 / sum(count(*)) over(), 2) as percentage,
+       round(cast(count(*) as float) / (select totalGames from game_count), 2) as perGame
+   from gameSimEvents 
+   where pitchOutcome is not null 
+   group by pitchOutcome
+),
+pitch_types as (
+   select 
+       'pitchTypes' as analysisType,
+       pitchName as type,
+       count(*) as count,
+       round(count(*) * 100.0 / sum(count(*)) over(), 2) as percentage,
+       round(cast(count(*) as float) / (select totalGames from game_count), 2) as perGame
+   from gameSimEvents 
+   where pitchName is not null 
+   group by pitchName
 )
+select *
+from (
+   select * from batting_outcomes
+   union all
+   select * from key_metrics
+   union all
+   select * from pitch_outcomes
+   union all
+   select * from pitch_types
+)
+order by 
+   case analysisType 
+       when 'battingOutcomes' then 1
+       when 'keyMetrics' then 2 
+       when 'pitchOutcomes' then 3
+       when 'pitchTypes' then 4
+   end,
+   count desc;
+    `)
+		.all();
 
-select 
-    'Batting Outcomes' as analysisType,
-    gameSimEvent as type,
-    count(*) as count,
-    round(cast(count(*) as float) / (select totalGameEvents from gameEvents) * 100, 2) as percentage
-from gameSimEvents
-where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk', 'hitByPitch')
-group by gameSimEvent
+	// Pitch type, name, location
 
-union all
+	// const toJson = db
+	// 	.query(/*sql*/ `
+	// select
+	//     avg(json_extract(pitchLocation, '$.releaseSpeed')) as avgVelocity,
+	//     avg(json_extract(pitchLocation, '$.pfxX')) as avgHorizontalBreak,
+	//     avg(json_extract(pitchLocation, '$.pfxZ')) as avgVerticalBreak,
+	//     count(*) as totalPitches,
+	//     pitchName,
+	//     pitchOutcome,
+	//     round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentageOfTotal
+	// from gameSimEvents
+	// where pitchLocation is not null
+	// and pitchName is not null
+	// group by
+	//     pitchName,
+	//     pitchOutcome
+	// order by
+	//     pitchName,
+	//     pitchOutcome;
+	// `)
+	// 	.all();
 
-select 
-    'Pitch Outcomes' as analysisType,
-    pitchOutcome as type,
-    count(*) as count,
-    round(cast(count(*) as float) / (select totalPitchEvents from pitchEvents) * 100, 2) as percentage
-from gameSimEvents
-where gameSimEvent = 'pitch' and pitchOutcome is not null
-group by pitchOutcome
-
-union all
-
-select
-    'Pitch Types' as analysisType,
-    pitchName as type,
-    count(*) as count,
-    round(cast(count(*) as float) / (select totalPitchEvents from pitchEvents) * 100, 2) as percentage
-from gameSimEvents
-where gameSimEvent = 'pitch' and pitchName is not null
-group by pitchName
-
-union all
-
-select
-    'Key Metrics' as analysisType,
-    'Batting Average' as type,
-    round(cast(sum(case when gameSimEvent in ('single', 'double', 'triple', 'homerun') then 1 else 0 end) as float) / 
-        (select totalABs from atBats) * 1000, 0) as count,
-    null as percentage
-from gameSimEvents
-
-union all
-
-select
-    'Key Metrics' as analysisType,
-    'On Base Percentage' as type,
-    round(cast(sum(case when gameSimEvent in ('single', 'double', 'triple', 'homerun', 'walk') then 1 else 0 end) as float) / 
-        (select totalPAs from plateAppearances) * 1000, 0) as count,
-    null as percentage
-from gameSimEvents
-
-union all
-
-select
-    'Key Metrics' as analysisType,
-    'Pitches Per PA' as type,
-    round(cast((select totalPitchEvents from pitchEvents) as float) / 
-        (select totalPAs from plateAppearances), 2) as count,
-    null as percentage
-from gameSimEvents
-group by 'Pitches Per PA'
-
-union all
-
-select
-    'Batted Ball Types' as analysisType,
-    case 
-        when gameSimEvent = 'groundout' then 'Ground Ball'
-        when gameSimEvent in ('flyout', 'popout') then 'Fly Ball'
-        when gameSimEvent = 'lineout' then 'Line Drive'
-    end as type,
-    count(*) as count,
-    round(cast(count(*) as float) / (select totalBattedBalls from battedBallEvents) * 100, 2) as percentage
-from gameSimEvents
-where gameSimEvent in ('flyout', 'groundout', 'lineout', 'popout')
-group by case 
-    when gameSimEvent = 'groundout' then 'Ground Ball'
-    when gameSimEvent in ('flyout', 'popout') then 'Fly Ball'
-    when gameSimEvent = 'lineout' then 'Line Drive'
-end
-
-order by analysisType, count desc;
-`)
-	.all();
-
-// Pitch type, name, location
-
-// const toJson = db
-// 	.query(/*sql*/ `
-// select
-//     avg(json_extract(pitchLocation, '$.releaseSpeed')) as avgVelocity,
-//     avg(json_extract(pitchLocation, '$.pfxX')) as avgHorizontalBreak,
-//     avg(json_extract(pitchLocation, '$.pfxZ')) as avgVerticalBreak,
-//     count(*) as totalPitches,
-//     pitchName,
-//     pitchOutcome,
-//     round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentageOfTotal
-// from gameSimEvents
-// where pitchLocation is not null
-// and pitchName is not null
-// group by
-//     pitchName,
-//     pitchOutcome
-// order by
-//     pitchName,
-//     pitchOutcome;
-// `)
-// 	.all();
-
-await Bun.write("./analyze.json", JSON.stringify(toJson, null, 2));
+	await Bun.write(
+		"/home/nathanh81/Projects/baseball-simulator/apps/server/src/db/analyze.json",
+		JSON.stringify(toJson, null, 2),
+	);
+	console.info("Analyze complete");
+};

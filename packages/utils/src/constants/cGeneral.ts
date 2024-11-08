@@ -184,6 +184,7 @@ export const TEAM_NAMES = [
 
 export const SIMULATION_LENGTH_OPTIONS = [
 	"oneDay",
+	"oneHalfWeek",
 	"oneWeek",
 	"oneMonth",
 	"oneYear",
