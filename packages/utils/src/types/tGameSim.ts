@@ -141,6 +141,16 @@ export type TGameSimEventHalfInningStart = InferOutput<
 	typeof VGameSimEventHalfInningStart
 >;
 
+export const VGameSimHitByPitch = object({
+	data: object({
+		playerHitter: instance(GameSimPlayerState),
+		playerPitcher: instance(GameSimPlayerState),
+		teamDefense: instance(GameSimTeamState),
+		teamOffense: instance(GameSimTeamState),
+	}),
+	gameSimEvent: literal("hitByPitch"),
+});
+
 export const VGameSimEventHomeRun = object({
 	data: object({
 		playerHitter: instance(GameSimPlayerState),
@@ -262,6 +272,7 @@ export const VGameSimEvent = variant("gameSimEvent", [
 	VGameSimEventGameEnd,
 	VGameSimEventHalfInningEnd,
 	VGameSimEventHalfInningStart,
+	VGameSimHitByPitch,
 	VGameSimEventHomeRun,
 	VGameSimEventOut,
 	VGameSimEventPitch,

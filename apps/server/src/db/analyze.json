@@ -1,44 +1,50 @@
 [
   {
     "analysisType": "Game Events",
-    "type": "out",
-    "count": 2066,
-    "percentage": 54.63
+    "type": "double",
+    "count": 1,
+    "percentage": 0.01
   },
   {
     "analysisType": "Game Events",
-    "type": "strikeout",
-    "count": 940,
-    "percentage": 24.85
+    "type": "hitByPitch",
+    "count": 31,
+    "percentage": 0.35
+  },
+  {
+    "analysisType": "Game Events",
+    "type": "out",
+    "count": 5137,
+    "percentage": 58.82
   },
   {
     "analysisType": "Game Events",
     "type": "single",
-    "count": 748,
-    "percentage": 19.78
+    "count": 671,
+    "percentage": 7.68
   },
   {
     "analysisType": "Game Events",
-    "type": "double",
-    "count": 28,
-    "percentage": 0.74
+    "type": "strikeout",
+    "count": 2894,
+    "percentage": 33.13
   },
   {
     "analysisType": "Pitch Outcomes",
     "type": "ball",
-    "count": 6292,
-    "percentage": 39.77
-  },
-  {
-    "analysisType": "Pitch Outcomes",
-    "type": "strike",
-    "count": 5760,
-    "percentage": 36.41
+    "count": 11919,
+    "percentage": 33.8
   },
   {
     "analysisType": "Pitch Outcomes",
     "type": "inPlay",
-    "count": 3767,
-    "percentage": 23.81
+    "count": 8198,
+    "percentage": 23.25
+  },
+  {
+    "analysisType": "Pitch Outcomes",
+    "type": "strike",
+    "count": 15146,
+    "percentage": 42.95
   }
 ]

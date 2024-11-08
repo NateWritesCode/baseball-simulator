@@ -88,6 +88,14 @@ export default class GameSimEventStore implements OGameSimObserver {
 				case "halfInningStart": {
 					break;
 				}
+				case "hitByPitch": {
+					const data = _gameSimEvent.data;
+					values.idTeamDefense = data.teamDefense.team.idTeam;
+					values.idTeamOffense = data.teamOffense.team.idTeam;
+					values.idPlayerHitter = data.playerHitter.player.idPlayer;
+					values.idPlayerPitcher = data.playerPitcher.player.idPlayer;
+					break;
+				}
 				case "homeRun": {
 					const data = _gameSimEvent.data;
 					values.idTeamDefense = data.teamDefense.team.idTeam;
@@ -217,6 +225,9 @@ export default class GameSimEventStore implements OGameSimObserver {
 				break;
 			}
 			case "halfInningStart": {
+				break;
+			}
+			case "hitByPitch": {
 				break;
 			}
 			case "homeRun": {

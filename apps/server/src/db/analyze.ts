@@ -9,7 +9,7 @@ const toJson = db
 with gameEvents as (
     select count(*) as totalGameEvents
     from gameSimEvents 
-    where gameSimEvent in ('single', 'double', 'triple', 'out', 'strikeout')
+    where gameSimEvent in ('single', 'double', 'triple', 'out', 'strikeout', 'hitByPitch')
 ),
 pitchEvents as (
     select count(*) as totalPitchEvents
@@ -22,7 +22,7 @@ select
     count(*) as count,
     round(cast(count(*) as float) / (select totalGameEvents from gameEvents) * 100, 2) as percentage
 from gameSimEvents
-where gameSimEvent in ('single', 'double', 'triple', 'out', 'strikeout')
+where gameSimEvent in ('single', 'double', 'triple', 'out', 'strikeout', 'hitByPitch')
 group by gameSimEvent
 
 union all
@@ -35,7 +35,6 @@ select
 from gameSimEvents
 where gameSimEvent = 'pitch' and pitchOutcome is not null
 group by pitchOutcome
-order by analysisType, count desc;
 `)
 	.all();
 

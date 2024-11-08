@@ -7,7 +7,6 @@ import {
 	parse,
 } from "valibot";
 import { FATIGUE_MAX, FATIGUE_MIN, RATING_MAX, RATING_MIN } from "../constants";
-import { PITCHES_THROWN_STANDARD_MAX } from "../constants/cBaseball";
 import { handleValibotParse } from "../functions";
 import {
 	type OGameSimObserver,
@@ -20,7 +19,12 @@ import {
 	type TConstructorGameSimPlayer,
 	VConstructorGameSimPlayer,
 } from "../types/tGameSimConstructors";
-import { VPicklistPitchNames } from "../types/tPicklist";
+import {
+	type TPicklistPitchNames,
+	VPicklistPitchNames,
+} from "../types/tPicklist";
+
+const PITCHES_THROWN_STANDARD_MAX = 125;
 
 // Fatigue multipliers for different pitch types
 const PITCH_TYPE_FATIGUE_MULTIPLIERS = {
@@ -129,208 +133,170 @@ class GameSimPlayerState implements OGameSimObserver {
 
 		const fatigueMultiplier = 1 - fatigueEffect.pitching.controlPenalty;
 		const velocityMultiplier = 1 - fatigueEffect.pitching.velocityPenalty;
+		const movementMultiplier = 1 - fatigueEffect.pitching.movementPenalty;
 
 		const getRandomInRange = (min: number, max: number) =>
 			Math.random() * (max - min) + min;
 
-		const getBaseReleaseSpeed = () => {
-			const staminaFactor =
-				1 -
-				((numPitchesThrown / PITCHES_THROWN_STANDARD_MAX) *
-					(RATING_MAX - pitcherStamina)) /
-					RATING_MAX;
-			const stuffFactor =
-				0.9 + (input.playerPitcher.player.pitching.stuff / RATING_MAX) * 0.2;
+		// Calculate release parameters
+		const releasePosX =
+			getRandomInRange(-1.5, 1.5) *
+			(1 + fatigueEffect.pitching.controlPenalty * 0.25);
+		const releasePosY = getRandomInRange(52.5, 54);
+		const releasePosZ =
+			getRandomInRange(5, 6) *
+			(1 + fatigueEffect.pitching.controlPenalty * 0.25);
 
-			switch (pitchName) {
-				case "fastball":
-					return getRandomInRange(92, 102) * staminaFactor * stuffFactor;
-				case "changeup":
-					return getRandomInRange(82, 90) * staminaFactor * stuffFactor;
-				case "curveball":
-					return getRandomInRange(76, 85) * staminaFactor * stuffFactor;
-				case "cutter":
-					return getRandomInRange(86, 96) * staminaFactor * stuffFactor;
-				case "eephus":
-					return getRandomInRange(55, 65) * staminaFactor;
-				case "forkball":
-					return getRandomInRange(80, 88) * staminaFactor * stuffFactor;
-				case "knuckleball":
-					return getRandomInRange(65, 75) * staminaFactor;
-				case "knuckleCurve":
-					return getRandomInRange(72, 82) * staminaFactor * stuffFactor;
-				case "screwball":
-					return getRandomInRange(78, 86) * staminaFactor * stuffFactor;
-				case "sinker":
-					return getRandomInRange(91, 98) * staminaFactor * stuffFactor;
-				case "slider":
-					return getRandomInRange(82, 92) * staminaFactor * stuffFactor;
-				case "slurve":
-					return getRandomInRange(78, 87) * staminaFactor * stuffFactor;
-				case "splitter":
-					return getRandomInRange(83, 90) * staminaFactor * stuffFactor;
-				case "sweeper":
-					return getRandomInRange(80, 88) * staminaFactor * stuffFactor;
-				default:
-					return getRandomInRange(85, 92) * staminaFactor * stuffFactor;
-			}
-		};
-
-		const getPitchMovement = () => {
-			const stuffFactor =
-				0.8 + (input.playerPitcher.player.pitching.stuff / RATING_MAX) * 0.4;
+		// Get movement profile based on pitch type
+		const getMovementProfile = () => {
+			const stuffFactor = 0.8 + (this.player.pitching.stuff / RATING_MAX) * 0.4;
 			const movementFactor =
-				0.8 + (input.playerPitcher.player.pitching.movement / RATING_MAX) * 0.4;
-			const combinedFactor = stuffFactor * movementFactor;
+				0.8 + (this.player.pitching.movement / RATING_MAX) * 0.4;
+			const effectiveFactor = stuffFactor * movementFactor * movementMultiplier;
 
 			switch (pitchName) {
 				case "fastball":
 					return {
-						pfxX: getRandomInRange(-2, 3) * combinedFactor,
-						pfxZ: getRandomInRange(6, 12) * combinedFactor,
+						horizontalBreak: getRandomInRange(-2, 2) * effectiveFactor,
+						verticalBreak: getRandomInRange(8, 12) * effectiveFactor,
+						spinRate: getRandomInRange(2200, 2500),
 					};
 				case "sinker":
 					return {
-						pfxX: getRandomInRange(-8, -4) * combinedFactor,
-						pfxZ: getRandomInRange(-3, 0) * combinedFactor,
+						horizontalBreak: getRandomInRange(-8, -4) * effectiveFactor,
+						verticalBreak: getRandomInRange(-4, -1) * effectiveFactor,
+						spinRate: getRandomInRange(1900, 2200),
 					};
 				case "cutter":
 					return {
-						pfxX: getRandomInRange(1, 4) * combinedFactor,
-						pfxZ: getRandomInRange(3, 7) * combinedFactor,
+						horizontalBreak: getRandomInRange(1, 4) * effectiveFactor,
+						verticalBreak: getRandomInRange(3, 7) * effectiveFactor,
+						spinRate: getRandomInRange(2300, 2700),
 					};
 				case "slider":
 					return {
-						pfxX: getRandomInRange(2, 6) * combinedFactor,
-						pfxZ: getRandomInRange(-2, 1) * combinedFactor,
+						horizontalBreak: getRandomInRange(2, 6) * effectiveFactor,
+						verticalBreak: getRandomInRange(-1, 2) * effectiveFactor,
+						spinRate: getRandomInRange(2400, 2800),
 					};
 				case "curveball":
 					return {
-						pfxX: getRandomInRange(-4, 4) * combinedFactor,
-						pfxZ: getRandomInRange(-10, -6) * combinedFactor,
+						horizontalBreak: getRandomInRange(-6, 6) * effectiveFactor,
+						verticalBreak: getRandomInRange(-12, -8) * effectiveFactor,
+						spinRate: getRandomInRange(2500, 3000),
 					};
 				case "changeup":
 					return {
-						pfxX: getRandomInRange(-8, -4) * combinedFactor,
-						pfxZ: getRandomInRange(-6, -2) * combinedFactor,
+						horizontalBreak: getRandomInRange(-10, -6) * effectiveFactor,
+						verticalBreak: getRandomInRange(-8, -4) * effectiveFactor,
+						spinRate: getRandomInRange(1700, 2000),
 					};
 				case "splitter":
 					return {
-						pfxX: getRandomInRange(-3, 0) * combinedFactor,
-						pfxZ: getRandomInRange(-8, -5) * combinedFactor,
+						horizontalBreak: getRandomInRange(-4, 0) * effectiveFactor,
+						verticalBreak: getRandomInRange(-12, -8) * effectiveFactor,
+						spinRate: getRandomInRange(1500, 1800),
 					};
 				case "sweeper":
 					return {
-						pfxX: getRandomInRange(8, 14) * combinedFactor,
-						pfxZ: getRandomInRange(-2, 1) * combinedFactor,
-					};
-				case "forkball":
-					return {
-						pfxX: getRandomInRange(-2, 2) * combinedFactor,
-						pfxZ: getRandomInRange(-10, -7) * combinedFactor,
-					};
-				case "knuckleball":
-					return {
-						pfxX: getRandomInRange(-10, 10),
-						pfxZ: getRandomInRange(-10, 10),
-					};
-				case "knuckleCurve":
-					return {
-						pfxX: getRandomInRange(-6, 6) * combinedFactor,
-						pfxZ: getRandomInRange(-8, -4) * combinedFactor,
-					};
-				case "screwball":
-					return {
-						pfxX: getRandomInRange(-8, -4) * combinedFactor,
-						pfxZ: getRandomInRange(-5, -2) * combinedFactor,
+						horizontalBreak: getRandomInRange(12, 18) * effectiveFactor,
+						verticalBreak: getRandomInRange(-4, 0) * effectiveFactor,
+						spinRate: getRandomInRange(2600, 3000),
 					};
 				case "slurve":
 					return {
-						pfxX: getRandomInRange(3, 8) * combinedFactor,
-						pfxZ: getRandomInRange(-6, -2) * combinedFactor,
+						horizontalBreak: getRandomInRange(8, 14) * effectiveFactor,
+						verticalBreak: getRandomInRange(-8, -4) * effectiveFactor,
+						spinRate: getRandomInRange(2400, 2800),
+					};
+				case "screwball":
+					return {
+						horizontalBreak: getRandomInRange(-12, -8) * effectiveFactor,
+						verticalBreak: getRandomInRange(-4, 0) * effectiveFactor,
+						spinRate: getRandomInRange(2000, 2400),
+					};
+				case "forkball":
+					return {
+						horizontalBreak: getRandomInRange(-2, 2) * effectiveFactor,
+						verticalBreak: getRandomInRange(-14, -10) * effectiveFactor,
+						spinRate: getRandomInRange(1400, 1700),
+					};
+				case "knuckleball":
+					return {
+						horizontalBreak: getRandomInRange(-10, 10),
+						verticalBreak: getRandomInRange(-5, 5),
+						spinRate: getRandomInRange(1000, 1400),
+					};
+				case "knuckleCurve":
+					return {
+						horizontalBreak: getRandomInRange(-8, 8) * effectiveFactor,
+						verticalBreak: getRandomInRange(-10, -6) * effectiveFactor,
+						spinRate: getRandomInRange(2200, 2600),
 					};
 				case "eephus":
 					return {
-						pfxX: getRandomInRange(-6, 6),
-						pfxZ: getRandomInRange(-20, -15) * combinedFactor,
+						horizontalBreak: getRandomInRange(-4, 4),
+						verticalBreak: getRandomInRange(-20, -15),
+						spinRate: getRandomInRange(1200, 1600),
 					};
-				default:
-					return {
-						pfxX: getRandomInRange(-4, 4) * combinedFactor,
-						pfxZ: getRandomInRange(-4, 4) * combinedFactor,
-					};
+				default: {
+					const exhaustiveCheck: never = pitchName;
+					throw new Error(`Unhandled pitch type: ${exhaustiveCheck}`);
+				}
 			}
 		};
 
-		const releaseSpeed = getBaseReleaseSpeed();
-		const { pfxX, pfxZ } = getPitchMovement();
-
+		// Calculate strike zone
 		const szBot = 1.5 + (playerHitterHeight - 500) / 1000;
 		const szTop = szBot + 2 + (playerHitterHeight - 500) / 500;
 
+		// Get intended location with pitcher's control
 		const controlFactor = (this.player.pitching.control / RATING_MAX) * 0.5;
+		const targetLocation = this._getTargetLocation(pitchName, szBot, szTop);
+		const intendedPlateX = targetLocation.x;
+		const intendedPlateZ = targetLocation.z;
 
-		// Calculate intended and actual locations
-		const intendedPlateX = getRandomInRange(-0.8, 0.8); // Widened from -0.7, 0.7
-		const intendedPlateZ = getRandomInRange(szBot + 0.1, szTop - 0.1); // Widened window
+		// Apply movement to get final location
+		const movement = getMovementProfile();
+		const distanceToPlate = 60.5 - releasePosY;
+		const timeToPlate =
+			distanceToPlate / (this._getPitchVelocity(pitchName) * 1.467);
 
-		// Add variance based on control and fatigue
-		const locationVariance = (1 - controlFactor) * 1.2 * fatigueMultiplier; // Reduced from 1.5
-		const actualPlateX =
-			intendedPlateX + getRandomInRange(-locationVariance, locationVariance);
-		const actualPlateZ =
-			intendedPlateZ + getRandomInRange(-locationVariance, locationVariance);
+		// Calculate how movement affects final location
+		const movementEffect = {
+			x: (movement.horizontalBreak / 12) * timeToPlate * timeToPlate,
+			z: (movement.verticalBreak / 12) * timeToPlate * timeToPlate,
+		};
 
-		// x-axis: Runs horizontally from the catcher's left to right (third base to first base).
-		// y-axis: Runs from home plate to the pitcher's mound (towards second base).
-		// z-axis: Runs vertically, perpendicular to the ground.
+		// Add control variance
+		const locationVariance = (1 - controlFactor) * 1.2 * fatigueMultiplier;
+		const controlVariance = {
+			x: getRandomInRange(-locationVariance, locationVariance),
+			z: getRandomInRange(-locationVariance, locationVariance),
+		};
 
-		// Positive z: The ball is moving upward
-		// Negative z: The ball is moving downward
-		// Zero z: The ball is moving purely horizontally
+		// Calculate final plate location
+		const plateX = intendedPlateX + movementEffect.x + controlVariance.x;
+		const plateZ = intendedPlateZ + movementEffect.z + controlVariance.z;
 
 		return {
-			// ax, ay, az: Acceleration of the pitch in the x, y, and z directions (ft/sec²)
-			// Range: Typically between -50 to 50 ft/sec²
-			ax: getRandomInRange(-20, 20),
+			ax: -movement.horizontalBreak * 2,
 			ay: getRandomInRange(-40, 0),
-			az: getRandomInRange(-20, 50),
-			// pfxX, pfxZ: Pitch movement in inches, from the catcher's perspective
-			// Range: Usually between -20 to 20 inches
-			pfxX,
-			pfxZ,
-			// plateX, plateZ: Horizontal and vertical position of the pitch as it crosses home plate (ft)
-			// plateX range: -2.5 to 2.5 ft (0 is the center of the plate)
-			// plateZ range: 0 to 5 ft (height above ground)
-			plateX: actualPlateX,
-			plateZ: actualPlateZ,
-			// releaseSpeed: Velocity of the pitch at release (mph)
-			// Range: Typically 70 to 105 mph
-			releaseSpeed: releaseSpeed * velocityMultiplier,
-			// releasePosX, releasePosY, releasePosZ: Position of the ball at release (ft)
-			// Range: Varies based on pitcher's release point, but typically:
-			// X: -3 to 3 ft
-			// Y: 50 to 55 ft (distance from home plate)
-			// Z: 5 to 7 ft (height)
-			releasePosX:
-				getRandomInRange(-1.5, 1.5) *
-				(1 + fatigueEffect.pitching.controlPenalty * 0.25),
-			releasePosY: getRandomInRange(52.5, 54), // Tightened range
-			releasePosZ:
-				getRandomInRange(5, 6) *
-				(1 + fatigueEffect.pitching.controlPenalty * 0.25),
-			// szBot, szTop: Bottom and top of the strike zone for the batter (ft)
-			// Range: Typically between 1.5 to 4 ft, varies by batter
+			az: -movement.verticalBreak * 2,
+			pfxX: movement.horizontalBreak,
+			pfxZ: movement.verticalBreak,
+			plateX,
+			plateZ,
+			releaseSpeed: this._getPitchVelocity(pitchName) * velocityMultiplier,
+			releasePosX,
+			releasePosY,
+			releasePosZ,
 			szBot,
 			szTop,
-			// vx0, vy0, vz0: Initial velocity components of the pitch (ft/sec)
-			// Range: Depends on pitch speed and direction, but typically:
-			// vx0: -20 to 20 ft/sec
-			// vy0: -150 to -110 ft/sec (negative because y-axis points towards batter)
-			// vz0: -10 to 10 ft/sec
-			vx0: getRandomInRange(-3, 3), // Reduced from -5,5
-			vy0: -releaseSpeed * 1.467, // Keep this constant
-			vz0: getRandomInRange(-2, 4), // Reduced from -3,5
+			spinRate: movement.spinRate,
+			vx0: movement.horizontalBreak * 0.4,
+			vy0: -this._getPitchVelocity(pitchName) * 1.467 * velocityMultiplier,
+			vz0: movement.verticalBreak * 0.4,
 		};
 	}
 
@@ -570,6 +536,9 @@ class GameSimPlayerState implements OGameSimObserver {
 			case "halfInningStart": {
 				break;
 			}
+			case "hitByPitch": {
+				break;
+			}
 			case "homeRun": {
 				const { playerHitter, playerPitcher } = input.data;
 
@@ -628,10 +597,22 @@ class GameSimPlayerState implements OGameSimObserver {
 				break;
 			}
 			case "pitch": {
-				const { playerPitcher, pitchOutcome } = input.data;
+				const { playerPitcher, pitchName, pitchOutcome } = input.data;
 
 				if (playerPitcher.player.idPlayer === this.player.idPlayer) {
 					this.statistics.pitching.pitchesThrown++;
+
+					// Add base fatigue for throwing a pitch
+					const pitchFatigue = BASE_FATIGUE.PITCH;
+
+					// Multiply by pitch-specific fatigue multiplier
+					const pitchMultiplier =
+						PITCH_TYPE_FATIGUE_MULTIPLIERS[pitchName] || 1;
+
+					// Add fatigue based on pitch type and situation
+					this._addFatigue({
+						amount: pitchFatigue * pitchMultiplier,
+					});
 
 					switch (pitchOutcome) {
 						case "ball": {
@@ -655,6 +636,7 @@ class GameSimPlayerState implements OGameSimObserver {
 
 				break;
 			}
+
 			case "run": {
 				const { playerHitter, playerPitcher, playerRunner } = input.data;
 
@@ -769,6 +751,153 @@ class GameSimPlayerState implements OGameSimObserver {
 				commandPenalty: fatiguePercentage * 0.2, // 20% max penalty
 			},
 		};
+	}
+
+	// Helper method to get target location based on pitch type
+	// Helper method to get target location based on pitch type
+	private _getTargetLocation(
+		pitchName: TPicklistPitchNames,
+		szBot: number,
+		szTop: number,
+	) {
+		const getRandomInRange = (min: number, max: number) =>
+			Math.random() * (max - min) + min;
+
+		// Default zones
+		const zones = {
+			top: { min: szTop - 0.5, max: szTop + 0.2 },
+			middle: {
+				min: (szBot + szTop) / 2 - 0.25,
+				max: (szBot + szTop) / 2 + 0.25,
+			},
+			bottom: { min: szBot - 0.2, max: szBot + 0.5 },
+			inside: { min: -0.8, max: -0.3 },
+			outside: { min: 0.3, max: 0.8 },
+			center: { min: -0.25, max: 0.25 },
+		};
+
+		switch (pitchName) {
+			case "fastball":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.outside.max),
+					z: getRandomInRange(zones.middle.min, zones.top.max),
+				};
+			case "sinker":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.center.max),
+					z: getRandomInRange(zones.bottom.min, zones.middle.max),
+				};
+			case "cutter":
+				return {
+					x: getRandomInRange(zones.center.min, zones.outside.max),
+					z: getRandomInRange(zones.middle.min, zones.top.min),
+				};
+			case "slider":
+				return {
+					x: getRandomInRange(zones.center.min, zones.outside.max),
+					z: getRandomInRange(zones.bottom.min, zones.middle.max),
+				};
+			case "curveball":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.outside.max),
+					z: getRandomInRange(zones.bottom.min, zones.middle.min),
+				};
+			case "changeup":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.outside.max),
+					z: getRandomInRange(zones.bottom.max, zones.middle.max),
+				};
+			case "splitter":
+				return {
+					x: getRandomInRange(zones.center.min, zones.center.max),
+					z: getRandomInRange(zones.bottom.min, zones.bottom.max),
+				};
+			case "sweeper":
+				return {
+					x: getRandomInRange(zones.center.min, zones.outside.max),
+					z: getRandomInRange(zones.middle.min, zones.middle.max),
+				};
+			case "slurve":
+				return {
+					x: getRandomInRange(zones.center.min, zones.outside.max),
+					z: getRandomInRange(zones.bottom.min, zones.middle.max),
+				};
+			case "screwball":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.center.max),
+					z: getRandomInRange(zones.middle.min, zones.middle.max),
+				};
+			case "forkball":
+				return {
+					x: getRandomInRange(zones.center.min, zones.center.max),
+					z: getRandomInRange(zones.bottom.min, zones.bottom.max),
+				};
+			case "knuckleball":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.outside.max),
+					z: getRandomInRange(zones.middle.min, zones.middle.max),
+				};
+			case "knuckleCurve":
+				return {
+					x: getRandomInRange(zones.inside.min, zones.outside.max),
+					z: getRandomInRange(zones.bottom.min, zones.middle.min),
+				};
+			case "eephus":
+				return {
+					x: getRandomInRange(zones.center.min, zones.center.max),
+					z: getRandomInRange(zones.middle.max, zones.top.max),
+				};
+			default: {
+				const exhaustiveCheck: never = pitchName;
+				throw new Error(`Unhandled pitch type: ${exhaustiveCheck}`);
+			}
+		}
+	}
+	private _getPitchVelocity(pitchName: TPicklistPitchNames): number {
+		const staminaFactor =
+			1 -
+			((this.statistics.pitching.pitchesThrown / PITCHES_THROWN_STANDARD_MAX) *
+				(RATING_MAX - this.player.pitching.stamina)) /
+				RATING_MAX;
+		const stuffFactor = 0.9 + (this.player.pitching.stuff / RATING_MAX) * 0.2;
+
+		const getRandomInRange = (min: number, max: number) =>
+			Math.random() * (max - min) + min;
+
+		switch (pitchName) {
+			case "fastball":
+				return getRandomInRange(92, 102) * staminaFactor * stuffFactor;
+			case "sinker":
+				return getRandomInRange(90, 96) * staminaFactor * stuffFactor;
+			case "cutter":
+				return getRandomInRange(86, 94) * staminaFactor * stuffFactor;
+			case "slider":
+				return getRandomInRange(82, 88) * staminaFactor * stuffFactor;
+			case "changeup":
+				return getRandomInRange(78, 86) * staminaFactor * stuffFactor;
+			case "curveball":
+				return getRandomInRange(76, 84) * staminaFactor * stuffFactor;
+			case "splitter":
+				return getRandomInRange(82, 88) * staminaFactor * stuffFactor;
+			case "sweeper":
+				return getRandomInRange(78, 84) * staminaFactor * stuffFactor;
+			case "slurve":
+				return getRandomInRange(78, 84) * staminaFactor * stuffFactor;
+			case "screwball":
+				return getRandomInRange(78, 84) * staminaFactor * stuffFactor;
+			case "forkball":
+				return getRandomInRange(80, 86) * staminaFactor * stuffFactor;
+			case "knuckleball":
+				return getRandomInRange(65, 75) * staminaFactor; // Knuckleball less affected by stuff
+			case "knuckleCurve":
+				return getRandomInRange(72, 78) * staminaFactor * stuffFactor;
+			case "eephus":
+				return getRandomInRange(55, 65) * staminaFactor; // Eephus also less affected by stuff
+			default: {
+				const exhaustiveCheck: never = pitchName;
+				throw new Error(`Unhandled pitch type: ${exhaustiveCheck}`);
+			}
+		}
 	}
 }
 

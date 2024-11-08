@@ -48,10 +48,12 @@ export default class GameSim {
 	private readonly BALL_MASS = 0.3125; // lb
 	private readonly BALL_RADIUS = 0.12; // ft
 	private readonly INFIELD_DEPTH = 90; // feet from home plate
-	private readonly OUTFIELD_DEPTH = 250; // typical outfield depth
+	private readonly OUTFIELD_DEPTH = 260; // typical outfield depth
 	private readonly AIR_DENSITY_SEA_LEVEL = 0.0765; // lb/ft^3 at 59°F
 	private readonly TEMPERATURE_REFERENCE = 59; // °F
 	private readonly WIND_EFFECT_FACTOR = 0.1; // How much wind affects ball flight
+	private readonly MAGNUS_COEFFICIENT = 0.00005; // Coefficient for Magnus force
+	private readonly DRAG_COEFFICIENT = 0.3; // Coefficient for drag force
 
 	private boxScore: GameSimBoxScore;
 	private coachStates: {
@@ -380,8 +382,27 @@ export default class GameSim {
 				},
 			},
 		} = input;
-		const baseExitVelo = 65 + (power / RATING_MAX) * 55; // 65-120 mph range
-		return baseExitVelo * contactQuality;
+
+		// Create more variance in exit velocities
+		const powerFactor = power / RATING_MAX;
+		const minExitVelo = 60 + powerFactor * 20;
+		const maxExitVelo = 95 + powerFactor * 25;
+
+		// Scale based on contact quality but ensure good contact produces hard hits
+		let scaledVelo: number;
+		if (contactQuality > 0.8) {
+			// Great contact is almost always hard hit
+			scaledVelo = maxExitVelo - 10 + Math.random() * 10;
+		} else if (contactQuality > 0.6) {
+			// Good contact has high chance of solid contact
+			scaledVelo =
+				minExitVelo + (maxExitVelo - minExitVelo) * 0.7 + Math.random() * 15;
+		} else {
+			// Weak contact
+			scaledVelo = minExitVelo + (maxExitVelo - minExitVelo) * contactQuality;
+		}
+
+		return Math.min(scaledVelo, 120); // Cap at 120 mph
 	}
 
 	private _calculateFieldingDifficulty(
@@ -566,25 +587,43 @@ export default class GameSim {
 
 	private _calculateLaunchAngle(input: TInputSimulateBallInPlay) {
 		const { contactQuality, pitchLocation } = input;
+		const pitchHeightFactor =
+			(pitchLocation.plateZ - pitchLocation.szBot) /
+			(pitchLocation.szTop - pitchLocation.szBot);
 
-		// Chance for optimal launch angle on good contact
+		// Define optimal launch angle ranges for different types of hits
 		if (contactQuality > 0.8) {
-			if (Math.random() < 0.3) {
-				// Home run angles
-				return 25 + (Math.random() - 0.5) * 10;
+			const rand = Math.random();
+			if (rand < 0.4) {
+				// Line drives: 10-20 degrees
+				return 10 + Math.random() * 10;
 			}
-			if (Math.random() < 0.4) {
-				// Line drive angles
-				return 15 + (Math.random() - 0.5) * 10;
+			if (rand < 0.7) {
+				// Fly balls: 25-35 degrees
+				return 25 + Math.random() * 10;
 			}
+			// Ground balls: -5 to 10 degrees
+			return -5 + Math.random() * 15;
 		}
-
-		// Base angle affected by pitch height
-		const baseAngle = 5 + (pitchLocation.plateZ - pitchLocation.szBot) * 15;
-
-		// More variation for weaker contact
-		const angleVariation = (Math.random() - 0.5) * 30;
-		return baseAngle + angleVariation * (1 - contactQuality);
+		if (contactQuality > 0.6) {
+			const rand = Math.random();
+			if (rand < 0.5) {
+				// More ground balls
+				return -5 + Math.random() * 15;
+			}
+			if (rand < 0.8) {
+				// Some line drives
+				return 10 + Math.random() * 10;
+			}
+			// Few fly balls
+			return 25 + Math.random() * 10;
+		}
+		// Poor contact - mostly ground balls and pop-ups
+		const rand = Math.random();
+		if (rand < 0.7) {
+			return -5 + Math.random() * 10; // Ground balls
+		}
+		return 45 + Math.random() * 25; // Pop-ups
 	}
 
 	private _calculateSituationalDifficulty(
@@ -631,16 +670,24 @@ export default class GameSim {
 				},
 			},
 		} = input;
-		// Higher gap power generally means better ability to create beneficial spin
-		const baseSpin = 1500 + (gap / RATING_MAX) * 1500;
-		return baseSpin * contactQuality;
+
+		// Base spin increases with gap power (line drive ability)
+		const baseSpin = 1200 + (gap / RATING_MAX) * 1800;
+
+		// Add variation based on contact quality
+		const spinVariation = (Math.random() - 0.5) * 600;
+
+		// Better contact means more optimal spin
+		const contactAdjustedSpin = baseSpin * (0.7 + contactQuality * 0.3);
+
+		return contactAdjustedSpin + spinVariation;
 	}
 
 	private _calculateTrajectory(_input: TInputCalculateTrajectory) {
 		const { airDensity, initialVx, initialVy, spinRate, verticalVelocity } =
 			parse(VInputCalculateTrajectory, _input);
 		const trajectory: Array<{ x: number; y: number; z: number }> = [];
-		const timeStep = 0.01; // seconds
+		const timeStep = 0.01;
 
 		let x = 0;
 		let y = 0;
@@ -648,7 +695,9 @@ export default class GameSim {
 		let vx = initialVx;
 		let vy = initialVy;
 		let vz = verticalVelocity;
-		const magnusCoef = spinRate / 10000;
+
+		// Adjusted Magnus effect based on spin rate
+		const magnusCoef = (spinRate / 8000) * this.MAGNUS_COEFFICIENT;
 
 		while (z > 0 && trajectory.length < 1000) {
 			x += vx * timeStep;
@@ -656,10 +705,9 @@ export default class GameSim {
 			z += vz * timeStep;
 
 			const velocity = Math.sqrt(vx * vx + vy * vy + vz * vz);
-			const dragCoefficient = 0.3;
+			const dragCoefficient = this.DRAG_COEFFICIENT;
 			const crossSectionalArea = Math.PI * this.BALL_RADIUS * this.BALL_RADIUS;
 
-			// Use passed in airDensity instead of constant
 			const dragForceMagnitude =
 				0.5 *
 				airDensity *
@@ -670,6 +718,7 @@ export default class GameSim {
 
 			const dragAcceleration = dragForceMagnitude / this.BALL_MASS;
 
+			// Enhanced Magnus effect for more realistic carry
 			vx += ((-dragAcceleration * vx) / velocity) * timeStep;
 			vy += ((-dragAcceleration * vy) / velocity + magnusCoef * vx) * timeStep;
 			vz += (this.GRAVITY + (-dragAcceleration * vz) / velocity) * timeStep;
@@ -1095,13 +1144,14 @@ export default class GameSim {
 			VInputDetermineContactQuality,
 			_input,
 		);
-		const batterContact =
-			0.3 + (playerHitter.player.batting.contact / RATING_MAX) * 0.5;
-		const batterWhiffResistance =
-			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.4;
-		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
 
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.5; // Reduced more
+		// Adjusted to reduce overall contact slightly
+		const batterContact =
+			0.32 + (playerHitter.player.batting.contact / RATING_MAX) * 0.55;
+		const batterWhiffResistance =
+			0.4 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.45;
+		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
+		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.45;
 
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
@@ -1110,7 +1160,8 @@ export default class GameSim {
 					2,
 		);
 
-		const locationFactor = 1 - distanceFromCenter * 0.12; // Keep same
+		// Increased location penalty slightly
+		const locationFactor = 1 - distanceFromCenter * 0.15;
 
 		const baseContactQuality =
 			batterContact *
@@ -1120,7 +1171,40 @@ export default class GameSim {
 
 		const scaledContactQuality = 0.3 + baseContactQuality * 0.7;
 
-		return scaledContactQuality * (0.8 + Math.random() * 0.4);
+		return scaledContactQuality * (0.85 + Math.random() * 0.3);
+	}
+
+	private _determineHitByPitch(_input: TInputDetermineHitByPitch) {
+		const { pitchLocation, pitchName, playerHitter, playerPitcher } = parse(
+			VInputDetermineHitByPitch,
+			_input,
+		);
+
+		// Base HBP chance increases dramatically for inside pitches
+		const distanceInside = -(pitchLocation.plateX + 1.0); // Positive when inside to batter
+		if (distanceInside <= 0) return false;
+
+		// Pitches need to be at body height
+		const isBodyHeight =
+			pitchLocation.plateZ > pitchLocation.szBot * 0.8 &&
+			pitchLocation.plateZ < pitchLocation.szTop * 1.4;
+		if (!isBodyHeight) return false;
+
+		// Control affects HBP chance
+		const pitcherControl = playerPitcher.player.pitching.control / RATING_MAX;
+
+		// Some pitches are more likely to hit batters
+		const pitchHbpFactor = this._getPitchHbpFactor({ pitchName });
+
+		// Calculate base probability (adjusted values)
+		let hbpProbability = distanceInside * 0.15; // Reduced from 0.3
+		hbpProbability *= 1 - pitcherControl * 0.7; // Slightly reduced control impact
+		hbpProbability *= pitchHbpFactor;
+
+		// Add a small baseline chance for all inside pitches
+		hbpProbability += 0.001; // Very small base chance
+
+		return Math.random() < hbpProbability;
 	}
 
 	private _determinePlayType({
@@ -1159,13 +1243,12 @@ export default class GameSim {
 			_input,
 		);
 
-		// Base swing chance should be higher on pitches in zone
+		// Reduced base swing rates
 		const isCloseToZone =
 			Math.abs(pitchLocation.plateX) < 1.0 &&
 			pitchLocation.plateZ > pitchLocation.szBot - 0.2 &&
 			pitchLocation.plateZ < pitchLocation.szTop + 0.2;
 
-		// Better eye means better judgment on borderline pitches
 		const batterEye = playerHitter.player.batting.eye / RATING_MAX;
 
 		const distanceFromCenter = Math.sqrt(
@@ -1175,12 +1258,11 @@ export default class GameSim {
 					2,
 		);
 
-		// Base likelihood modified by location and batter eye
-		let likelihood = isCloseToZone ? 0.7 : 0.2;
+		// Adjusted swing rates
+		let likelihood = isCloseToZone ? 0.65 : 0.12;
 		likelihood *= 1 - distanceFromCenter * (0.5 - batterEye * 0.3);
 		likelihood *= 1 - (1 - batterEye) * 0.3;
 
-		// Pitcher movement affects likelihood slightly
 		const movementEffect =
 			(playerPitcher.player.pitching.movement / RATING_MAX) * 0.2;
 		likelihood *= 1 - movementEffect;
@@ -1455,35 +1537,33 @@ export default class GameSim {
 	private _getFielderStartPosition(_input: TInputGetFielderStartPosition) {
 		const { position } = parse(VInputGetFielderStartPosition, _input);
 
-		// All measurements in feet from home plate
-		// (0,0) is home plate, positive x is right field, positive y is outfield
 		switch (position) {
 			case "p": {
-				return { x: 0, y: 60.5 }; // Pitcher's mound
+				return { x: 0, y: 60.5 };
 			}
 			case "c": {
-				return { x: 0, y: -3 }; // Slightly behind home plate
+				return { x: 0, y: -3 };
 			}
 			case "fb": {
-				return { x: 45, y: 87 }; // First base
+				return { x: 45, y: 87 };
 			}
 			case "sb": {
-				return { x: 37, y: 137 }; // Second base
+				return { x: 40, y: 140 }; // Adjusted positioning
 			}
 			case "tb": {
-				return { x: -45, y: 87 }; // Third base
+				return { x: -45, y: 87 };
 			}
 			case "ss": {
-				return { x: -37, y: 137 }; // Shortstop
+				return { x: -40, y: 140 }; // Adjusted positioning
 			}
 			case "lf": {
-				return { x: -100, y: this.OUTFIELD_DEPTH }; // Left field
+				return { x: -110, y: this.OUTFIELD_DEPTH }; // Wider spacing
 			}
 			case "cf": {
-				return { x: 0, y: this.OUTFIELD_DEPTH + 50 }; // Center field
+				return { x: 0, y: this.OUTFIELD_DEPTH + 45 };
 			}
 			case "rf": {
-				return { x: 100, y: this.OUTFIELD_DEPTH }; // Right field
+				return { x: 110, y: this.OUTFIELD_DEPTH }; // Wider spacing
 			}
 			default: {
 				const exhaustiveCheck: never = position;
@@ -1491,7 +1571,6 @@ export default class GameSim {
 			}
 		}
 	}
-
 	private _getGameSituationDifficulty({
 		gameTime,
 		numOuts,
@@ -1573,6 +1652,30 @@ export default class GameSim {
 		}
 
 		return Math.min(difficulty, 1);
+	}
+
+	private _getPitchHbpFactor({
+		pitchName,
+	}: { pitchName: TPicklistPitchNames }) {
+		// Different pitch types have different HBP tendencies
+		const hbpFactors: Record<TPicklistPitchNames, number> = {
+			fastball: 1.0,
+			sinker: 1.2, // Inside sinkers more likely to hit
+			slider: 1.1, // Inside sliders can back up
+			curveball: 0.7, // Less likely due to trajectory
+			changeup: 0.6, // Less likely due to speed
+			splitter: 0.8,
+			cutter: 1.1, // Inside cutters can ride in
+			sweeper: 0.9,
+			slurve: 0.8,
+			screwball: 0.7,
+			forkball: 0.8,
+			knuckleball: 0.6,
+			knuckleCurve: 0.7,
+			eephus: 0.4, // Very unlikely due to speed
+		};
+
+		return hbpFactors[pitchName];
 	}
 
 	private _getPitchWhiffFactor(_input: TInputGetPitchWhiffFactor) {
@@ -1792,6 +1895,19 @@ export default class GameSim {
 	}
 
 	private _handleHitByPitch() {
+		this._notifyObservers({
+			gameSimEvent: "hitByPitch",
+			data: {
+				playerHitter: this._getCurrentHitter({
+					teamIndex: this.numTeamOffense,
+				}),
+				playerPitcher: this._getCurrentPitcher({
+					teamIndex: this.numTeamDefense,
+				}),
+				teamDefense: this._getTeamDefense(),
+				teamOffense: this._getTeamOffense(),
+			},
+		});
 		this._handleRunnerAdvanceAutomaticIncludingHitter();
 	}
 
@@ -1836,87 +1952,83 @@ export default class GameSim {
 			VInputHandleNonWallBallOutcome,
 			_input,
 		);
-		if (ballInPlay.launchAngle < 10) {
-			// Ground ball
-			if (fieldingResult.isError) {
-				// 20% chance for double on error
-				if (Math.random() < 0.2) {
+
+		const distance = Math.sqrt(
+			ballInPlay.finalX * ballInPlay.finalX +
+				ballInPlay.finalY * ballInPlay.finalY,
+		);
+
+		const exitVelo = ballInPlay.exitVelocity;
+		const isHardHit = exitVelo > 95;
+
+		// First determine if it's a hit at all
+		let isHit = false;
+
+		if (ballInPlay.launchAngle > 35) {
+			// Pop ups: almost never hits
+			isHit = Math.random() < 0.02;
+		} else if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 20) {
+			// Line drives: higher but more realistic BABIP
+			isHit = Math.random() < 0.45;
+		} else if (ballInPlay.launchAngle > 20 && ballInPlay.launchAngle <= 35) {
+			// Fly balls: much lower BABIP
+			isHit = Math.random() < 0.15;
+		} else {
+			// Ground balls: league average BABIP with modifiers
+			let hitChance = 0.15; // Reduced base chance
+			if (!fieldingResult.isSuccess) hitChance += 0.15;
+			if (isHardHit) hitChance += 0.1;
+			isHit = Math.random() < hitChance;
+		}
+
+		if (!isHit) {
+			this._handleOut();
+			return;
+		}
+
+		// Significantly increase extra-base hit chances
+		if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 20) {
+			// Line drives
+			if (isHardHit && distance > 200) {
+				const rand = Math.random();
+				if (rand < 0.35) {
+					// Increased double chance
 					this._handleDouble();
-				} else {
-					this._handleSingle();
+					return;
 				}
-			} else if (fieldingResult.isSuccess) {
-				this._handleOut();
-			} else {
-				// Reduce singles probability
-				if (Math.random() < 0.6) {
-					// Increased out probability
-					this._handleOut();
-				} else {
-					this._handleSingle();
+				if (rand < 0.38) {
+					// Small chance for triple
+					this._handleTriple();
+					return;
 				}
 			}
-		} else if (ballInPlay.launchAngle > 25) {
-			// Fly ball - check for home run
-			const distance = Math.sqrt(
-				ballInPlay.finalX * ballInPlay.finalX +
-					ballInPlay.finalY * ballInPlay.finalY,
-			);
-
-			if (
-				distance > 350 &&
-				ballInPlay.launchAngle > 20 &&
-				ballInPlay.launchAngle < 35
-			) {
-				this._handleHomeRun();
-			} else if (fieldingResult.isError) {
-				if (distance > 300) {
-					if (Math.random() < 0.1) {
-						// 10% chance for triple
-						this._handleTriple();
-					} else {
-						this._handleDouble();
-					}
-				} else {
-					this._handleSingle();
+		} else if (ballInPlay.launchAngle > 20 && ballInPlay.launchAngle <= 35) {
+			// Fly balls
+			if (isHardHit && distance > 350) {
+				const rand = Math.random();
+				if (rand < 0.3) {
+					// Increased HR chance
+					this._handleHomeRun();
+					return;
 				}
-			} else if (fieldingResult.isSuccess) {
-				this._handleOut();
-			} else {
-				if (Math.random() < 0.7) {
-					// Increased out probability
-					this._handleOut();
-				} else {
-					this._handleSingle();
+				if (rand < 0.6) {
+					// High double chance on deep flies
+					this._handleDouble();
+					return;
 				}
 			}
 		} else {
-			// Line drive
-			if (fieldingResult.isError) {
-				const distance = Math.sqrt(
-					ballInPlay.finalX * ballInPlay.finalX +
-						ballInPlay.finalY * ballInPlay.finalY,
-				);
-				if (distance > 250) {
-					this._handleTriple();
-				} else {
+			// Ground balls
+			if (isHardHit && distance > 140) {
+				if (Math.random() < 0.25) {
+					// Increased double chance
 					this._handleDouble();
-				}
-			} else if (fieldingResult.isSuccess) {
-				this._handleOut();
-			} else {
-				const distance = Math.sqrt(
-					ballInPlay.finalX * ballInPlay.finalX +
-						ballInPlay.finalY * ballInPlay.finalY,
-				);
-				if (distance > 250) {
-					// Make doubles require more distance
-					this._handleDouble();
-				} else {
-					this._handleSingle();
+					return;
 				}
 			}
 		}
+
+		this._handleSingle();
 	}
 
 	private _handleOut() {
@@ -2710,17 +2822,33 @@ export default class GameSim {
 
 		const input = parse(VInputSimulatePitchOutcome, _input);
 
-		// First check: ~35% should be balls
+		// Check for HBP
+		const isHbp = this._determineHitByPitch({
+			pitchLocation: input.pitchLocation,
+			pitchName: input.pitchName,
+			playerHitter: input.playerHitter,
+			playerPitcher: input.playerPitcher,
+		});
+
+		if (isHbp) {
+			this._handleHitByPitch();
+			pitchOutcome.pitchOutcome = "ball";
+			return pitchOutcome;
+		}
+
+		// Adjust strike zone check to get better ball/strike ratio
 		if (
 			!this._determineStrikeZone({
 				pitchLocation: input.pitchLocation,
 				umpireHp: input.umpireHp,
 			})
 		) {
-			return pitchOutcome; // It's a ball
+			if (Math.random() < 0.95) {
+				// Slight chance of bad calls
+				return pitchOutcome;
+			}
 		}
 
-		// At this point, we know it's in the strike zone
 		const isBatterSwinging = this._determineSwingLikelihood({
 			pitchLocation: input.pitchLocation,
 			playerHitter: input.playerHitter,
@@ -2739,8 +2867,9 @@ export default class GameSim {
 			playerPitcher: input.playerPitcher,
 		});
 
-		// Of swings, about 40% should be strikes
-		if (contactQuality < 0.3) {
+		// Adjust contact threshold to get better K rate
+		if (contactQuality < 0.27) {
+			// Was 0.25
 			pitchOutcome.pitchOutcome = "strike";
 			return pitchOutcome;
 		}
@@ -2868,6 +2997,14 @@ const VInputDetermineContactQuality = object({
 type TInputDetermineContactQuality = InferInput<
 	typeof VInputDetermineContactQuality
 >;
+
+const VInputDetermineHitByPitch = object({
+	pitchLocation: VDbPitchLocation,
+	playerHitter: instance(GameSimPlayerState),
+	pitchName: VPicklistPitchNames,
+	playerPitcher: instance(GameSimPlayerState),
+});
+type TInputDetermineHitByPitch = InferInput<typeof VInputDetermineHitByPitch>;
 
 const VInputGetPitchWhiffFactor = object({
 	pitchName: VPicklistPitchNames,
