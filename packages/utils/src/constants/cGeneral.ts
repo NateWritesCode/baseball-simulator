@@ -181,3 +181,10 @@ export const TEAM_NAMES = [
 	"Yellowjackets",
 	"Zeus",
 ];
+
+export const SIMULATION_LENGTH_OPTIONS = [
+	"oneDay",
+	"oneWeek",
+	"oneMonth",
+	"oneYear",
+] as const;

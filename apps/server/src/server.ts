@@ -4,6 +4,7 @@ import { hc } from "hono/client";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { game, person, player, simulate, standings } from "./routes";
+import { simulateGames } from "./routes/simulate";
 
 export type TMiddleware = {
 	Variables: {
@@ -11,6 +12,10 @@ export type TMiddleware = {
 		idSession: string;
 	};
 };
+
+const db = new Database(`${import.meta.dir}/db/baseball-simulator.db`, {
+	strict: true,
+});
 
 const middlewareVariables = createMiddleware<TMiddleware>(async (c, next) => {
 	const db = new Database(`${import.meta.dir}/db/baseball-simulator.db`, {
@@ -43,6 +48,11 @@ const routes = app
 
 export const client = hc<typeof routes>("");
 export type THonoClient = typeof routes;
+
+await simulateGames({
+	db,
+	simulationLength: "oneDay",
+});
 
 export default {
 	idleTimeout: 60,

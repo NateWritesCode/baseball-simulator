@@ -22,37 +22,77 @@ import {
 	VQueryConstructorGameSimPark,
 } from "@baseball-simulator/utils/types";
 import type { TMiddleware } from "@server/server";
+import { Database } from "bun:sqlite";
 import { Hono } from "hono";
 import { cpus } from "node:os";
-import { array, intersect, object, omit, pick } from "valibot";
+import {
+	type InferOutput,
+	array,
+	instance,
+	intersect,
+	object,
+	omit,
+	parse,
+	pick,
+} from "valibot";
+import { VPicklistSimuationLengthOptions } from "../../../../packages/utils/src/types/tPicklist";
 import type { WorkerData } from "./gameSimWorker";
 
 const VGames = array(omit(VDbGames, ["boxScore"]));
 
-const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
-	"/simulate",
-	async (c) => {
-		const db = c.var.db;
+const VInputSimulateGames = object({
+	db: instance(Database),
+	simulationLength: VPicklistSimuationLengthOptions,
+});
+type TInputSimulateGames = InferOutput<typeof VInputSimulateGames>;
 
+export const simulateGames = async (_input: TInputSimulateGames) => {
+	console.info("Beginning game simulation");
+	const { db, simulationLength } = parse(VInputSimulateGames, _input);
+
+	const numDaysToSim = (() => {
+		switch (simulationLength) {
+			case "oneDay": {
+				return 1;
+			}
+			case "oneWeek": {
+				return 7;
+			}
+			case "oneMonth": {
+				return 30;
+			}
+			case "oneYear": {
+				return 365;
+			}
+			default: {
+				const exhaustiveCheck: never = simulationLength;
+				throw new Error(exhaustiveCheck);
+			}
+		}
+	})();
+
+	let counter = numDaysToSim;
+
+	while (counter > 0) {
 		const queryGames = /* sql */ `
-            with myUniverse as (
+                with myUniverse as (
+                    select
+                        dateTime
+                    from
+                        universe
+                )
                 select
-                    dateTime
+                    dateTime,
+                    idGame,
+                    idGameGroup,
+                    idTeamAway,
+                    idTeamHome
                 from
-                    universe
-            )
-            select
-                dateTime,
-                idGame,
-                idGameGroup,
-                idTeamAway,
-                idTeamHome
-            from
-                games
-            where
-                dateTime = (select dateTime from myUniverse)
-            ;
-        `;
+                    games
+                where
+                    dateTime = (select dateTime from myUniverse)
+                ;
+            `;
 
 		const [dataGames, errorGames] = handleValibotParse({
 			data: db.query(queryGames).all(),
@@ -60,7 +100,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (errorGames || !dataGames) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const paramsTeams = dataGames
@@ -69,19 +109,19 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			.map((idTeam) => idTeam);
 
 		const queryTeams = /* sql */ `
-            select
-                abbreviation,
-                idTeam,
-                cities.name as 'city.name',
-                nickname
-            from
-                teams
-            inner join
-                cities on teams.idCity = cities.idCity
-            where
-                idTeam in (${paramsTeams.map(() => "?").join(", ")})
-            ;
-        `;
+                select
+                    abbreviation,
+                    idTeam,
+                    cities.name as 'city.name',
+                    nickname
+                from
+                    teams
+                inner join
+                    cities on teams.idCity = cities.idCity
+                where
+                    idTeam in (${paramsTeams.map(() => "?").join(", ")})
+                ;
+            `;
 
 		const prepareTeams = db.query(queryTeams);
 
@@ -99,117 +139,117 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (dataError || !dataTeams) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const queryPlayers = /* sql */ `
-            select
-                persons.dateOfBirth,
-                persons.firstName,
-                persons.idPerson,
-                persons.lastName,
-                persons.middleName,
-                persons.nickname,
-                players.idPlayer,
-                players.idTeam,
-                personsAlignment.chaotic as "alignment.chaotic",
-                personsAlignment.evil as "alignment.evil",
-                personsAlignment.good as "alignment.good",
-                personsAlignment.lawful as "alignment.lawful",
-                personsAlignment.neutralMorality as "alignment.neutralMorality",
-                personsAlignment.neutralOrder as "alignment.neutralOrder",
-                personsMyersBriggs.extroversion as "myersBriggs.extroversion",
-                personsMyersBriggs.feeling as "myersBriggs.feeling",
-                personsMyersBriggs.introversion as "myersBriggs.introversion",
-                personsMyersBriggs.intuition as "myersBriggs.intuition",
-                personsMyersBriggs.judging as "myersBriggs.judging",
-                personsMyersBriggs.perceiving as "myersBriggs.perceiving",
-                personsMyersBriggs.sensing as "myersBriggs.sensing",
-                personsMyersBriggs.thinking as "myersBriggs.thinking",
-                personsMental.charisma as "mental.charisma",
-                personsMental.constitution as "mental.constitution",
-                personsMental.intelligence as "mental.intelligence",
-                personsMental.loyalty as "mental.loyalty",
-                personsMental.wisdom as "mental.wisdom",
-                personsMental.workEthic as "mental.workEthic",
-                personsPhysical.height as "physical.height",
-                personsPhysical.weight as "physical.weight",
-                playersBatting.avoidKs as "batting.avoidKs",
-                playersBatting.avoidKsVL as "batting.avoidKsVL",
-                playersBatting.avoidKsVR as "batting.avoidKsVR",
-                playersBatting.contact as "batting.contact",
-                playersBatting.contactVL as "batting.contactVL",
-                playersBatting.contactVR as "batting.contactVR",
-                playersBatting.eye as "batting.eye",
-                playersBatting.eyeVL as "batting.eyeVL",
-                playersBatting.eyeVR as "batting.eyeVR",
-                playersBatting.gap as "batting.gap",
-                playersBatting.gapVL as "batting.gapVL",
-                playersBatting.gapVR as "batting.gapVR",
-                playersBatting.power as "batting.power",
-                playersBatting.powerVL as "batting.powerVL",
-                playersBatting.powerVR as "batting.powerVR",
-                playersFielding.c as "fielding.c",
-                playersFielding.catcherAbility as "fielding.catcherAbility",
-                playersFielding.catcherArm as "fielding.catcherArm",
-                playersFielding.catcherFraming as "fielding.catcherFraming",
-                playersFielding.cf as "fielding.cf",
-                playersFielding.fb as "fielding.fb",
-                playersFielding.infieldArm as "fielding.infieldArm",
-                playersFielding.infieldError as "fielding.infieldError",
-                playersFielding.infieldRange as "fielding.infieldRange",
-                playersFielding.infieldDoublePlay as "fielding.infieldDoublePlay",
-                playersFielding.lf as "fielding.lf",
-                playersFielding.outfieldArm as "fielding.outfieldArm",
-                playersFielding.outfieldError as "fielding.outfieldError",
-                playersFielding.outfieldRange as "fielding.outfieldRange",
-                playersFielding.rf as "fielding.rf",
-                playersFielding.sb as "fielding.sb",
-                playersFielding.ss as "fielding.ss",
-                playersFielding.tb as "fielding.tb",
-                playersPitching.control as "pitching.control",
-                playersPitching.controlVL as "pitching.controlVL",
-                playersPitching.controlVR as "pitching.controlVR",
-                playersPitching.movement as "pitching.movement",
-                playersPitching.movementVL as "pitching.movementVL",
-                playersPitching.movementVR as "pitching.movementVR",
-                playersPitching.stamina as "pitching.stamina",
-                playersPitching.stuff as "pitching.stuff",
-                playersPitching.stuffVL as "pitching.stuffVL",
-                playersPitching.stuffVR as "pitching.stuffVR",
-                playersPitches.changeup as "pitches.changeup",
-                playersPitches.curveball as "pitches.curveball",
-                playersPitches.cutter as "pitches.cutter",
-                playersPitches.eephus as "pitches.eephus",
-                playersPitches.fastball as "pitches.fastball",
-                playersPitches.forkball as "pitches.forkball",
-                playersPitches.knuckleball as "pitches.knuckleball",
-                playersPitches.knuckleCurve as "pitches.knuckleCurve",
-                playersPitches.screwball as "pitches.screwball",
-                playersPitches.sinker as "pitches.sinker",
-                playersPitches.slider as "pitches.slider",
-                playersPitches.slurve as "pitches.slurve",
-                playersPitches.splitter as "pitches.splitter",
-                playersPitches.sweeper as "pitches.sweeper",
-                playersRunning.baserunning as "running.baserunning",
-                playersRunning.speed as "running.speed",
-                playersRunning.stealing as "running.stealing"
-            from
-                players
-            left join playersBatting on players.idPlayer = playersBatting.idPlayer
-            left join playersFielding on players.idPlayer = playersFielding.idPlayer
-            left join playersPitching on players.idPlayer = playersPitching.idPlayer
-            left join playersPitches on players.idPlayer = playersPitches.idPlayer
-            left join playersRunning on players.idPlayer = playersRunning.idPlayer
-            left join persons on players.idPerson = persons.idPerson
-            left join personsAlignment on persons.idPerson = personsAlignment.idPerson
-            left join personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
-            left join personsMental on persons.idPerson = personsMental.idPerson
-            left join personsPhysical on persons.idPerson = personsPhysical.idPerson
-            where
-                players.idTeam in (${paramsTeams.map(() => "?").join(", ")})
-            ;
-`;
+                select
+                    persons.dateOfBirth,
+                    persons.firstName,
+                    persons.idPerson,
+                    persons.lastName,
+                    persons.middleName,
+                    persons.nickname,
+                    players.idPlayer,
+                    players.idTeam,
+                    personsAlignment.chaotic as "alignment.chaotic",
+                    personsAlignment.evil as "alignment.evil",
+                    personsAlignment.good as "alignment.good",
+                    personsAlignment.lawful as "alignment.lawful",
+                    personsAlignment.neutralMorality as "alignment.neutralMorality",
+                    personsAlignment.neutralOrder as "alignment.neutralOrder",
+                    personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                    personsMyersBriggs.feeling as "myersBriggs.feeling",
+                    personsMyersBriggs.introversion as "myersBriggs.introversion",
+                    personsMyersBriggs.intuition as "myersBriggs.intuition",
+                    personsMyersBriggs.judging as "myersBriggs.judging",
+                    personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                    personsMyersBriggs.sensing as "myersBriggs.sensing",
+                    personsMyersBriggs.thinking as "myersBriggs.thinking",
+                    personsMental.charisma as "mental.charisma",
+                    personsMental.constitution as "mental.constitution",
+                    personsMental.intelligence as "mental.intelligence",
+                    personsMental.loyalty as "mental.loyalty",
+                    personsMental.wisdom as "mental.wisdom",
+                    personsMental.workEthic as "mental.workEthic",
+                    personsPhysical.height as "physical.height",
+                    personsPhysical.weight as "physical.weight",
+                    playersBatting.avoidKs as "batting.avoidKs",
+                    playersBatting.avoidKsVL as "batting.avoidKsVL",
+                    playersBatting.avoidKsVR as "batting.avoidKsVR",
+                    playersBatting.contact as "batting.contact",
+                    playersBatting.contactVL as "batting.contactVL",
+                    playersBatting.contactVR as "batting.contactVR",
+                    playersBatting.eye as "batting.eye",
+                    playersBatting.eyeVL as "batting.eyeVL",
+                    playersBatting.eyeVR as "batting.eyeVR",
+                    playersBatting.gap as "batting.gap",
+                    playersBatting.gapVL as "batting.gapVL",
+                    playersBatting.gapVR as "batting.gapVR",
+                    playersBatting.power as "batting.power",
+                    playersBatting.powerVL as "batting.powerVL",
+                    playersBatting.powerVR as "batting.powerVR",
+                    playersFielding.c as "fielding.c",
+                    playersFielding.catcherAbility as "fielding.catcherAbility",
+                    playersFielding.catcherArm as "fielding.catcherArm",
+                    playersFielding.catcherFraming as "fielding.catcherFraming",
+                    playersFielding.cf as "fielding.cf",
+                    playersFielding.fb as "fielding.fb",
+                    playersFielding.infieldArm as "fielding.infieldArm",
+                    playersFielding.infieldError as "fielding.infieldError",
+                    playersFielding.infieldRange as "fielding.infieldRange",
+                    playersFielding.infieldDoublePlay as "fielding.infieldDoublePlay",
+                    playersFielding.lf as "fielding.lf",
+                    playersFielding.outfieldArm as "fielding.outfieldArm",
+                    playersFielding.outfieldError as "fielding.outfieldError",
+                    playersFielding.outfieldRange as "fielding.outfieldRange",
+                    playersFielding.rf as "fielding.rf",
+                    playersFielding.sb as "fielding.sb",
+                    playersFielding.ss as "fielding.ss",
+                    playersFielding.tb as "fielding.tb",
+                    playersPitching.control as "pitching.control",
+                    playersPitching.controlVL as "pitching.controlVL",
+                    playersPitching.controlVR as "pitching.controlVR",
+                    playersPitching.movement as "pitching.movement",
+                    playersPitching.movementVL as "pitching.movementVL",
+                    playersPitching.movementVR as "pitching.movementVR",
+                    playersPitching.stamina as "pitching.stamina",
+                    playersPitching.stuff as "pitching.stuff",
+                    playersPitching.stuffVL as "pitching.stuffVL",
+                    playersPitching.stuffVR as "pitching.stuffVR",
+                    playersPitches.changeup as "pitches.changeup",
+                    playersPitches.curveball as "pitches.curveball",
+                    playersPitches.cutter as "pitches.cutter",
+                    playersPitches.eephus as "pitches.eephus",
+                    playersPitches.fastball as "pitches.fastball",
+                    playersPitches.forkball as "pitches.forkball",
+                    playersPitches.knuckleball as "pitches.knuckleball",
+                    playersPitches.knuckleCurve as "pitches.knuckleCurve",
+                    playersPitches.screwball as "pitches.screwball",
+                    playersPitches.sinker as "pitches.sinker",
+                    playersPitches.slider as "pitches.slider",
+                    playersPitches.slurve as "pitches.slurve",
+                    playersPitches.splitter as "pitches.splitter",
+                    playersPitches.sweeper as "pitches.sweeper",
+                    playersRunning.baserunning as "running.baserunning",
+                    playersRunning.speed as "running.speed",
+                    playersRunning.stealing as "running.stealing"
+                from
+                    players
+                left join playersBatting on players.idPlayer = playersBatting.idPlayer
+                left join playersFielding on players.idPlayer = playersFielding.idPlayer
+                left join playersPitching on players.idPlayer = playersPitching.idPlayer
+                left join playersPitches on players.idPlayer = playersPitches.idPlayer
+                left join playersRunning on players.idPlayer = playersRunning.idPlayer
+                left join persons on players.idPerson = persons.idPerson
+                left join personsAlignment on persons.idPerson = personsAlignment.idPerson
+                left join personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+                left join personsMental on persons.idPerson = personsMental.idPerson
+                left join personsPhysical on persons.idPerson = personsPhysical.idPerson
+                where
+                    players.idTeam in (${paramsTeams.map(() => "?").join(", ")})
+                ;
+    `;
 
 		const [dataPlayers, errorPlayers] = handleValibotParse({
 			data: db.query(queryPlayers).all(...paramsTeams),
@@ -241,61 +281,61 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (errorPlayers || !dataPlayers) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const queryCoaches = /* sql */ `
-            select
-                persons.dateOfBirth,
-                persons.firstName,
-                persons.idPerson,
-                persons.lastName,
-                persons.middleName,
-                persons.nickname,
-                personsAlignment.chaotic as "alignment.chaotic",
-                personsAlignment.evil as "alignment.evil",
-                personsAlignment.good as "alignment.good",
-                personsAlignment.lawful as "alignment.lawful",
-                personsAlignment.neutralMorality as "alignment.neutralMorality",
-                personsAlignment.neutralOrder as "alignment.neutralOrder",
-                personsMyersBriggs.extroversion as "myersBriggs.extroversion",
-                personsMyersBriggs.feeling as "myersBriggs.feeling",
-                personsMyersBriggs.introversion as "myersBriggs.introversion",
-                personsMyersBriggs.intuition as "myersBriggs.intuition",
-                personsMyersBriggs.judging as "myersBriggs.judging",
-                personsMyersBriggs.perceiving as "myersBriggs.perceiving",
-                personsMyersBriggs.sensing as "myersBriggs.sensing",
-                personsMyersBriggs.thinking as "myersBriggs.thinking",
-                personsMental.charisma as "mental.charisma",
-                personsMental.constitution as "mental.constitution",
-                personsMental.intelligence as "mental.intelligence",
-                personsMental.loyalty as "mental.loyalty",
-                personsMental.wisdom as "mental.wisdom",
-                personsMental.workEthic as "mental.workEthic",
-                personsPhysical.height as "physical.height",
-                personsPhysical.weight as "physical.weight",
-                coaches.idCoach,
-                coaches.idPerson,
-                coaches.idTeam,
-                coachesRatings.ability
-            from
-                coaches
-            inner join
-                persons on coaches.idPerson = persons.idPerson
-            inner join
-                personsAlignment on persons.idPerson = personsAlignment.idPerson
-            inner join
-                personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
-            inner join
-                personsMental on persons.idPerson = personsMental.idPerson
-            inner join
-                personsPhysical on persons.idPerson = personsPhysical.idPerson
-            inner join
-                coachesRatings on coaches.idCoach = coachesRatings.idCoach
-            where
-                coaches.idTeam in (${paramsTeams.map(() => "?").join(", ")})
-            ;
-        `;
+                select
+                    persons.dateOfBirth,
+                    persons.firstName,
+                    persons.idPerson,
+                    persons.lastName,
+                    persons.middleName,
+                    persons.nickname,
+                    personsAlignment.chaotic as "alignment.chaotic",
+                    personsAlignment.evil as "alignment.evil",
+                    personsAlignment.good as "alignment.good",
+                    personsAlignment.lawful as "alignment.lawful",
+                    personsAlignment.neutralMorality as "alignment.neutralMorality",
+                    personsAlignment.neutralOrder as "alignment.neutralOrder",
+                    personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                    personsMyersBriggs.feeling as "myersBriggs.feeling",
+                    personsMyersBriggs.introversion as "myersBriggs.introversion",
+                    personsMyersBriggs.intuition as "myersBriggs.intuition",
+                    personsMyersBriggs.judging as "myersBriggs.judging",
+                    personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                    personsMyersBriggs.sensing as "myersBriggs.sensing",
+                    personsMyersBriggs.thinking as "myersBriggs.thinking",
+                    personsMental.charisma as "mental.charisma",
+                    personsMental.constitution as "mental.constitution",
+                    personsMental.intelligence as "mental.intelligence",
+                    personsMental.loyalty as "mental.loyalty",
+                    personsMental.wisdom as "mental.wisdom",
+                    personsMental.workEthic as "mental.workEthic",
+                    personsPhysical.height as "physical.height",
+                    personsPhysical.weight as "physical.weight",
+                    coaches.idCoach,
+                    coaches.idPerson,
+                    coaches.idTeam,
+                    coachesRatings.ability
+                from
+                    coaches
+                inner join
+                    persons on coaches.idPerson = persons.idPerson
+                inner join
+                    personsAlignment on persons.idPerson = personsAlignment.idPerson
+                inner join
+                    personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+                inner join
+                    personsMental on persons.idPerson = personsMental.idPerson
+                inner join
+                    personsPhysical on persons.idPerson = personsPhysical.idPerson
+                inner join
+                    coachesRatings on coaches.idCoach = coachesRatings.idCoach
+                where
+                    coaches.idTeam in (${paramsTeams.map(() => "?").join(", ")})
+                ;
+            `;
 
 		const [dataCoaches, errorCoaches] = handleValibotParse({
 			data: db.query(queryCoaches).all(...paramsTeams),
@@ -304,59 +344,59 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (errorCoaches || !dataCoaches) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const queryParks = /* sql */ `
-            select
-                cities.idCity as 'city.idCity',
-                cities.latitude as 'city.latitude',
-                cities.longitude as 'city.longitude',
-                cities.name as 'city.name',
-                parks.backstopDistance,
-                parks.capacityMax,
-                parks.centerFieldDirection,
-                parks.idCity,
-                parks.idPark,
-                parks.idTeam,
-                parks.name,
-                parks.roofType,
-                parks.surfaceType,
-                parksFieldCoordinates.basePath,
-                parksFieldCoordinates.batterLeftX,
-                parksFieldCoordinates.batterLeftY,
-                parksFieldCoordinates.batterRightX,
-                parksFieldCoordinates.batterRightY,
-                parksFieldCoordinates.coachesBoxFirstX,
-                parksFieldCoordinates.coachesBoxFirstY,
-                parksFieldCoordinates.coachesBoxThirdX,
-                parksFieldCoordinates.coachesBoxThirdY,
-                parksFieldCoordinates.firstBaseX,
-                parksFieldCoordinates.firstBaseY,
-                parksFieldCoordinates.foulLineLeftFieldX,
-                parksFieldCoordinates.foulLineLeftFieldY,
-                parksFieldCoordinates.foulLineRightFieldX,
-                parksFieldCoordinates.foulLineRightFieldY,
-                parksFieldCoordinates.homePlateX,
-                parksFieldCoordinates.homePlateY,
-                parksFieldCoordinates.idPark,
-                parksFieldCoordinates.onDeckLeftX,
-                parksFieldCoordinates.onDeckLeftY,
-                parksFieldCoordinates.onDeckRightX,
-                parksFieldCoordinates.onDeckRightY,
-                parksFieldCoordinates.pitchersPlateX,
-                parksFieldCoordinates.pitchersPlateY,
-                parksFieldCoordinates.secondBaseX,
-                parksFieldCoordinates.secondBaseY,
-                parksFieldCoordinates.thirdBaseX,
-                parksFieldCoordinates.thirdBaseY
-            from parks
-            inner join cities on parks.idCity = cities.idCity
-            inner join parksFieldCoordinates on parks.idPark = parksFieldCoordinates.idPark
-            where 
-                parks.idTeam in (${paramsTeams.map(() => "?").join(", ")})
-
-        `;
+                select
+                    cities.idCity as 'city.idCity',
+                    cities.latitude as 'city.latitude',
+                    cities.longitude as 'city.longitude',
+                    cities.name as 'city.name',
+                    parks.backstopDistance,
+                    parks.capacityMax,
+                    parks.centerFieldDirection,
+                    parks.idCity,
+                    parks.idPark,
+                    parks.idTeam,
+                    parks.name,
+                    parks.roofType,
+                    parks.surfaceType,
+                    parksFieldCoordinates.basePath,
+                    parksFieldCoordinates.batterLeftX,
+                    parksFieldCoordinates.batterLeftY,
+                    parksFieldCoordinates.batterRightX,
+                    parksFieldCoordinates.batterRightY,
+                    parksFieldCoordinates.coachesBoxFirstX,
+                    parksFieldCoordinates.coachesBoxFirstY,
+                    parksFieldCoordinates.coachesBoxThirdX,
+                    parksFieldCoordinates.coachesBoxThirdY,
+                    parksFieldCoordinates.firstBaseX,
+                    parksFieldCoordinates.firstBaseY,
+                    parksFieldCoordinates.foulLineLeftFieldX,
+                    parksFieldCoordinates.foulLineLeftFieldY,
+                    parksFieldCoordinates.foulLineRightFieldX,
+                    parksFieldCoordinates.foulLineRightFieldY,
+                    parksFieldCoordinates.homePlateX,
+                    parksFieldCoordinates.homePlateY,
+                    parksFieldCoordinates.idPark,
+                    parksFieldCoordinates.onDeckLeftX,
+                    parksFieldCoordinates.onDeckLeftY,
+                    parksFieldCoordinates.onDeckRightX,
+                    parksFieldCoordinates.onDeckRightY,
+                    parksFieldCoordinates.pitchersPlateX,
+                    parksFieldCoordinates.pitchersPlateY,
+                    parksFieldCoordinates.secondBaseX,
+                    parksFieldCoordinates.secondBaseY,
+                    parksFieldCoordinates.thirdBaseX,
+                    parksFieldCoordinates.thirdBaseY
+                from parks
+                inner join cities on parks.idCity = cities.idCity
+                inner join parksFieldCoordinates on parks.idPark = parksFieldCoordinates.idPark
+                where 
+                    parks.idTeam in (${paramsTeams.map(() => "?").join(", ")})
+    
+            `;
 
 		const [dataParks, errorParks] = handleValibotParse({
 			data: db.query(queryParks).all(...paramsTeams),
@@ -365,24 +405,24 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (errorParks || !dataParks) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const queryParksWallSegments = /* sql */ `
-            select
-                height,
-                idPark,
-                idWallSegment,
-                segmentEndX,
-                segmentEndY,
-                segmentStartX,
-                segmentStartY
-            from
-                parksWallSegments
-            where
-                idPark in (${dataParks.map(() => "?").join(", ")})
-            ;
-        `;
+                select
+                    height,
+                    idPark,
+                    idWallSegment,
+                    segmentEndX,
+                    segmentEndY,
+                    segmentStartX,
+                    segmentStartY
+                from
+                    parksWallSegments
+                where
+                    idPark in (${dataParks.map(() => "?").join(", ")})
+                ;
+            `;
 
 		const [dataParksWallSegments, errorParksWallSegments] = handleValibotParse({
 			data: db
@@ -393,7 +433,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		});
 
 		if (errorParksWallSegments || !dataParksWallSegments) {
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
 
 		const numCpus = Math.max(1, cpus().length - 1);
@@ -415,66 +455,66 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				nextWorker = (nextWorker + 1) % workerPool.length;
 
 				const queryUmpires = /* sql */ `
-                        select
-                            persons.dateOfBirth,
-                            persons.firstName,
-                            persons.idPerson,
-                            persons.lastName,
-                            persons.middleName,
-                            persons.nickname,
-                            personsAlignment.chaotic as "alignment.chaotic",
-                            personsAlignment.evil as "alignment.evil",
-                            personsAlignment.good as "alignment.good",
-                            personsAlignment.lawful as "alignment.lawful",
-                            personsAlignment.neutralMorality as "alignment.neutralMorality",
-                            personsAlignment.neutralOrder as "alignment.neutralOrder",
-                            personsMyersBriggs.extroversion as "myersBriggs.extroversion",
-                            personsMyersBriggs.feeling as "myersBriggs.feeling",
-                            personsMyersBriggs.introversion as "myersBriggs.introversion",
-                            personsMyersBriggs.intuition as "myersBriggs.intuition",
-                            personsMyersBriggs.judging as "myersBriggs.judging",
-                            personsMyersBriggs.perceiving as "myersBriggs.perceiving",
-                            personsMyersBriggs.sensing as "myersBriggs.sensing",
-                            personsMyersBriggs.thinking as "myersBriggs.thinking",
-                            personsMental.charisma as "mental.charisma",
-                            personsMental.constitution as "mental.constitution",
-                            personsMental.intelligence as "mental.intelligence",
-                            personsMental.loyalty as "mental.loyalty",
-                            personsMental.wisdom as "mental.wisdom",
-                            personsMental.workEthic as "mental.workEthic",
-                            personsPhysical.height as "physical.height",
-                            personsPhysical.weight as "physical.weight",
-                            umpires.idUmpire,
-                            umpiresRatings.balkAccuracy,
-                            umpiresRatings.checkSwingAccuracy,
-                            umpiresRatings.consistency,
-                            umpiresRatings.expandedZone,
-                            umpiresRatings.favorFastballs,
-                            umpiresRatings.favorOffspeed,
-                            umpiresRatings.highZone,
-                            umpiresRatings.insideZone,
-                            umpiresRatings.lowZone,
-                            umpiresRatings.outsideZone,
-                            umpiresRatings.pitchFramingInfluence,
-                            umpiresRatings.reactionTime
-                        from
-                            umpires
-                        inner join
-                            persons on umpires.idPerson = persons.idPerson
-                        inner join
-                            personsAlignment on persons.idPerson = personsAlignment.idPerson
-                        inner join
-                            personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
-                        inner join
-                            personsMental on persons.idPerson = personsMental.idPerson
-                        inner join
-                            personsPhysical on persons.idPerson = personsPhysical.idPerson
-                        inner join
-                            umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
-                        limit 
-                            4
-                        ;
-                    `;
+                            select
+                                persons.dateOfBirth,
+                                persons.firstName,
+                                persons.idPerson,
+                                persons.lastName,
+                                persons.middleName,
+                                persons.nickname,
+                                personsAlignment.chaotic as "alignment.chaotic",
+                                personsAlignment.evil as "alignment.evil",
+                                personsAlignment.good as "alignment.good",
+                                personsAlignment.lawful as "alignment.lawful",
+                                personsAlignment.neutralMorality as "alignment.neutralMorality",
+                                personsAlignment.neutralOrder as "alignment.neutralOrder",
+                                personsMyersBriggs.extroversion as "myersBriggs.extroversion",
+                                personsMyersBriggs.feeling as "myersBriggs.feeling",
+                                personsMyersBriggs.introversion as "myersBriggs.introversion",
+                                personsMyersBriggs.intuition as "myersBriggs.intuition",
+                                personsMyersBriggs.judging as "myersBriggs.judging",
+                                personsMyersBriggs.perceiving as "myersBriggs.perceiving",
+                                personsMyersBriggs.sensing as "myersBriggs.sensing",
+                                personsMyersBriggs.thinking as "myersBriggs.thinking",
+                                personsMental.charisma as "mental.charisma",
+                                personsMental.constitution as "mental.constitution",
+                                personsMental.intelligence as "mental.intelligence",
+                                personsMental.loyalty as "mental.loyalty",
+                                personsMental.wisdom as "mental.wisdom",
+                                personsMental.workEthic as "mental.workEthic",
+                                personsPhysical.height as "physical.height",
+                                personsPhysical.weight as "physical.weight",
+                                umpires.idUmpire,
+                                umpiresRatings.balkAccuracy,
+                                umpiresRatings.checkSwingAccuracy,
+                                umpiresRatings.consistency,
+                                umpiresRatings.expandedZone,
+                                umpiresRatings.favorFastballs,
+                                umpiresRatings.favorOffspeed,
+                                umpiresRatings.highZone,
+                                umpiresRatings.insideZone,
+                                umpiresRatings.lowZone,
+                                umpiresRatings.outsideZone,
+                                umpiresRatings.pitchFramingInfluence,
+                                umpiresRatings.reactionTime
+                            from
+                                umpires
+                            inner join
+                                persons on umpires.idPerson = persons.idPerson
+                            inner join
+                                personsAlignment on persons.idPerson = personsAlignment.idPerson
+                            inner join
+                                personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
+                            inner join
+                                personsMental on persons.idPerson = personsMental.idPerson
+                            inner join
+                                personsPhysical on persons.idPerson = personsPhysical.idPerson
+                            inner join
+                                umpiresRatings on umpires.idUmpire = umpiresRatings.idUmpire
+                            limit 
+                                4
+                            ;
+                        `;
 
 				const [dataUmpires, errorUmpires] = handleValibotParse({
 					data: db.query(queryUmpires).all(),
@@ -483,7 +523,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				});
 
 				if (errorUmpires || !dataUmpires) {
-					return c.text("Internal Server Error", 500);
+					throw new Error("Internal Server Error");
 				}
 
 				const teams = dataTeams
@@ -504,7 +544,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				const park = dataParks.find((park) => park.idTeam === game.idTeamHome);
 
 				if (!park) {
-					return c.text("Internal Server Error", 500);
+					throw new Error("Internal Server Error");
 				}
 
 				worker.onmessage = (event) => resolve(event.data as TGameSimResult);
@@ -540,7 +580,7 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 			}
 		} catch (error) {
 			console.error("Error during game simulation:", error);
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		} finally {
 			// Clean up workers
 			for (const worker of workerPool) {
@@ -557,19 +597,19 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 				const queryStandings = db.query(
 					/*sql*/ `
-					update gameGroups
-					set standings = json_patch(
-						coalesce(standings, '{}'),
-						json_object(
-							cast($idTeam as text),
-							json_object(
-								cast($field as text),
-								coalesce(json_extract(standings, '$.' || $idTeam || '.' || $field), 0) + 1
-							)
-						)
-					)
-					where idGameGroup = $idGameGroup
-				`,
+                        update gameGroups
+                        set standings = json_patch(
+                            coalesce(standings, '{}'),
+                            json_object(
+                                cast($idTeam as text),
+                                json_object(
+                                    cast($field as text),
+                                    coalesce(json_extract(standings, '$.' || $idTeam || '.' || $field), 0) + 1
+                                )
+                            )
+                        )
+                        where idGameGroup = $idGameGroup
+                    `,
 				);
 
 				queryStandings.run({
@@ -585,8 +625,8 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				});
 
 				const queryInsertGameLog = db.query(/*sql*/ `
-						insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
-					`);
+                            insert into gameSimLogs (idGame, gameSimLog) values ($idGame, $gameSimLog)
+                        `);
 
 				queryInsertGameLog.run({
 					gameSimLog: JSON.stringify(result.log),
@@ -598,8 +638,8 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				);
 
 				const insertGameSimEvent = db.query(/*sql*/ `
-						insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
-					`);
+                            insert into gameSimEvents (${keys.join(", ")}) values (${keys.map((key) => `$${key}`).join(", ")})
+                        `);
 
 				const insertGameSimEvents = db.transaction(() => {
 					for (const gameSimEvent of result.gameSimEvents) {
@@ -610,8 +650,8 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				insertGameSimEvents(result.gameSimEvents);
 
 				const queryBoxScore = db.query(/*sql*/ `
-					update games set boxScore = $boxScore where idGame = $idGame;
-				`);
+                        update games set boxScore = $boxScore where idGame = $idGame;
+                    `);
 
 				queryBoxScore.run({
 					boxScore: JSON.stringify(result.boxScore),
@@ -619,59 +659,59 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 				});
 
 				const queryStatisticsBatting = db.query(/*sql*/ `
-                    insert into statisticsPlayerGameGroupBatting
-                    (
-                        ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
-                        k, lob, outs, rbi, runs, singles, triples
-                    )
-                    values (
-                        $ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
-                        $k, $lob, $outs, $rbi, $runs, $singles, $triples
-                    )
-                    on conflict (idGameGroup, idPlayer, idTeam) do update set
-                        ab = statisticsPlayerGameGroupBatting.ab + $ab,
-                        doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
-                        h = statisticsPlayerGameGroupBatting.h + $h,
-                        hr = statisticsPlayerGameGroupBatting.hr + $hr,
-                        k = statisticsPlayerGameGroupBatting.k + $k,
-                        lob = statisticsPlayerGameGroupBatting.lob + $lob,
-                        outs = statisticsPlayerGameGroupBatting.outs + $outs,
-                        rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
-                        runs = statisticsPlayerGameGroupBatting.runs + $runs,
-                        singles = statisticsPlayerGameGroupBatting.singles + $singles,
-                        triples = statisticsPlayerGameGroupBatting.triples + $triples
-		        `);
+                        insert into statisticsPlayerGameGroupBatting
+                        (
+                            ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
+                            k, lob, outs, rbi, runs, singles, triples
+                        )
+                        values (
+                            $ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
+                            $k, $lob, $outs, $rbi, $runs, $singles, $triples
+                        )
+                        on conflict (idGameGroup, idPlayer, idTeam) do update set
+                            ab = statisticsPlayerGameGroupBatting.ab + $ab,
+                            doubles = statisticsPlayerGameGroupBatting.doubles + $doubles,
+                            h = statisticsPlayerGameGroupBatting.h + $h,
+                            hr = statisticsPlayerGameGroupBatting.hr + $hr,
+                            k = statisticsPlayerGameGroupBatting.k + $k,
+                            lob = statisticsPlayerGameGroupBatting.lob + $lob,
+                            outs = statisticsPlayerGameGroupBatting.outs + $outs,
+                            rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
+                            runs = statisticsPlayerGameGroupBatting.runs + $runs,
+                            singles = statisticsPlayerGameGroupBatting.singles + $singles,
+                            triples = statisticsPlayerGameGroupBatting.triples + $triples
+                    `);
 
 				const queryStatisticsPitching = db.query(/*sql*/ `
-                    insert into statisticsPlayerGameGroupPitching
-                    (
-                        battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
-                        k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
-                        runs, runsEarned, singlesAllowed, triplesAllowed
-                    )
-                    values (
-                        $battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
-                        $k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
-                        $runs, $runsEarned, $singlesAllowed, $triplesAllowed
-                    )
-                    on conflict (idGameGroup, idPlayer, idTeam) do update set
-                        battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
-                        bb = statisticsPlayerGameGroupPitching.bb + $bb,
-                        doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
-                        hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
-                        hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
-                        k = statisticsPlayerGameGroupPitching.k + $k,
-                        lob = statisticsPlayerGameGroupPitching.lob + $lob,
-                        outs = statisticsPlayerGameGroupPitching.outs + $outs,
-                        pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
-                        pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
-                        pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
-                        pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
-                        runs = statisticsPlayerGameGroupPitching.runs + $runs,
-                        runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
-                        singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
-                        triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
-		        `);
+                        insert into statisticsPlayerGameGroupPitching
+                        (
+                            battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
+                            k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
+                            runs, runsEarned, singlesAllowed, triplesAllowed
+                        )
+                        values (
+                            $battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
+                            $k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
+                            $runs, $runsEarned, $singlesAllowed, $triplesAllowed
+                        )
+                        on conflict (idGameGroup, idPlayer, idTeam) do update set
+                            battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
+                            bb = statisticsPlayerGameGroupPitching.bb + $bb,
+                            doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
+                            hitsAllowed = statisticsPlayerGameGroupPitching.hitsAllowed + $hitsAllowed,
+                            hrsAllowed = statisticsPlayerGameGroupPitching.hrsAllowed + $hrsAllowed,
+                            k = statisticsPlayerGameGroupPitching.k + $k,
+                            lob = statisticsPlayerGameGroupPitching.lob + $lob,
+                            outs = statisticsPlayerGameGroupPitching.outs + $outs,
+                            pitchesThrown = statisticsPlayerGameGroupPitching.pitchesThrown + $pitchesThrown,
+                            pitchesThrownBalls = statisticsPlayerGameGroupPitching.pitchesThrownBalls + $pitchesThrownBalls,
+                            pitchesThrownInPlay = statisticsPlayerGameGroupPitching.pitchesThrownInPlay + $pitchesThrownInPlay,
+                            pitchesThrownStrikes = statisticsPlayerGameGroupPitching.pitchesThrownStrikes + $pitchesThrownStrikes,
+                            runs = statisticsPlayerGameGroupPitching.runs + $runs,
+                            runsEarned = statisticsPlayerGameGroupPitching.runsEarned + $runsEarned,
+                            singlesAllowed = statisticsPlayerGameGroupPitching.singlesAllowed + $singlesAllowed,
+                            triplesAllowed = statisticsPlayerGameGroupPitching.triplesAllowed + $triplesAllowed
+                    `);
 
 				const insertStatisticsBatting = db.transaction(() => {
 					for (const player of result.players) {
@@ -726,21 +766,42 @@ const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 
 			// Advance the date only after all saves are complete
 			const dbQueryAdvanceData = /* sql */ `
-                        update universe
-                        set
-                            dateTime = datetime(dateTime, '+1 day')
-                    `;
+                            update universe
+                            set
+                                dateTime = datetime(dateTime, '+1 day')
+                        `;
 			db.query(dbQueryAdvanceData).run();
 		});
 
 		try {
 			saveResults();
-
-			return c.text("OK", 200);
 		} catch (error) {
 			console.error("Error saving results:", error);
-			return c.text("Internal Server Error", 500);
+			throw new Error("Internal Server Error");
 		}
+
+		counter--;
+		console.info(`Simulation complete for day ${numDaysToSim - counter}`);
+	}
+
+	console.info("Game simulation complete");
+
+	return true;
+};
+
+const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
+	"/simulate",
+	async (c) => {
+		const result = await simulateGames({
+			db: c.get("db"),
+			simulationLength: "oneWeek",
+		});
+
+		if (result) {
+			return c.text("OK", 200);
+		}
+
+		return c.text("Internal Server Error", 500);
 	},
 );
 
