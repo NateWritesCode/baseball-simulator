@@ -63,6 +63,9 @@ class GameSimCoachState implements OGameSimObserver {
 			case "halfInningStart": {
 				break;
 			}
+			case "hitByPitch": {
+				break;
+			}
 			case "homeRun": {
 				break;
 			}

@@ -104,6 +104,13 @@ class GameSimLog implements OGameSimObserver {
 
 				break;
 			}
+			case "hitByPitch": {
+				const { playerHitter } = input.data;
+				this.logInfo([
+					`${playerHitter.player.firstName} ${playerHitter.player.lastName} was hit by a pitch`,
+				]);
+				break;
+			}
 			case "homeRun": {
 				const { playerHitter } = input.data;
 				this.logInfo([

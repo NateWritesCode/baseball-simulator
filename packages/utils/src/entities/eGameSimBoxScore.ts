@@ -157,6 +157,9 @@ class GameSimBoxScore implements OGameSimObserver {
 
 				break;
 			}
+			case "hitByPitch": {
+				break;
+			}
 			case "homeRun": {
 				break;
 			}

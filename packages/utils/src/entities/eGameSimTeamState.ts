@@ -251,6 +251,9 @@ class GameSimTeamState extends GameSimUtils implements OGameSimObserver {
 			case "halfInningStart": {
 				break;
 			}
+			case "hitByPitch": {
+				break;
+			}
 			case "homeRun": {
 				const { teamDefense, teamOffense } = input.data;
 

@@ -9,7 +9,7 @@ const toJson = db
 with gameEvents as (
     select count(*) as totalGameEvents
     from gameSimEvents 
-    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk')
+    where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk', 'hitByPitch')
 ),
 pitchEvents as (
     select count(*) as totalPitchEvents
@@ -38,7 +38,7 @@ select
     count(*) as count,
     round(cast(count(*) as float) / (select totalGameEvents from gameEvents) * 100, 2) as percentage
 from gameSimEvents
-where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk')
+where gameSimEvent in ('double', 'flyout', 'groundout', 'homerun', 'lineout', 'out', 'popout', 'single', 'strikeout', 'triple', 'walk', 'hitByPitch')
 group by gameSimEvent
 
 union all

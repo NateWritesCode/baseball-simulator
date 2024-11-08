@@ -1,44 +1,152 @@
 [
   {
-    "analysisType": "Game Events",
+    "analysisType": "Batting Outcomes",
     "type": "out",
-    "count": 2066,
-    "percentage": 54.63
+    "count": 2872,
+    "percentage": 48.33
   },
   {
-    "analysisType": "Game Events",
+    "analysisType": "Batting Outcomes",
     "type": "strikeout",
-    "count": 940,
-    "percentage": 24.85
+    "count": 1319,
+    "percentage": 22.19
   },
   {
-    "analysisType": "Game Events",
+    "analysisType": "Batting Outcomes",
     "type": "single",
-    "count": 748,
-    "percentage": 19.78
+    "count": 1023,
+    "percentage": 17.21
   },
   {
-    "analysisType": "Game Events",
+    "analysisType": "Batting Outcomes",
+    "type": "walk",
+    "count": 680,
+    "percentage": 11.44
+  },
+  {
+    "analysisType": "Batting Outcomes",
     "type": "double",
-    "count": 28,
-    "percentage": 0.74
+    "count": 49,
+    "percentage": 0.82
+  },
+  {
+    "analysisType": "Key Metrics",
+    "type": "On Base Percentage",
+    "count": 1625,
+    "percentage": null
+  },
+  {
+    "analysisType": "Key Metrics",
+    "type": "Batting Average",
+    "count": 996,
+    "percentage": null
+  },
+  {
+    "analysisType": "Key Metrics",
+    "type": "Pitches Per PA",
+    "count": 20.36,
+    "percentage": null
   },
   {
     "analysisType": "Pitch Outcomes",
     "type": "ball",
-    "count": 6292,
-    "percentage": 39.77
+    "count": 8580,
+    "percentage": 39.09
   },
   {
     "analysisType": "Pitch Outcomes",
     "type": "strike",
-    "count": 5760,
-    "percentage": 36.41
+    "count": 8080,
+    "percentage": 36.81
   },
   {
     "analysisType": "Pitch Outcomes",
     "type": "inPlay",
-    "count": 3767,
-    "percentage": 23.81
+    "count": 5288,
+    "percentage": 24.09
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "slider",
+    "count": 5632,
+    "percentage": 25.66
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "fastball",
+    "count": 5183,
+    "percentage": 23.61
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "changeup",
+    "count": 3355,
+    "percentage": 15.29
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "curveball",
+    "count": 2194,
+    "percentage": 10
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "sinker",
+    "count": 1582,
+    "percentage": 7.21
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "sweeper",
+    "count": 1423,
+    "percentage": 6.48
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "knuckleCurve",
+    "count": 750,
+    "percentage": 3.42
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "splitter",
+    "count": 745,
+    "percentage": 3.39
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "cutter",
+    "count": 471,
+    "percentage": 2.15
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "forkball",
+    "count": 367,
+    "percentage": 1.67
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "knuckleball",
+    "count": 128,
+    "percentage": 0.58
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "eephus",
+    "count": 114,
+    "percentage": 0.52
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "screwball",
+    "count": 3,
+    "percentage": 0.01
+  },
+  {
+    "analysisType": "Pitch Types",
+    "type": "slurve",
+    "count": 1,
+    "percentage": 0
   }
 ]
