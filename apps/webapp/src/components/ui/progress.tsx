@@ -1,26 +1,40 @@
-import * as React from "react"
-import * as ProgressPrimitive from "@radix-ui/react-progress"
+import { Progress as ChakraProgress, IconButton } from "@chakra-ui/react"
+import { ToggleTip } from "./toggle-tip"
+import { forwardRef } from "react"
+import { HiOutlineInformationCircle } from "react-icons/hi"
 
-import { cn } from "@webapp/lib/utils"
+export const ProgressBar = forwardRef<
+  HTMLDivElement,
+  ChakraProgress.TrackProps
+>(function ProgressBar(props, ref) {
+  return (
+    <ChakraProgress.Track {...props} ref={ref}>
+      <ChakraProgress.Range />
+    </ChakraProgress.Track>
+  )
+})
 
-const Progress = React.forwardRef<
-  React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
-  <ProgressPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
-      className
-    )}
-    {...props}
-  >
-    <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    />
-  </ProgressPrimitive.Root>
-))
-Progress.displayName = ProgressPrimitive.Root.displayName
+export const ProgressRoot = ChakraProgress.Root
+export const ProgressValueText = ChakraProgress.ValueText
 
-export { Progress }
+export interface ProgressLabelProps extends ChakraProgress.LabelProps {
+  info?: React.ReactNode
+}
+
+export const ProgressLabel = forwardRef<HTMLDivElement, ProgressLabelProps>(
+  function ProgressLabel(props, ref) {
+    const { children, info, ...rest } = props
+    return (
+      <ChakraProgress.Label {...rest} ref={ref}>
+        {children}
+        {info && (
+          <ToggleTip content={info}>
+            <IconButton variant="ghost" aria-label="info" size="2xs" ms="1">
+              <HiOutlineInformationCircle />
+            </IconButton>
+          </ToggleTip>
+        )}
+      </ChakraProgress.Label>
+    )
+  },
+)

@@ -3,9 +3,7 @@ import { Hono } from "hono";
 import { hc } from "hono/client";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
-import analyze from "./db/analyze";
 import { game, person, player, simulate, standings } from "./routes";
-import { simulateGames } from "./routes/simulate";
 
 export type TMiddleware = {
 	Variables: {
@@ -50,12 +48,12 @@ const routes = app
 export const client = hc<typeof routes>("");
 export type THonoClient = typeof routes;
 
-await simulateGames({
-	db,
-	simulationLength: "oneDay",
-});
+// await simulateGames({
+// 	db,
+// 	simulationLength: "oneDay",
+// });
 
-await analyze();
+// await analyze();
 
 export default {
 	idleTimeout: 60,

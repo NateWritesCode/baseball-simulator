@@ -1,7 +1,7 @@
+import { honoClient } from "@/services/hono";
+import { Button } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@webapp/components/ui/button";
-import { honoClient } from "@webapp/services/hono";
-import { Loader2, Play } from "lucide-react";
+import { LuLoader2, LuPlay } from "react-icons/lu";
 
 const SimulateButton = () => {
 	const queryClient = useQueryClient();
@@ -36,10 +36,10 @@ const SimulateButton = () => {
 		>
 			{(() => {
 				if (isPending) {
-					return <Loader2 className="animate-spin mr-2 h-4 w-4" />;
+					return <LuLoader2 className="animate-spin mr-2 h-4 w-4" />;
 				}
 
-				return <Play className="mr-2 h-4 w-4" />;
+				return <LuPlay className="mr-2 h-4 w-4" />;
 			})()}
 			Simulate
 		</Button>

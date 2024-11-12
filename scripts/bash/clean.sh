@@ -1,0 +1,1 @@
+rm -rf node_modules && rm bun.lockb && bun i

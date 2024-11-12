@@ -1,23 +1,12 @@
+import PageError from "@/components/general/PageError";
+import PageLoading from "@/components/general/PageLoading";
+import PageNoDataFound from "@/components/general/PageNoDataFound";
+import { honoClient } from "@/services/hono";
 import type { TApiResponseGetIdPerson } from "@baseball-simulator/utils/types";
+import { Card, Table } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
-import PageError from "@webapp/components/general/PageError";
-import PageLoading from "@webapp/components/general/PageLoading";
-import PageNoDataFound from "@webapp/components/general/PageNoDataFound";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@webapp/components/ui/card";
-import { Progress } from "@webapp/components/ui/progress";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableRow,
-} from "@webapp/components/ui/table";
-import { honoClient } from "@webapp/services/hono";
 import { useParams } from "wouter";
+import { ProgressBar, ProgressRoot } from "../ui/progress";
 
 const IdPerson = () => {
 	const params = useParams<{ idPerson: string }>();
@@ -71,7 +60,9 @@ const IdPerson = () => {
 	};
 
 	const renderProgressBar = (value: number, max = 1000) => (
-		<Progress value={(value / max) * 100} className="w-full" />
+		<ProgressRoot value={(value / max) * 100}>
+			<ProgressBar />
+		</ProgressRoot>
 	);
 
 	const person = data;
@@ -150,16 +141,16 @@ const IdPerson = () => {
 
 	return (
 		<div className="container mx-auto p-4 space-y-6">
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-2xl font-bold">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title className="text-2xl font-bold">
 						{person.firstName} {person.middleName} {person.lastName}
 						{person.nickname && (
 							<span className="text-gray-500 ml-2">"{person.nickname}"</span>
 						)}
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</Card.Title>
+				</Card.Header>
+				<Card.Body>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
 							<p>
@@ -171,60 +162,60 @@ const IdPerson = () => {
 							</p>
 						</div>
 					</div>
-				</CardContent>
-			</Card>
+				</Card.Body>
+			</Card.Root>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<Card>
-					<CardHeader>
-						<CardTitle>Alignment</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<Table>
-							<TableBody>
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Alignment</Card.Title>
+					</Card.Header>
+					<Card.Body>
+						<Table.Root>
+							<Table.Body>
 								{Object.entries(person.alignment).map(([key, value]) => (
-									<TableRow key={key}>
-										<TableCell className="font-medium capitalize">
+									<Table.Row key={key}>
+										<Table.Cell className="font-medium capitalize">
 											{key}
-										</TableCell>
-										<TableCell className="w-full">
+										</Table.Cell>
+										<Table.Cell className="w-full">
 											{renderProgressBar(value)}
-										</TableCell>
-										<TableCell className="text-right">{value}</TableCell>
-									</TableRow>
+										</Table.Cell>
+										<Table.Cell className="text-right">{value}</Table.Cell>
+									</Table.Row>
 								))}
-							</TableBody>
-						</Table>
-					</CardContent>
-				</Card>
+							</Table.Body>
+						</Table.Root>
+					</Card.Body>
+				</Card.Root>
 
-				<Card>
-					<CardHeader>
-						<CardTitle>Mental Attributes</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<Table>
-							<TableBody>
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Mental Attributes</Card.Title>
+					</Card.Header>
+					<Card.Body>
+						<Table.Root>
+							<Table.Body>
 								{Object.entries(person.mental).map(([key, value]) => (
-									<TableRow key={key}>
-										<TableCell className="font-medium capitalize">
+									<Table.Row key={key}>
+										<Table.Cell className="font-medium capitalize">
 											{key}
-										</TableCell>
-										<TableCell className="w-full">
+										</Table.Cell>
+										<Table.Cell className="w-full">
 											{renderProgressBar(value)}
-										</TableCell>
-										<TableCell className="text-right">{value}</TableCell>
-									</TableRow>
+										</Table.Cell>
+										<Table.Cell className="text-right">{value}</Table.Cell>
+									</Table.Row>
 								))}
-							</TableBody>
-						</Table>
-					</CardContent>
-				</Card>
-				<Card className="w-full max-w-2xl mx-auto">
-					<CardHeader>
-						<CardTitle>Myers-Briggs Type Indicator (MBTI)</CardTitle>
-					</CardHeader>
-					<CardContent>
+							</Table.Body>
+						</Table.Root>
+					</Card.Body>
+				</Card.Root>
+				<Card.Root className="w-full max-w-2xl mx-auto">
+					<Card.Header>
+						<Card.Title>Myers-Briggs Type Indicator (MBTI)</Card.Title>
+					</Card.Header>
+					<Card.Body>
 						<h3 className="text-xl font-bold mb-2">Type: {mbtiType}</h3>
 						<p className="text-gray-700">{description}</p>
 						<div className="mt-4 grid grid-cols-2 gap-2">
@@ -235,30 +226,30 @@ const IdPerson = () => {
 								</div>
 							))}
 						</div>
-					</CardContent>
-				</Card>
+					</Card.Body>
+				</Card.Root>
 
-				<Card className="w-full max-w-md mx-auto">
-					<CardHeader>
-						<CardTitle>Physical Attributes</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<Table>
-							<TableBody>
-								<TableRow>
-									<TableCell className="font-medium">Height</TableCell>
-									<TableCell>{heightCm} cm</TableCell>
-									<TableCell>{heightFtIn}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell className="font-medium">Weight</TableCell>
-									<TableCell>{weightKg} kg</TableCell>
-									<TableCell>{weightLbs} lbs</TableCell>
-								</TableRow>
-							</TableBody>
-						</Table>
-					</CardContent>
-				</Card>
+				<Card.Root className="w-full max-w-md mx-auto">
+					<Card.Header>
+						<Card.Title>Physical Attributes</Card.Title>
+					</Card.Header>
+					<Card.Body>
+						<Table.Root>
+							<Table.Body>
+								<Table.Row>
+									<Table.Cell className="font-medium">Height</Table.Cell>
+									<Table.Cell>{heightCm} cm</Table.Cell>
+									<Table.Cell>{heightFtIn}</Table.Cell>
+								</Table.Row>
+								<Table.Row>
+									<Table.Cell className="font-medium">Weight</Table.Cell>
+									<Table.Cell>{weightKg} kg</Table.Cell>
+									<Table.Cell>{weightLbs} lbs</Table.Cell>
+								</Table.Row>
+							</Table.Body>
+						</Table.Root>
+					</Card.Body>
+				</Card.Root>
 			</div>
 		</div>
 	);

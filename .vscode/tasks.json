@@ -12,6 +12,11 @@
 			"command": "bash scripts/bash/blockchain-dev.sh"
 		},
 		{
+			"label": "clean",
+			"type": "shell",
+			"command": "bash scripts/bash/clean.sh"
+		},
+		{
 			"label": "server-dev",
 			"type": "shell",
 			"dependsOn": ["server-seed"],

@@ -1,13 +1,13 @@
-import Explore from "@webapp/components/pages/Explore";
-import Home from "@webapp/components/pages/Home";
-import IdGame from "@webapp/components/pages/IdGame";
-import IdPerson from "@webapp/components/pages/IdPerson";
-import IdPlayer from "@webapp/components/pages/IdPlayer";
-import Person from "@webapp/components/pages/Person";
-import Player from "@webapp/components/pages/Player";
-import Search from "@webapp/components/pages/Search";
-import Standings from "@webapp/components/pages/Standings";
-import Test from "@webapp/components/pages/Test";
+import Explore from "@/components/pages/Explore";
+import Home from "@/components/pages/Home";
+import IdGame from "@/components/pages/IdGame";
+import IdPerson from "@/components/pages/IdPerson";
+import IdPlayer from "@/components/pages/IdPlayer";
+import Person from "@/components/pages/Person";
+import Player from "@/components/pages/Player";
+import Search from "@/components/pages/Search";
+import Standings from "@/components/pages/Standings";
+import Test from "@/components/pages/Test";
 import { Route, Switch } from "wouter";
 
 const Router = () => {

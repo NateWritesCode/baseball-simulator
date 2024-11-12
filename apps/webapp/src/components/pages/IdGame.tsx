@@ -1,9 +1,9 @@
+import PageError from "@/components/general/PageError";
+import PageLoading from "@/components/general/PageLoading";
+import PageNoDataFound from "@/components/general/PageNoDataFound";
+import { honoClient } from "@/services/hono";
 import type { TApiResponseGetIdGame } from "@baseball-simulator/utils/types";
 import { useQuery } from "@tanstack/react-query";
-import PageError from "@webapp/components/general/PageError";
-import PageLoading from "@webapp/components/general/PageLoading";
-import PageNoDataFound from "@webapp/components/general/PageNoDataFound";
-import { honoClient } from "@webapp/services/hono";
 import { useParams } from "wouter";
 
 const IdGame = () => {

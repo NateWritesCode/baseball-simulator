@@ -1,19 +1,6 @@
 import { VFormSchemaExplore } from "@baseball-simulator/utils/types";
+import { Box } from "@chakra-ui/react";
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-} from "@webapp/components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@webapp/components/ui/select";
 import { useForm } from "react-hook-form";
 
 const DEFAULT_VALUES = {
@@ -29,11 +16,11 @@ const Explore = () => {
 	});
 
 	return (
-		<div>
-			<div>Explore</div>
-			<div className=" max-w-md">
-				<Form {...form}>
-					<form className="space-y-8">
+		<Box>
+			<Box>Explore</Box>
+			<Box className="max-w-md">
+				{/* <Form {...form}>
+					<form className="space-y-8" {...form.formProps}>
 						<FormField
 							control={form.control}
 							name="typeExplore"
@@ -42,29 +29,29 @@ const Explore = () => {
 									<FormItem>
 										<FormLabel>Explore type</FormLabel>
 										<FormControl>
-											<Select
+											<SelectRoot
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
 													<SelectTrigger>
-														<SelectValue placeholder="Select a verified email to display" />
+														<SelectValueText placeholder="Select a verified email to display" />
 													</SelectTrigger>
 												</FormControl>
 												<SelectContent>
 													<SelectItem value="person">Person</SelectItem>
 													<SelectItem value="player">Player</SelectItem>
 												</SelectContent>
-											</Select>
+											</SelectRoot>
 										</FormControl>
 									</FormItem>
 								);
 							}}
 						/>
 					</form>
-				</Form>
-			</div>
-		</div>
+				</Form> */}
+			</Box>
+		</Box>
 	);
 };
 

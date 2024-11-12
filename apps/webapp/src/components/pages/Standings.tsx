@@ -1,20 +1,7 @@
+import { honoClient } from "@/services/hono";
 import type { TApiResponseGetStandings } from "@baseball-simulator/utils/types";
+import { Card, Table } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@webapp/components/ui/card";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@webapp/components/ui/table";
-import { honoClient } from "@webapp/services/hono";
 import { useParams } from "wouter";
 import PageError from "../general/PageError";
 import PageLoading from "../general/PageLoading";
@@ -135,11 +122,11 @@ const Standings = () => {
 			<div className="flex flex-col md:flex-row gap-8">
 				{Object.entries(organized).map(([subLeagueName, divisions]) => (
 					<div key={subLeagueName} className="flex-1">
-						<Card>
-							<CardHeader>
-								<CardTitle>{subLeagueName}</CardTitle>
-							</CardHeader>
-							<CardContent>
+						<Card.Root>
+							<Card.Header>
+								<Card.Title>{subLeagueName}</Card.Title>
+							</Card.Header>
+							<Card.Body>
 								<div className="space-y-6">
 									{Object.entries(divisions).map(([divisionName, teams]) => (
 										<div key={divisionName}>
@@ -149,43 +136,49 @@ const Standings = () => {
 													? `(${teams[0].division.direction})`
 													: ""}
 											</h4>
-											<Table>
-												<TableHeader>
-													<TableRow>
-														<TableHead>Team</TableHead>
-														<TableHead className="text-right">W</TableHead>
-														<TableHead className="text-right">L</TableHead>
-														<TableHead className="text-right">PCT</TableHead>
-													</TableRow>
-												</TableHeader>
-												<TableBody>
+											<Table.Root>
+												<Table.Header>
+													<Table.Row>
+														<Table.ColumnHeader>Team</Table.ColumnHeader>
+														<Table.ColumnHeader className="text-right">
+															W
+														</Table.ColumnHeader>
+														<Table.ColumnHeader className="text-right">
+															L
+														</Table.ColumnHeader>
+														<Table.ColumnHeader className="text-right">
+															PCT
+														</Table.ColumnHeader>
+													</Table.Row>
+												</Table.Header>
+												<Table.Body>
 													{teams.map((team) => (
-														<TableRow key={team.idTeam}>
-															<TableCell className="font-medium">
+														<Table.Row key={team.idTeam}>
+															<Table.Cell className="font-medium">
 																{team.city.name} {team.nickname}
-															</TableCell>
-															<TableCell className="text-right">
+															</Table.Cell>
+															<Table.Cell className="text-right">
 																{team.w}
-															</TableCell>
-															<TableCell className="text-right">
+															</Table.Cell>
+															<Table.Cell className="text-right">
 																{team.l}
-															</TableCell>
-															<TableCell className="text-right">
+															</Table.Cell>
+															<Table.Cell className="text-right">
 																{team.w + team.l === 0
 																	? ".000"
 																	: calculatePct(team.w, team.l)
 																			.toFixed(3)
 																			.substring(1)}
-															</TableCell>
-														</TableRow>
+															</Table.Cell>
+														</Table.Row>
 													))}
-												</TableBody>
-											</Table>
+												</Table.Body>
+											</Table.Root>
 										</div>
 									))}
 								</div>
-							</CardContent>
-						</Card>
+							</Card.Body>
+						</Card.Root>
 					</div>
 				))}
 			</div>
