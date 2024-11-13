@@ -20,7 +20,12 @@ import {
 	VDbPlayers,
 	VDbStates,
 } from "./tDb";
-import { VDbQueryStandingsTeams } from "./tDbQueries";
+import {
+	VDbQuerySelectLeague,
+	VDbQuerySelectTeam,
+	VDbQueryStandingsTeams,
+	VDbQueryUniverseDateTime,
+} from "./tDbQueries";
 
 export const VApiResponseGetIdGame = intersect([
 	pick(VDbGames, ["boxScore", "idGame"]),
@@ -92,4 +97,19 @@ export const VApiResponseGetStandings = array(
 );
 export type TApiResponseGetStandings = InferInput<
 	typeof VApiResponseGetStandings
+>;
+
+export const VApiResponseGetUniverse = VDbQueryUniverseDateTime;
+export type TApiResponseGetUniverse = InferInput<
+	typeof VApiResponseGetUniverse
+>;
+
+export const VApiResponsePostSelectTeam = VDbQuerySelectTeam;
+export type TApiResponsePostSelectTeam = InferInput<
+	typeof VApiResponsePostSelectTeam
+>;
+
+export const VApiResponsePostSelectLeague = VDbQuerySelectLeague;
+export type TApiResponsePostSelectLeague = InferInput<
+	typeof VApiResponsePostSelectLeague
 >;

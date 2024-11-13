@@ -1,18 +1,17 @@
-import { Box, Button, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
+import SimulateButton from "@/components/general/SimulateButton";
+import { ColorModeButton, useColorMode } from "@/components/ui/color-mode";
+import { Box, Button, Flex, Icon, IconButton, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import {
-	LuHelpCircle,
-	LuHome,
-	LuLogOut,
-	LuMenu,
-	LuSettings,
-	LuUser,
-	LuX,
-} from "react-icons/lu";
+import { LuMenu, LuX } from "react-icons/lu";
+import { PiBaseballHelmetDuotone } from "react-icons/pi";
+import SelectLeague from "../league/SelectLeague";
+import SelectTeam from "../team/SelectTeam";
+import UniverseDate from "../universe/UniverseDate";
 
 const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
+	const { colorMode } = useColorMode();
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(false);
 
@@ -26,18 +25,10 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 		return () => window.removeEventListener("resize", checkMobile);
 	}, []);
 
-	const menuItems = [
-		{ icon: LuHome, label: "Dashboard" },
-		{ icon: LuUser, label: "Profile" },
-		{ icon: LuSettings, label: "Settings" },
-		{ icon: LuHelpCircle, label: "Help" },
-		...Array(20)
-			.fill(null)
-			.map((_, i) => ({
-				icon: LuSettings,
-				label: `Menu Item ${i + 1}`,
-			})),
-	];
+	const scrollbarColor =
+		colorMode === "light" ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.3)";
+	const scrollbarColorHover =
+		colorMode === "light" ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.5)";
 
 	const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
@@ -49,12 +40,12 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
     }
     
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color:   ${scrollbarColor};
       border-radius: 20px;
     }
     
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: ${scrollbarColorHover};
     }
   `;
 
@@ -68,29 +59,44 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				justifyContent="space-between"
 				px="4"
 				borderBottom="1px solid"
-				borderColor="whiteAlpha.300"
+				borderColor="border"
+				borderRightWidth={1}
+				borderRightStyle={"solid"}
 			>
-				<Text fontSize="xl" fontWeight="bold">
-					Dashboard
-				</Text>
+				<Flex alignItems={"center"} gap="2">
+					<Icon fontSize={["3xl", "3xl", "4xl"]}>
+						<PiBaseballHelmetDuotone />
+					</Icon>
+					<Text fontSize={["sm", "sm", "lg"]} fontWeight="bold">
+						Baseball Simulator
+					</Text>
+				</Flex>
 				{isMobile && (
-					<Button
-						variant="ghost"
+					<IconButton
+						variant="outline"
 						onClick={() => setIsMobileMenuOpen(false)}
 						p="2"
-						borderRadius="lg"
-						_hover={{ bg: "whiteAlpha.200" }}
-						color="white"
+						size="sm"
+						borderRadius={"sm"}
 					>
-						<LuX size={20} />
-					</Button>
+						<LuX />
+					</IconButton>
 				)}
 			</Flex>
 
 			{/* Scrollable Sidebar Content */}
-			<Box flex="1" overflowY="auto" className="custom-scrollbar">
+			<Box
+				flex="1"
+				overflowY="auto"
+				className="custom-scrollbar"
+				borderColor="border"
+				borderRightWidth={1}
+				borderRightStyle={"solid"}
+			>
 				<Box as="nav" p="4">
-					{menuItems.map((item, index) => (
+					<SelectLeague />
+					<SelectTeam />
+					{/* {menuItems.map((item, index) => (
 						<Link
 							key={`${item.label}-${index}`}
 							href="#"
@@ -101,41 +107,37 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 							borderRadius="lg"
 							_hover={{ bg: "whiteAlpha.200", textDecoration: "none" }}
 							transition="all 0.2s"
-							color="white"
+							color="fg"
 						>
 							<Box as={item.icon} />
 							<Text ml="3">{item.label}</Text>
 						</Link>
-					))}
+					))} */}
 				</Box>
 			</Box>
 
 			{/* Sidebar Footer */}
-			<Box p="4" borderTop="1px solid" borderColor="whiteAlpha.300">
-				<Button
-					variant="ghost"
-					display="flex"
-					alignItems="center"
-					w="full"
-					borderRadius="lg"
-					_hover={{ bg: "whiteAlpha.200" }}
-					color="white"
-				>
-					<LuLogOut size={20} />
-					<Text ml="3">Logout</Text>
-				</Button>
+			<Box
+				p="4"
+				borderColor="border"
+				borderTopWidth={1}
+				borderTopStyle={"solid"}
+				borderRightWidth={1}
+				borderRightStyle={"solid"}
+			>
+				<ColorModeButton />
 			</Box>
 		</Flex>
 	);
 
 	return (
-		<Box bg="gray.100" minH="100vh">
+		<Box bg="bg" minH="100vh">
 			{/* Mobile Overlay */}
 			{isMobile && isMobileMenuOpen && (
 				<Box
 					position="fixed"
 					inset="0"
-					bg="blackAlpha.600"
+					bg="bg"
 					onClick={() => setIsMobileMenuOpen(false)}
 					zIndex={40}
 					transition="opacity 0.3s"
@@ -150,7 +152,8 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				left="0"
 				h="full"
 				w="64"
-				bg="gray.900"
+				bg="bg"
+				color="fg"
 				zIndex={isMobile ? 50 : "auto"}
 				transform={
 					isMobile
@@ -170,8 +173,8 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				<Flex
 					as="header"
 					h="16"
-					bg="white"
-					boxShadow="sm"
+					color="fg"
+					bg="bg"
 					position="fixed"
 					top={0}
 					right={0}
@@ -180,14 +183,16 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 					alignItems="center"
 					px={{ base: 4, lg: 6 }}
 					transition="left 0.3s"
+					borderColor={"border"}
+					borderBottomWidth={1}
+					borderBottomStyle={"solid"}
 				>
 					{isMobile && (
 						<Button
-							variant="ghost"
+							variant="outline"
 							onClick={() => setIsMobileMenuOpen(true)}
 							p="2"
 							borderRadius="lg"
-							_hover={{ bg: "gray.100" }}
 						>
 							<LuMenu size={20} />
 						</Button>
@@ -196,52 +201,22 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 					<Flex
 						flex="1"
 						alignItems="center"
-						justifyContent="space-between"
+						justifyContent="flex-end"
 						ml={isMobile ? 4 : 0}
+						gap="2"
 					>
-						<Box>Item 1</Box>
-						<Flex gap="4">
-							<Box>Item 2</Box>
-							<Box>Item 3</Box>
-						</Flex>
+						<Box>
+							<UniverseDate />
+						</Box>
+						<Box>
+							<SimulateButton />
+						</Box>
 					</Flex>
 				</Flex>
 
 				{/* Main Content */}
-				<Box as="main" pt="16" px={{ base: 4, lg: 6 }} py="8">
+				<Box as="main" pt="16">
 					{children}
-
-					{/* Example Grid Content */}
-					<Grid
-						templateColumns={{
-							base: "1fr",
-							md: "repeat(2, 1fr)",
-							lg: "repeat(3, 1fr)",
-						}}
-						gap="6"
-						mt="6"
-					>
-						{Array(90)
-							.fill(null)
-							.map((_, i) => (
-								<Box key={i} bg="white" borderRadius="lg" boxShadow="sm" p="2">
-									<Heading
-										as="h2"
-										fontSize="lg"
-										fontWeight="semibold"
-										mb="4"
-										color="black"
-									>
-										Card {i + 1}
-									</Heading>
-									<Text color="gray.600">
-										Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-										do eiusmod tempor incididunt ut labore et dolore magna
-										aliqua.
-									</Text>
-								</Box>
-							))}
-					</Grid>
 				</Box>
 			</Box>
 		</Box>

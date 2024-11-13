@@ -1,6 +1,7 @@
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
 import type { TGameSimResult } from "@baseball-simulator/utils/types";
 import {
+	VApiParamsSimulate,
 	VConstructorGameSimCoach,
 	VConstructorGameSimUmpire,
 	VDbCities,
@@ -21,6 +22,7 @@ import {
 	VDbTeams,
 	VQueryConstructorGameSimPark,
 } from "@baseball-simulator/utils/types";
+import { vValidator } from "@hono/valibot-validator";
 import type { TMiddleware } from "@server/server";
 import { Database } from "bun:sqlite";
 import { Hono } from "hono";
@@ -665,11 +667,11 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
                         insert into statisticsPlayerGameGroupBatting
                         (
                             ab, doubles, h, hr, idGameGroup, idPlayer, idTeam,
-                            k, lob, outs, rbi, runs, singles, triples
+                            k, lob, outs, rbi, runs, sb, singles, triples
                         )
                         values (
                             $ab, $doubles, $h, $hr, $idGameGroup, $idPlayer, $idTeam,
-                            $k, $lob, $outs, $rbi, $runs, $singles, $triples
+                            $k, $lob, $outs, $rbi, $runs, $sb, $singles, $triples
                         )
                         on conflict (idGameGroup, idPlayer, idTeam) do update set
                             ab = statisticsPlayerGameGroupBatting.ab + $ab,
@@ -681,6 +683,7 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
                             outs = statisticsPlayerGameGroupBatting.outs + $outs,
                             rbi = statisticsPlayerGameGroupBatting.rbi + $rbi,
                             runs = statisticsPlayerGameGroupBatting.runs + $runs,
+                            sb = statisticsPlayerGameGroupBatting.sb + $sb,
                             singles = statisticsPlayerGameGroupBatting.singles + $singles,
                             triples = statisticsPlayerGameGroupBatting.triples + $triples
                     `);
@@ -688,16 +691,17 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 				const queryStatisticsPitching = db.query(/*sql*/ `
                         insert into statisticsPlayerGameGroupPitching
                         (
-                            battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
+                            balks, battersFaced, bb, doublesAllowed, hitsAllowed, hrsAllowed, idGameGroup, idPlayer, idTeam,
                             k, lob, outs, pitchesThrown, pitchesThrownBalls, pitchesThrownInPlay, pitchesThrownStrikes,
                             runs, runsEarned, singlesAllowed, triplesAllowed
                         )
                         values (
-                            $battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
+                            $balks, $battersFaced, $bb, $doublesAllowed, $hitsAllowed, $hrsAllowed, $idGameGroup, $idPlayer, $idTeam,
                             $k, $lob, $outs, $pitchesThrown, $pitchesThrownBalls, $pitchesThrownInPlay, $pitchesThrownStrikes,
                             $runs, $runsEarned, $singlesAllowed, $triplesAllowed
                         )
                         on conflict (idGameGroup, idPlayer, idTeam) do update set
+                            balks = statisticsPlayerGameGroupPitching.balks + $balks,
                             battersFaced = statisticsPlayerGameGroupPitching.battersFaced + $battersFaced,
                             bb = statisticsPlayerGameGroupPitching.bb + $bb,
                             doublesAllowed = statisticsPlayerGameGroupPitching.doublesAllowed + $doublesAllowed,
@@ -731,6 +735,7 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 							outs: player.batting.outs,
 							rbi: player.batting.rbi,
 							runs: player.batting.runs,
+							sb: player.batting.sb,
 							singles: player.batting.singles,
 							triples: player.batting.triples,
 						});
@@ -740,6 +745,7 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 				const insertStatisticsPitching = db.transaction(() => {
 					for (const player of result.players) {
 						queryStatisticsPitching.run({
+							balks: player.pitching.balks,
 							battersFaced: player.pitching.battersFaced,
 							bb: player.pitching.bb,
 							doublesAllowed: player.pitching.doublesAllowed,
@@ -794,10 +800,13 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 
 const simulate = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 	"/simulate",
+	vValidator("json", VApiParamsSimulate),
 	async (c) => {
+		const db = c.var.db;
+		const params = c.req.valid("json");
 		const result = await simulateGames({
-			db: c.get("db"),
-			simulationLength: "oneWeek",
+			db,
+			simulationLength: params.simulationLength,
 		});
 
 		if (result) {

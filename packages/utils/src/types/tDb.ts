@@ -16,6 +16,7 @@ import {
 	VPicklistRoofType,
 	VPicklistSurfaceType,
 } from "./tPicklist";
+import { VRegexDateTimeIsoString } from "./tRegex";
 
 export const VDbPitchLocation = object({
 	ax: number(),
@@ -492,4 +493,12 @@ export const VDbUmpiresRatings = object({
 	outsideZone: number(),
 	pitchFramingInfluence: number(),
 	reactionTime: number(),
+});
+
+export const VDbUniverse = object({
+	dateTime: pipe(
+		string(),
+		transform((input) => new Date(input).toISOString()),
+		VRegexDateTimeIsoString,
+	),
 });

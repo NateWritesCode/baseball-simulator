@@ -1,5 +1,6 @@
 import { type InferInput, object, string } from "valibot";
 import { VFormSchemaExplore } from "./tFormSchema";
+import { VPicklistSimuationLengthOptions } from "./tPicklist";
 
 export const VApiParamsGetIdGame = object({
 	idGame: string(),
@@ -23,3 +24,15 @@ export const VApiParamsGetStandings = object({
 	idGameGroup: string(),
 });
 export type TApiParamsGetStandings = InferInput<typeof VApiParamsGetStandings>;
+
+export const VApiParamsSimulate = object({
+	simulationLength: VPicklistSimuationLengthOptions,
+});
+export type TApiParamsSimulate = InferInput<typeof VApiParamsSimulate>;
+
+export const VApiParamsPostSelectTeam = object({
+	idLeague: string(),
+});
+export type TApiParamsPostSelectTeam = InferInput<
+	typeof VApiParamsPostSelectTeam
+>;
