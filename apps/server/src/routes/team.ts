@@ -1,6 +1,8 @@
 import { handleValibotParse } from "@baseball-simulator/utils/functions";
 import {
+	VApiParamsPostIdTeam,
 	VApiParamsPostSelectTeam,
+	VApiResponsePostIdTeam,
 	VApiResponsePostSelectTeam,
 	VDbQuerySelectTeam,
 } from "@baseball-simulator/utils/types";
@@ -9,14 +11,15 @@ import type { TMiddleware } from "@server/server";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-const team = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
-	"/selectTeam/:idLeague",
-	vValidator("json", VApiParamsPostSelectTeam),
-	(c) => {
-		const db = c.var.db;
-		const params = c.req.valid("json");
+const team = new Hono<{ Variables: TMiddleware["Variables"] }>()
+	.post(
+		"/selectTeam/:idLeague",
+		vValidator("json", VApiParamsPostSelectTeam),
+		(c) => {
+			const db = c.var.db;
+			const params = c.req.valid("json");
 
-		const query = db.query(/* sql */ `
+			const query = db.query(/* sql */ `
 		select
             cities.name as 'city.name',
             idTeam,
@@ -29,35 +32,66 @@ const team = new Hono<{ Variables: TMiddleware["Variables"] }>().post(
 		;
 	`);
 
-		const [dataSelectTeam, errorSelectTeam] = handleValibotParse({
-			data: query.all({
-				idLeague: Number(params.idLeague),
-			}),
-			schema: VDbQuerySelectTeam,
-			shouldParseDotNotation: true,
-		});
+			const [dataSelectTeam, errorSelectTeam] = handleValibotParse({
+				data: query.all({
+					idLeague: Number(params.idLeague),
+				}),
+				schema: VDbQuerySelectTeam,
+				shouldParseDotNotation: true,
+			});
 
-		if (errorSelectTeam) {
+			if (errorSelectTeam) {
+				throw new HTTPException(500, {
+					message: "There was an error fetching the data",
+				});
+			}
+
+			if (dataSelectTeam) {
+				const [dataResponse, errorResponse] = handleValibotParse({
+					data: dataSelectTeam,
+					schema: VApiResponsePostSelectTeam,
+				});
+
+				if (dataResponse) {
+					return c.json(dataResponse);
+				}
+			}
+
 			throw new HTTPException(500, {
 				message: "There was an error fetching the data",
 			});
-		}
+		},
+	)
+	.post("/:idTeam", vValidator("json", VApiParamsPostIdTeam), (c) => {
+		const db = c.var.db;
+		const params = c.req.valid("json");
 
-		if (dataSelectTeam) {
-			const [dataResponse, errorResponse] = handleValibotParse({
-				data: dataSelectTeam,
-				schema: VApiResponsePostSelectTeam,
-			});
+		const query = db.query(
+			/* sql */ `
+		select 
+			idTeam
+		from 
+			teams
+		where 
+			teams.idTeam = $idTeam
+		;
+	`,
+		);
 
-			if (dataResponse) {
-				return c.json(dataResponse);
-			}
+		const [dataResponse, errorResponse] = handleValibotParse({
+			data: query.get({
+				idTeam: Number(params.idTeam),
+			}),
+			schema: VApiResponsePostIdTeam,
+		});
+
+		if (dataResponse) {
+			return c.json(dataResponse);
 		}
 
 		throw new HTTPException(500, {
 			message: "There was an error fetching the data",
 		});
-	},
-);
+	});
 
 export default team;

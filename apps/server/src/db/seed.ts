@@ -1345,8 +1345,16 @@ try {
 
 	insertDivisions(seedDivisions);
 
+	const citiesToChooseFrom = seedCities;
+
 	const seedTeamsCities = Array.from({ length: NUM_TEAMS }, (_) => {
-		return faker.helpers.arrayElement(seedCities);
+		const city = faker.helpers.arrayElement(citiesToChooseFrom);
+
+		const index = citiesToChooseFrom.indexOf(city);
+
+		citiesToChooseFrom.splice(index, 1);
+
+		return city;
 	}).map((city, i) => {
 		return {
 			...city,

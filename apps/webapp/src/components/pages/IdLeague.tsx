@@ -2,22 +2,22 @@ import PageError from "@/components/general/PageError";
 import PageLoading from "@/components/general/PageLoading";
 import PageNoDataFound from "@/components/general/PageNoDataFound";
 import { honoClient } from "@/services/hono";
-import type { TApiResponsePostIdTeam } from "@baseball-simulator/utils/types";
+import type { TApiResponsePostIdLeague } from "@baseball-simulator/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
 
-const IdTeam = () => {
-	const params = useParams<{ idTeam: string }>();
+const IdLeague = () => {
+	const params = useParams<{ idLeague: string }>();
 	const { data, error, isError, isLoading } = useQuery({
-		queryKey: ["team", params.idTeam],
+		queryKey: ["league", params.idLeague],
 		queryFn: async () => {
 			try {
-				const res = await honoClient.team[":idTeam"].$post({
+				const res = await honoClient.league[":idLeague"].$post({
 					json: {
-						idTeam: params.idTeam,
+						idLeague: params.idLeague,
 					},
 					param: {
-						idTeam: params.idTeam,
+						idLeague: params.idLeague,
 					},
 				});
 
@@ -25,7 +25,7 @@ const IdTeam = () => {
 					throw new Error("There was an error fetching the data");
 				}
 
-				return (await res.json()) as TApiResponsePostIdTeam;
+				return (await res.json()) as TApiResponsePostIdLeague;
 			} catch (error) {
 				console.error("error", error);
 				throw new Error("There was an error fetching the data");
@@ -57,4 +57,4 @@ const IdTeam = () => {
 	);
 };
 
-export default IdTeam;
+export default IdLeague;

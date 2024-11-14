@@ -19,8 +19,10 @@ import {
 	VDbPersonsPhysical,
 	VDbPlayers,
 	VDbStates,
+	VDbTeams,
 } from "./tDb";
 import {
+	VDbQueryLeagueGameGroupLeaders,
 	VDbQuerySelectLeague,
 	VDbQuerySelectTeam,
 	VDbQueryStandingsTeams,
@@ -112,4 +114,18 @@ export type TApiResponsePostSelectTeam = InferInput<
 export const VApiResponsePostSelectLeague = VDbQuerySelectLeague;
 export type TApiResponsePostSelectLeague = InferInput<
 	typeof VApiResponsePostSelectLeague
+>;
+
+export const VApiResponsePostIdLeague = pick(VDbTeams, ["idLeague"]);
+export type TApiResponsePostIdLeague = InferInput<
+	typeof VApiResponsePostIdLeague
+>;
+
+export const VApiResponsePostIdTeam = pick(VDbTeams, ["idTeam"]);
+export type TApiResponsePostIdTeam = InferInput<typeof VApiResponsePostIdTeam>;
+
+export const VApiResponsePostIdLeagueIdGameGroupLeaders =
+	VDbQueryLeagueGameGroupLeaders;
+export type TApiResponsePostIdLeagueIdGameGroupLeaders = InferInput<
+	typeof VApiResponsePostIdLeagueIdGameGroupLeaders
 >;

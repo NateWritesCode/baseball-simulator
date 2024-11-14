@@ -36,3 +36,22 @@ export const VApiParamsPostSelectTeam = object({
 export type TApiParamsPostSelectTeam = InferInput<
 	typeof VApiParamsPostSelectTeam
 >;
+
+export const VApiParamsPostIdLeague = object({
+	idLeague: string(),
+});
+export type TApiParamsPostIdLeague = InferInput<typeof VApiParamsPostIdLeague>;
+
+export const VApiParamsPostIdTeam = object({
+	idTeam: string(),
+});
+
+export type TApiParamsPostIdTeam = InferInput<typeof VApiParamsPostIdTeam>;
+
+export const VApiParamsPostIdLeagueIdGameGroupLeaders = object({
+	idGameGroup: string(),
+	idLeague: string(),
+});
+export type TApiParamsPostIdLeagueIdGameGroupLeaders = InferInput<
+	typeof VApiParamsPostIdLeagueIdGameGroupLeaders
+>;

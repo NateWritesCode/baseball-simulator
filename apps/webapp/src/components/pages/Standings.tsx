@@ -2,7 +2,7 @@ import { honoClient } from "@/services/hono";
 import type { TApiResponseGetStandings } from "@baseball-simulator/utils/types";
 import { Box, Card, Container, Flex, Heading, Table } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { Link, useParams } from "wouter";
 import PageError from "../general/PageError";
 import PageLoading from "../general/PageLoading";
 import PageNoDataFound from "../general/PageNoDataFound";
@@ -206,7 +206,9 @@ const Standings = () => {
 													{teams.map((team) => (
 														<Table.Row key={team.idTeam}>
 															<Table.Cell className="font-medium">
-																{team.city.name} {team.nickname}
+																<Link href={`/team/${team.idTeam}`}>
+																	{team.city.name} {team.nickname}
+																</Link>
 															</Table.Cell>
 															<Table.Cell>{team.w}</Table.Cell>
 															<Table.Cell>{team.l}</Table.Cell>

@@ -1,9 +1,20 @@
 import SimulateButton from "@/components/general/SimulateButton";
 import { ColorModeButton, useColorMode } from "@/components/ui/color-mode";
-import { Box, Button, Flex, Icon, IconButton, Text } from "@chakra-ui/react";
+import { storeGeneral } from "@/services/storeGeneral";
+import {
+	Box,
+	Button,
+	Collapsible,
+	Flex,
+	Icon,
+	IconButton,
+	Text,
+} from "@chakra-ui/react";
+import { useStore } from "@tanstack/react-store";
 import { useEffect, useState } from "react";
 import { LuMenu, LuX } from "react-icons/lu";
 import { PiBaseballHelmetDuotone } from "react-icons/pi";
+import { Link } from "wouter";
 import SelectLeague from "../league/SelectLeague";
 import SelectTeam from "../team/SelectTeam";
 import UniverseDate from "../universe/UniverseDate";
@@ -11,6 +22,9 @@ import UniverseDate from "../universe/UniverseDate";
 const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
+	const idGameGroupActive = useStore(storeGeneral, (s) => s.idGameGroupActive);
+	const idLeagueActive = useStore(storeGeneral, (s) => s.idLeagueActive);
+	const idTeamActive = useStore(storeGeneral, (s) => s.idTeamActive);
 	const { colorMode } = useColorMode();
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(false);
@@ -63,14 +77,16 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				borderRightWidth={1}
 				borderRightStyle={"solid"}
 			>
-				<Flex alignItems={"center"} gap="2">
-					<Icon fontSize={["3xl", "3xl", "4xl"]}>
-						<PiBaseballHelmetDuotone />
-					</Icon>
-					<Text fontSize={["sm", "sm", "lg"]} fontWeight="bold">
-						Baseball Simulator
-					</Text>
-				</Flex>
+				<Link href="/">
+					<Flex alignItems={"center"} gap="2">
+						<Icon fontSize={["3xl", "3xl", "4xl"]}>
+							<PiBaseballHelmetDuotone />
+						</Icon>
+						<Text fontSize={["sm", "sm", "lg"]} fontWeight="bold">
+							Baseball Simulator
+						</Text>
+					</Flex>
+				</Link>
 				{isMobile && (
 					<IconButton
 						variant="outline"
@@ -96,23 +112,36 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 				<Box as="nav" p="4">
 					<SelectLeague />
 					<SelectTeam />
-					{/* {menuItems.map((item, index) => (
-						<Link
-							key={`${item.label}-${index}`}
-							href="#"
-							display="flex"
-							alignItems="center"
-							p="3"
-							mb="2"
-							borderRadius="lg"
-							_hover={{ bg: "whiteAlpha.200", textDecoration: "none" }}
-							transition="all 0.2s"
-							color="fg"
-						>
-							<Box as={item.icon} />
-							<Text ml="3">{item.label}</Text>
-						</Link>
-					))} */}
+					<Collapsible.Root>
+						<Collapsible.Trigger>
+							<Box>League</Box>
+						</Collapsible.Trigger>
+						<Collapsible.Content ml={"5"}>
+							<Box>
+								<Link href={`/league/${idLeagueActive}`}>League Home</Link>
+							</Box>
+							<Box>
+								<Link
+									href={`/league/${idLeagueActive}/gameGroup/${idGameGroupActive}/leaders`}
+								>
+									Leaders
+								</Link>
+							</Box>
+							<Box>
+								<Link href={`/standings/${idGameGroupActive}`}>Standings</Link>
+							</Box>
+						</Collapsible.Content>
+					</Collapsible.Root>
+					<Collapsible.Root>
+						<Collapsible.Trigger>
+							<Box>Team</Box>
+						</Collapsible.Trigger>
+						<Collapsible.Content ml="5">
+							<Box>
+								<Link href={`/team/${idTeamActive}`}>Team Home</Link>
+							</Box>
+						</Collapsible.Content>
+					</Collapsible.Root>
 				</Box>
 			</Box>
 

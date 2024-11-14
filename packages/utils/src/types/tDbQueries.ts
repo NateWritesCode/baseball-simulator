@@ -3,14 +3,17 @@ import {
 	array,
 	intersect,
 	nullable,
+	number,
 	object,
 	pick,
+	picklist,
 } from "valibot";
 import {
 	VDbCities,
 	VDbDivisions,
 	VDbGameGroups,
 	VDbLeagues,
+	VDbPersons,
 	VDbSubLeagues,
 	VDbTeams,
 	VDbUniverse,
@@ -54,3 +57,32 @@ export const VDbQuerySelectLeague = array(
 	pick(VDbLeagues, ["idLeague", "name"]),
 );
 export type TDbQuerySelectLeague = InferOutput<typeof VDbQuerySelectLeague>;
+
+export const VDbQueryLeagueGameGroupLeaders = array(
+	intersect([
+		object({
+			numRank: number(),
+			statCategory: picklist(["batting", "pitching"]),
+			statType: picklist([
+				"avg",
+				"bb/9",
+				"era",
+				"hr",
+				"k/9",
+				"k/bb",
+				"rbi",
+				"sb",
+			]),
+			statValue: number(),
+			team: object({
+				city: pick(VDbCities, ["name"]),
+				idTeam: number(),
+				nickname: VDbTeams.entries.nickname,
+			}),
+		}),
+		pick(VDbPersons, ["firstName", "idPerson", "lastName"]),
+	]),
+);
+export type TDbQueryLeagueGameGroupLeaders = InferOutput<
+	typeof VDbQueryLeagueGameGroupLeaders
+>;
