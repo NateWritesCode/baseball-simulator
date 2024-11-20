@@ -12,6 +12,7 @@ import {
 } from "valibot";
 import {
 	VPicklistDirections,
+	VPicklistHands,
 	VPicklistPitchOutcomes,
 	VPicklistRoofType,
 	VPicklistSurfaceType,
@@ -221,9 +222,11 @@ export const VDbLeagues = object({
 });
 
 export const VDbPlayers = object({
+	bats: VPicklistHands,
 	idPerson: number(),
 	idPlayer: number(),
 	idTeam: nullable(number()),
+	throws: VPicklistHands,
 });
 
 export const VDParks = object({

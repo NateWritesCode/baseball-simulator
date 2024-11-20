@@ -1,6 +1,8 @@
 import {
 	DIRECTIONS,
 	GAME_SIM_EVENTS,
+	HANDS,
+	LINEUP_TYPE,
 	PITCH_NAMES,
 	PITCH_OUTCOMES,
 	RATING_MAX,
@@ -285,9 +287,11 @@ try {
 		);
 
 		create table players (
+			bats text check(bats in (${HANDS.map((hand) => `'${hand}'`).join(", ")})),
 			idPlayer integer primary key,
 			idPerson integer not null,
-			idTeam integer
+			idTeam integer,
+			throws text check(throws in (${HANDS.map((hand) => `'${hand}'`).join(", ")}))
 		);
 
 		create table playersBatting(
@@ -457,6 +461,21 @@ try {
 			foreign key (idLeague) references leagues(idLeague)
 		);
 
+		create table teamLineups (
+			idTeam integer not null,
+			lineupType text check(lineupType in (${LINEUP_TYPE.map((lineupType) => `'${lineupType}'`).join(", ")})),
+			lineup text not null,
+
+			foreign key (idTeam) references teams(idTeam)
+		);
+
+		create table teamPitchingStaff (
+			idTeam integer not null,
+			pitchingStaff text not null,
+
+			foreign key (idTeam) references teams(idTeam)
+		);
+
 		create table teams (
 			abbreviation text not null,
 			colorPrimary text not null,
@@ -472,6 +491,7 @@ try {
 			foreign key (idLeague) references leagues(idLeague),
 			foreign key (idSubLeague) references subLeagues(idSubLeague)
 		);
+
 
 		create table umpires (
 			idPerson integer,
@@ -2514,15 +2534,24 @@ try {
 	});
 
 	const insertPlayer = db.query(/*sql*/ `
-      insert into players (idPerson, idPlayer, idTeam) values ($idPerson, $idPlayer, $idTeam);
+      insert into players (bats, idPerson, idPlayer, idTeam, throws) values ($bats, $idPerson, $idPlayer, $idTeam, $throws);
    `);
 
 	const insertPlayers = db.transaction(() => {
 		for (const seedPlayer of seedPlayers) {
 			insertPlayer.run({
+				bats: faker.helpers.weightedArrayElement([
+					{ value: "R", weight: 0.7 },
+					{ value: "L", weight: 0.2 },
+					{ value: "S", weight: 0.1 },
+				]),
 				idPlayer: seedPlayer.idPlayer,
 				idPerson: seedPlayer.idPerson,
 				idTeam: seedPlayer.idTeam,
+				throws: faker.helpers.weightedArrayElement([
+					{ value: "R", weight: 0.7 },
+					{ value: "L", weight: 0.3 },
+				]),
 			});
 		}
 	});

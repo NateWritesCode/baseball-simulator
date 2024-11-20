@@ -86,3 +86,22 @@ export const GAME_SIM_EVENTS = [
 	"triple",
 	"walk",
 ] as const;
+
+export const HANDS = ["r", "l", "s"] as const;
+
+export const LINEUP_TYPE = ["r", "l", "rDh", "lDh"] as const;
+
+export const PITCHING_STAFF_SIZE = [1, 2, 3, 4, 5, 6] as const;
+
+export const PITCHING_STAFF_ROTATION_MODE = [
+	"highestRested",
+	"strict",
+] as const;
+
+export const PITCHING_STAFF_BULLPEN_ROLE = [
+	"closer",
+	"setup",
+	"middle",
+	"long",
+	"spot",
+] as const;
