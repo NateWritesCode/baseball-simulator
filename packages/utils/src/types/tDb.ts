@@ -1,9 +1,13 @@
 import {
 	type InferOutput,
 	array,
+	intersect,
+	maxLength,
+	minLength,
 	nullable,
 	number,
 	object,
+	pick,
 	pipe,
 	record,
 	regex,
@@ -13,7 +17,11 @@ import {
 import {
 	VPicklistDirections,
 	VPicklistHands,
+	VPicklistLineupType,
 	VPicklistPitchOutcomes,
+	VPicklistPitchingStaffBullpenRole,
+	VPicklistPitchingStaffRotationMode,
+	VPicklistPositionsWithDh,
 	VPicklistRoofType,
 	VPicklistSurfaceType,
 } from "./tPicklist";
@@ -505,3 +513,59 @@ export const VDbUniverse = object({
 		VRegexDateTimeIsoString,
 	),
 });
+
+export const VDbLineup = pipe(
+	string(),
+	transform((input) => {
+		if (input) {
+			return JSON.parse(input);
+		}
+
+		return null;
+	}),
+	pipe(
+		array(
+			intersect([
+				pick(VDbPlayers, ["idPlayer"]),
+				object({
+					position: VPicklistPositionsWithDh,
+				}),
+			]),
+		),
+		minLength(8, "Lineup must have 8 players"),
+		maxLength(9, "Lineup must have 9 players"),
+	),
+);
+
+export const VDbPitchingStaff = pipe(
+	string(),
+	transform((input) => {
+		if (input) {
+			return JSON.parse(input);
+		}
+
+		return null;
+	}),
+	object({
+		bullpen: array(
+			intersect([
+				pick(VDbPlayers, ["idPlayer"]),
+				object({
+					role: VPicklistPitchingStaffBullpenRole,
+				}),
+			]),
+		),
+		rotation: array(pick(VDbPlayers, ["idPlayer"])),
+		rotationMode: VPicklistPitchingStaffRotationMode,
+	}),
+);
+
+export const VDbTeamPitchingStaffs = intersect([
+	pick(VDbTeams, ["idTeam"]),
+	VDbPitchingStaff,
+]);
+
+export const VDbTeamLineups = intersect([
+	pick(VDbTeams, ["idTeam"]),
+	object({ lineup: VDbLineup, lineupType: VPicklistLineupType }),
+]);

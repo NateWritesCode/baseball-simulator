@@ -222,9 +222,11 @@
 		);
 
 		create table players (
+			bats text check(bats in ('r', 'l', 's')),
 			idPlayer integer primary key,
 			idPerson integer not null,
-			idTeam integer
+			idTeam integer,
+			throws text check(throws in ('r', 'l', 's'))
 		);
 
 		create table playersBatting(
@@ -394,6 +396,21 @@
 			foreign key (idLeague) references leagues(idLeague)
 		);
 
+		create table teamLineups (
+			idTeam integer not null,
+			lineupType text check(lineupType in ('r', 'l', 'rDh', 'lDh')),
+			lineup text not null,
+
+			foreign key (idTeam) references teams(idTeam)
+		);
+
+		create table teamPitchingStaffs (
+			idTeam integer not null,
+			pitchingStaff text not null,
+
+			foreign key (idTeam) references teams(idTeam)
+		);
+
 		create table teams (
 			abbreviation text not null,
 			colorPrimary text not null,
@@ -409,6 +426,7 @@
 			foreign key (idLeague) references leagues(idLeague),
 			foreign key (idSubLeague) references subLeagues(idSubLeague)
 		);
+
 
 		create table umpires (
 			idPerson integer,

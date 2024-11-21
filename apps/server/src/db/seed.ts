@@ -469,7 +469,7 @@ try {
 			foreign key (idTeam) references teams(idTeam)
 		);
 
-		create table teamPitchingStaff (
+		create table teamPitchingStaffs (
 			idTeam integer not null,
 			pitchingStaff text not null,
 
@@ -2541,16 +2541,16 @@ try {
 		for (const seedPlayer of seedPlayers) {
 			insertPlayer.run({
 				bats: faker.helpers.weightedArrayElement([
-					{ value: "R", weight: 0.7 },
-					{ value: "L", weight: 0.2 },
-					{ value: "S", weight: 0.1 },
+					{ value: "r", weight: 0.7 },
+					{ value: "l", weight: 0.2 },
+					{ value: "s", weight: 0.1 },
 				]),
 				idPlayer: seedPlayer.idPlayer,
 				idPerson: seedPlayer.idPerson,
 				idTeam: seedPlayer.idTeam,
 				throws: faker.helpers.weightedArrayElement([
-					{ value: "R", weight: 0.7 },
-					{ value: "L", weight: 0.3 },
+					{ value: "r", weight: 0.7 },
+					{ value: "l", weight: 0.3 },
 				]),
 			});
 		}

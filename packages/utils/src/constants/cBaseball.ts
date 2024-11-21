@@ -59,6 +59,8 @@ export const POSITIONS = [
 	"rf",
 ] as const;
 
+export const POSITIONS_WITH_DH = [...POSITIONS, "dh"] as const;
+
 export const GAME_SIM_EVENTS = [
 	"atBatStart",
 	"atBatEnd",
@@ -90,8 +92,6 @@ export const GAME_SIM_EVENTS = [
 export const HANDS = ["r", "l", "s"] as const;
 
 export const LINEUP_TYPE = ["r", "l", "rDh", "lDh"] as const;
-
-export const PITCHING_STAFF_SIZE = [1, 2, 3, 4, 5, 6] as const;
 
 export const PITCHING_STAFF_ROTATION_MODE = [
 	"highestRested",

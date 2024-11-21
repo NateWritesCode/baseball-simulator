@@ -3,10 +3,14 @@ import { DIRECTIONS, SIMULATION_LENGTH_OPTIONS } from "../constants";
 import {
 	GAME_SIM_EVENTS,
 	HANDS,
+	LINEUP_TYPE,
+	PITCHING_STAFF_BULLPEN_ROLE,
+	PITCHING_STAFF_ROTATION_MODE,
 	PITCH_IN_PLAY_EVENTS,
 	PITCH_NAMES,
 	PITCH_OUTCOMES,
 	POSITIONS,
+	POSITIONS_WITH_DH,
 } from "../constants/cBaseball";
 import { ROOF_TYPES, SURFACE_TYPES } from "../constants/cPark";
 
@@ -45,3 +49,25 @@ export type TPicklistGameSimEvents = InferInput<typeof VPicklistGameSimEvents>;
 
 export const VPicklistHands = picklist([...HANDS]);
 export type TPicklistHands = InferInput<typeof VPicklistHands>;
+
+export const VPicklistPositionsWithDh = picklist([...POSITIONS_WITH_DH]);
+export type TPicklistPositionsWithDh = InferInput<
+	typeof VPicklistPositionsWithDh
+>;
+
+export const VPicklistPitchingStaffRotationMode = picklist([
+	...PITCHING_STAFF_ROTATION_MODE,
+]);
+export type TPicklistPitchingStaffRotationMode = InferInput<
+	typeof VPicklistPitchingStaffRotationMode
+>;
+
+export const VPicklistPitchingStaffBullpenRole = picklist([
+	...PITCHING_STAFF_BULLPEN_ROLE,
+]);
+export type TPicklistPitchingStaffBullpenRole = InferInput<
+	typeof VPicklistPitchingStaffBullpenRole
+>;
+
+export const VPicklistLineupType = picklist([...LINEUP_TYPE]);
+export type TPicklistLineupType = InferInput<typeof VPicklistLineupType>;
