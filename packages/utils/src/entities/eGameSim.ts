@@ -1043,10 +1043,17 @@ export default class GameSim {
 	}
 	private _close = () => {
 		if (this.testData) {
-			fs.writeFileSync(
-				`/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/testData-${this.teams[0].idTeam}-${this.teams[1].idTeam}.json`,
-				JSON.stringify(this.testData, null, 2),
-			);
+			const filePath =
+				"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/testData.json";
+			const isFile = fs.existsSync(filePath);
+
+			if (!isFile) {
+				fs.writeFileSync(filePath, JSON.stringify(this.testData, null, 2));
+			} else {
+				const existingData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+				const newData = [...existingData, ...this.testData];
+				fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
+			}
 		}
 
 		const boxScore = this.boxScore.close();
