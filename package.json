@@ -29,6 +29,7 @@
 		"dayjs": "^1.11.13",
 		"hono": "^4.6.2",
 		"next-themes": "^0.4.3",
+		"node-llama-cpp": "^3.3.0",
 		"o1js": "^2.0.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
@@ -37,5 +38,10 @@
 		"valibot": "^1.0.0-beta.3",
 		"wouter": "^3.3.5"
 	},
-	"trustedDependencies": ["@biomejs/biome", "@swc/core", "esbuild"]
+	"trustedDependencies": [
+		"@biomejs/biome",
+		"@swc/core",
+		"esbuild",
+		"node-llama-cpp"
+	]
 }

@@ -2,51 +2,51 @@
   {
     "analysisType": "battingOutcomes",
     "type": "strikeout",
-    "count": 778,
-    "percentage": 52.28,
-    "perGame": 51.87
+    "count": 1488,
+    "percentage": 53.1,
+    "perGame": 49.6
   },
   {
     "analysisType": "battingOutcomes",
     "type": "double",
-    "count": 303,
-    "percentage": 20.36,
-    "perGame": 20.2
+    "count": 539,
+    "percentage": 19.24,
+    "perGame": 17.97
   },
   {
     "analysisType": "battingOutcomes",
     "type": "run",
-    "count": 153,
-    "percentage": 10.28,
-    "perGame": 10.2
+    "count": 274,
+    "percentage": 9.78,
+    "perGame": 9.13
   },
   {
     "analysisType": "battingOutcomes",
     "type": "walk",
-    "count": 123,
-    "percentage": 8.27,
-    "perGame": 8.2
-  },
-  {
-    "analysisType": "battingOutcomes",
-    "type": "out",
-    "count": 74,
-    "percentage": 4.97,
-    "perGame": 4.93
+    "count": 232,
+    "percentage": 8.28,
+    "perGame": 7.73
   },
   {
     "analysisType": "battingOutcomes",
     "type": "single",
-    "count": 53,
-    "percentage": 3.56,
-    "perGame": 3.53
+    "count": 133,
+    "percentage": 4.75,
+    "perGame": 4.43
+  },
+  {
+    "analysisType": "battingOutcomes",
+    "type": "out",
+    "count": 132,
+    "percentage": 4.71,
+    "perGame": 4.4
   },
   {
     "analysisType": "battingOutcomes",
     "type": "hitByPitch",
     "count": 4,
-    "percentage": 0.27,
-    "perGame": 0.27
+    "percentage": 0.14,
+    "perGame": 0.13
   },
   {
     "analysisType": "keyMetrics",
@@ -65,120 +65,127 @@
   {
     "analysisType": "keyMetrics",
     "type": "pitchesPerPlateAppearance",
-    "count": 3.76,
+    "count": 3.69,
     "percentage": null,
     "perGame": null
   },
   {
     "analysisType": "pitchOutcomes",
     "type": "strike",
-    "count": 2733,
-    "percentage": 54.45,
-    "perGame": 182.2
+    "count": 5231,
+    "percentage": 56.03,
+    "perGame": 174.37
   },
   {
     "analysisType": "pitchOutcomes",
     "type": "ball",
-    "count": 1823,
-    "percentage": 36.32,
-    "perGame": 121.53
+    "count": 3223,
+    "percentage": 34.52,
+    "perGame": 107.43
   },
   {
     "analysisType": "pitchOutcomes",
     "type": "inPlay",
-    "count": 463,
-    "percentage": 9.22,
-    "perGame": 30.87
+    "count": 882,
+    "percentage": 9.45,
+    "perGame": 29.4
   },
   {
     "analysisType": "pitchTypes",
     "type": "fastball",
-    "count": 1343,
-    "percentage": 26.76,
-    "perGame": 89.53
-  },
-  {
-    "analysisType": "pitchTypes",
-    "type": "changeup",
-    "count": 1204,
-    "percentage": 23.99,
-    "perGame": 80.27
+    "count": 2429,
+    "percentage": 26.02,
+    "perGame": 80.97
   },
   {
     "analysisType": "pitchTypes",
     "type": "slider",
-    "count": 869,
-    "percentage": 17.31,
-    "perGame": 57.93
+    "count": 2134,
+    "percentage": 22.86,
+    "perGame": 71.13
+  },
+  {
+    "analysisType": "pitchTypes",
+    "type": "changeup",
+    "count": 1615,
+    "percentage": 17.3,
+    "perGame": 53.83
   },
   {
     "analysisType": "pitchTypes",
     "type": "curveball",
-    "count": 594,
-    "percentage": 11.84,
-    "perGame": 39.6
+    "count": 946,
+    "percentage": 10.13,
+    "perGame": 31.53
   },
   {
     "analysisType": "pitchTypes",
     "type": "sinker",
-    "count": 463,
-    "percentage": 9.22,
-    "perGame": 30.87
-  },
-  {
-    "analysisType": "pitchTypes",
-    "type": "sweeper",
-    "count": 139,
-    "percentage": 2.77,
-    "perGame": 9.27
-  },
-  {
-    "analysisType": "pitchTypes",
-    "type": "cutter",
-    "count": 131,
-    "percentage": 2.61,
-    "perGame": 8.73
-  },
-  {
-    "analysisType": "pitchTypes",
-    "type": "slurve",
-    "count": 95,
-    "percentage": 1.89,
-    "perGame": 6.33
+    "count": 572,
+    "percentage": 6.13,
+    "perGame": 19.07
   },
   {
     "analysisType": "pitchTypes",
     "type": "splitter",
-    "count": 78,
-    "percentage": 1.55,
-    "perGame": 5.2
+    "count": 513,
+    "percentage": 5.49,
+    "perGame": 17.1
   },
   {
     "analysisType": "pitchTypes",
-    "type": "eephus",
-    "count": 38,
-    "percentage": 0.76,
-    "perGame": 2.53
+    "type": "sweeper",
+    "count": 356,
+    "percentage": 3.81,
+    "perGame": 11.87
   },
   {
     "analysisType": "pitchTypes",
     "type": "knuckleCurve",
-    "count": 34,
-    "percentage": 0.68,
-    "perGame": 2.27
+    "count": 232,
+    "percentage": 2.49,
+    "perGame": 7.73
   },
   {
     "analysisType": "pitchTypes",
-    "type": "forkball",
-    "count": 30,
-    "percentage": 0.6,
-    "perGame": 2
+    "type": "cutter",
+    "count": 199,
+    "percentage": 2.13,
+    "perGame": 6.63
   },
   {
     "analysisType": "pitchTypes",
     "type": "screwball",
-    "count": 1,
+    "count": 170,
+    "percentage": 1.82,
+    "perGame": 5.67
+  },
+  {
+    "analysisType": "pitchTypes",
+    "type": "eephus",
+    "count": 165,
+    "percentage": 1.77,
+    "perGame": 5.5
+  },
+  {
+    "analysisType": "pitchTypes",
+    "type": "forkball",
+    "count": 2,
     "percentage": 0.02,
     "perGame": 0.07
+  },
+  {
+    "analysisType": "pitchTypes",
+    "type": "slurve",
+    "count": 2,
+    "percentage": 0.02,
+    "perGame": 0.07
+  },
+  {
+    "analysisType": "pitchTypes",
+    "type": "knuckleball",
+    "count": 1,
+    "percentage": 0.01,
+    "perGame": 0.03
   }
 ]

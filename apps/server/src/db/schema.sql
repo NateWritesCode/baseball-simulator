@@ -169,6 +169,7 @@
 
 
 		create table persons (
+			biography text,
 			dateOfBirth text not null,
 			firstName text not null,
 			idCityOfBirth integer not null,
