@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useStore } from "@tanstack/react-store";
 import { useEffect, useState } from "react";
+import { FaCaretRight } from "react-icons/fa";
 import { LuMenu, LuX } from "react-icons/lu";
 import { PiBaseballHelmetDuotone } from "react-icons/pi";
 import { Link } from "wouter";
@@ -114,7 +115,12 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 					<SelectTeam />
 					<Collapsible.Root>
 						<Collapsible.Trigger>
-							<Box>League</Box>
+							<Flex alignItems="center" justifyContent={"center"}>
+								<Icon>
+									<FaCaretRight />
+								</Icon>
+								<Box>League</Box>
+							</Flex>
 						</Collapsible.Trigger>
 						<Collapsible.Content ml={"5"}>
 							<Box>
@@ -134,7 +140,12 @@ const WrapperDashboard: React.FC<{ children: React.ReactNode }> = ({
 					</Collapsible.Root>
 					<Collapsible.Root>
 						<Collapsible.Trigger>
-							<Box>Team</Box>
+							<Flex alignItems="center" justifyContent={"center"}>
+								<Icon>
+									<FaCaretRight />
+								</Icon>
+								<Box>Team</Box>
+							</Flex>
 						</Collapsible.Trigger>
 						<Collapsible.Content ml="5">
 							<Box>

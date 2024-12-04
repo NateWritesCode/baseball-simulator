@@ -1,4 +1,3 @@
-import { Ai } from "@baseball-simulator/ai";
 import {
 	DIRECTIONS,
 	GAME_SIM_EVENTS,
@@ -17,8 +16,6 @@ import { faker } from "@faker-js/faker";
 import { Database } from "bun:sqlite";
 import dayjs from "dayjs";
 import fs from "node:fs";
-
-const ai = await Ai.init();
 
 const DB_PATH = `${import.meta.dir}/baseball-simulator.db`;
 
@@ -237,7 +234,6 @@ try {
 
 
 		create table persons (
-			biography text,
 			dateOfBirth text not null,
 			firstName text not null,
 			idCityOfBirth integer not null,
@@ -2699,94 +2695,6 @@ try {
 	insertUniverse.run({
 		dateTime: "2024-04-01 00:00:00",
 	});
-
-	const myPersonsQuery = db.query(/*sql*/ `
-		select
-			persons.dateOfBirth,
-			persons.firstName,
-			persons.lastName,
-			persons.middleName,
-			persons.nickname,
-			personsAlignment.chaotic,
-			personsAlignment.evil,
-			personsAlignment.good,
-			personsAlignment.lawful,
-			personsAlignment.neutralMorality,
-			personsAlignment.neutralOrder,
-			personsMyersBriggs.extroversion,
-			personsMyersBriggs.feeling,
-			personsMyersBriggs.introversion,
-			personsMyersBriggs.intuition,
-			personsMyersBriggs.judging,
-			personsMyersBriggs.perceiving,
-			personsMyersBriggs.sensing,
-			personsMyersBriggs.thinking,
-			personsMental.charisma,
-			personsMental.constitution,
-			personsMental.intelligence,
-			personsMental.loyalty,
-			personsMental.wisdom,
-			personsMental.workEthic,
-			personsPhysical.height,
-			personsPhysical.weight,
-			birthCity.name as birthCityName,
-			birthState.name as birthStateName,
-			birthCountry.name as birthCountryName
-		from persons
-		inner join cities birthCity on persons.idCityOfBirth = birthCity.idCity
-		inner join states birthState on birthCity.idState = birthState.idState
-		inner join countries birthCountry on birthState.idCountry = birthCountry.idCountry
-		inner join personsAlignment on persons.idPerson = personsAlignment.idPerson
-		inner join personsMyersBriggs on persons.idPerson = personsMyersBriggs.idPerson
-		inner join personsMental on persons.idPerson = personsMental.idPerson
-		inner join personsPhysical on persons.idPerson = personsPhysical.idPerson
-	`);
-
-	const myPersons = myPersonsQuery.all();
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	const myPerson: any = myPersons[0];
-
-	console.log("MyTest start!");
-	const myTest = await ai.prompt(
-		`
-			Generate a biography for a baseball player with the following characteristics:
-			First Name: ${myPerson.firstName} Middle Name: ${myPerson.middleName} Last Name: ${myPerson.lastName} ${myPerson.nickname ? `Nickname: ${myPerson.nickname}` : ""}
-			Born: ${myPerson.dateOfBirth} in ${myPerson.birthCityName}, ${myPerson.birthStateName}, ${myPerson.birthCountryName}
-			Physical: ${myPerson.height}/1000 rating tall, ${myPerson.weight}/1000 rating weight
-			Personality Profile:
-
-			Myers-Briggs Indicators (1-1000 scale):
-
-			Extroversion: ${myPerson.extroversion} vs Introversion: ${myPerson.introversion}
-			Sensing: ${myPerson.sensing} vs Intuition: ${myPerson.intuition}
-			Thinking: ${myPerson.thinking} vs Feeling: ${myPerson.feeling}
-			Judging: ${myPerson.judging} vs Perceiving: ${myPerson.perceiving}
-
-
-
-			Mental Attributes (1-1000 scale):
-
-			Charisma: ${myPerson.charisma}
-			Constitution: ${myPerson.constitution}
-			Intelligence: ${myPerson.intelligence}
-			Loyalty: ${myPerson.loyalty}
-			Wisdom: ${myPerson.wisdom}
-			Work Ethic: ${myPerson.workEthic}
-
-			Moral Alignment (1-1000 scale):
-
-			Lawful: ${myPerson.lawful} vs Chaotic: ${myPerson.chaotic}
-			Good: ${myPerson.good} vs Evil: ${myPerson.evil}
-			Neutral (Morality): ${myPerson.neutralMorality}
-			Neutral (Order): ${myPerson.neutralOrder}
-
-			Write a 2-3 paragraph biography that incorporates these personality traits and background details into a compelling narrative about their life before and during their baseball career. 
-			Include how their personality traits influence their playing style and relationships with teammates. 
-			Make references to their hometown and upbringing where relevant.
-		`,
-	);
-
-	console.log("myTest", myTest);
 } catch (error) {
 	console.error("Error: ", error);
 }

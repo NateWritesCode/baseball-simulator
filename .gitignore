@@ -5,3 +5,4 @@ bun.lockb
 dist
 apps/server/test/data/*
 **/models/*
+**/data/test/**.*

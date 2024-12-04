@@ -291,7 +291,6 @@ export const VDbParksWallSegments = object({
 });
 
 export const VDbPersons = object({
-	biography: string(),
 	dateOfBirth: pipe(string(), regex(/^\d{4}-\d{2}-\d{2}$/)),
 	firstName: string(),
 	idPerson: number(),
