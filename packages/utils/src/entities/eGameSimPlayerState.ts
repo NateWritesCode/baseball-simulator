@@ -71,6 +71,14 @@ type TConstructorGameSimPlayerState = InferInput<
 	typeof VConstructorGameSimPlayerState
 >;
 
+function randomNormal(): number {
+	let u = 0;
+	let v = 0;
+	while (u === 0) u = Math.random();
+	while (v === 0) v = Math.random();
+	return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
 class GameSimPlayerState implements OGameSimObserver {
 	fatigue: TFatigue = {
 		accumulator: 0,
@@ -140,7 +148,7 @@ class GameSimPlayerState implements OGameSimObserver {
 		const getRandomInRange = (min: number, max: number) =>
 			Math.random() * (max - min) + min;
 
-		// Calculate release parameters
+		// Calculate release parameters with fatigue influence
 		const releasePosX =
 			getRandomInRange(-1.5, 1.5) *
 			(1 + fatigueEffect.pitching.controlPenalty * 0.25);
@@ -149,114 +157,209 @@ class GameSimPlayerState implements OGameSimObserver {
 			getRandomInRange(5, 6) *
 			(1 + fatigueEffect.pitching.controlPenalty * 0.25);
 
-		// Get movement profile based on pitch type
+		// Calculate strike zone
+		const szBot = 1.5 + (playerHitterHeight - 500) / 1000;
+		const szTop = szBot + 2 + (playerHitterHeight - 500) / 500;
+
+		// Calculate target location based on pitch type
+		const szMid = (szTop + szBot) / 2;
+		let targetX = 0;
+		let targetZ = szMid;
+
+		// Pitch-specific targeting
+		switch (pitchName) {
+			case "changeup": {
+				targetZ = szMid - 0.2;
+				targetX += Math.random() > 0.5 ? 0.2 : -0.2;
+				break;
+			}
+			case "curveball": {
+				targetZ = szMid - 0.3;
+				targetX += Math.random() > 0.5 ? 0.2 : -0.2;
+				break;
+			}
+			case "cutter": {
+				targetX += 0.3;
+				targetZ = szMid + 0.1;
+				break;
+			}
+			case "eephus": {
+				targetZ = szMid + 0.3;
+				targetX += Math.random() > 0.5 ? 0.3 : -0.3;
+				break;
+			}
+			case "fastball": {
+				targetZ = szMid + (Math.random() > 0.5 ? 0.2 : -0.2);
+				targetX += Math.random() > 0.7 ? 0.2 : 0;
+				break;
+			}
+			case "forkball": {
+				targetZ = szMid - 0.4;
+				break;
+			}
+			case "knuckleball": {
+				targetX += (Math.random() - 0.5) * 0.4;
+				targetZ += (Math.random() - 0.5) * 0.4;
+				break;
+			}
+			case "knuckleCurve": {
+				targetZ = szMid - 0.25;
+				targetX += Math.random() > 0.5 ? 0.25 : -0.25;
+				break;
+			}
+			case "screwball": {
+				targetX -= 0.3;
+				targetZ = szMid + 0.1;
+				break;
+			}
+			case "sinker": {
+				targetZ = szMid - 0.25;
+				targetX -= 0.2;
+				break;
+			}
+			case "slider": {
+				targetX += 0.3;
+				targetZ = szMid - 0.1;
+				break;
+			}
+			case "slurve": {
+				targetX += 0.25;
+				targetZ = szMid - 0.2;
+				break;
+			}
+			case "splitter": {
+				targetZ = szMid - 0.35;
+				targetX += Math.random() > 0.5 ? 0.1 : -0.1;
+				break;
+			}
+			case "sweeper": {
+				targetX += 0.35;
+				targetZ = szMid - 0.15;
+				break;
+			}
+		}
+
+		// Inside getPitchLocation, update getMovementProfile:
 		const getMovementProfile = () => {
-			const stuffFactor = 0.8 + (this.player.pitching.stuff / RATING_MAX) * 0.4;
-			const movementFactor =
-				0.8 + (this.player.pitching.movement / RATING_MAX) * 0.4;
+			// More dramatic stuff impact
+			const stuffRating = this.player.pitching.stuff / RATING_MAX;
+			const stuffFactor = 0.3 + stuffRating * 1.4; // Range: 0.3-1.7
+
+			const movementRating = this.player.pitching.movement / RATING_MAX;
+			const movementFactor = 0.3 + movementRating * 1.4; // Range: 0.3-1.7
+
 			const effectiveFactor = stuffFactor * movementFactor * movementMultiplier;
+
+			// Helper for spin rate calculation
+			const getSpinRate = (baseMin: number, baseMax: number) => {
+				const spinRange = baseMax - baseMin;
+				const stuffImpact = stuffRating * spinRange * 0.4; // Stuff affects max spin
+				const actualMin = baseMin + stuffImpact;
+				const actualMax = baseMax + stuffImpact;
+				return getRandomInRange(actualMin, actualMax);
+			};
 
 			switch (pitchName) {
 				case "fastball":
 					return {
 						horizontalBreak: getRandomInRange(-2, 2) * effectiveFactor,
 						verticalBreak: getRandomInRange(8, 12) * effectiveFactor,
-						spinRate: getRandomInRange(2200, 2500),
+						spinRate: getSpinRate(1800, 2200), // Lower base, more stuff impact
 					};
 				case "sinker":
 					return {
 						horizontalBreak: getRandomInRange(-8, -4) * effectiveFactor,
 						verticalBreak: getRandomInRange(-4, -1) * effectiveFactor,
-						spinRate: getRandomInRange(1900, 2200),
+						spinRate: getSpinRate(1700, 2000),
 					};
 				case "cutter":
 					return {
 						horizontalBreak: getRandomInRange(1, 4) * effectiveFactor,
 						verticalBreak: getRandomInRange(3, 7) * effectiveFactor,
-						spinRate: getRandomInRange(2300, 2700),
+						spinRate: getSpinRate(2200, 2500),
 					};
 				case "slider":
 					return {
 						horizontalBreak: getRandomInRange(2, 6) * effectiveFactor,
 						verticalBreak: getRandomInRange(-1, 2) * effectiveFactor,
-						spinRate: getRandomInRange(2400, 2800),
+						spinRate: getSpinRate(2300, 2600),
 					};
 				case "curveball":
 					return {
 						horizontalBreak: getRandomInRange(-6, 6) * effectiveFactor,
 						verticalBreak: getRandomInRange(-12, -8) * effectiveFactor,
-						spinRate: getRandomInRange(2500, 3000),
+						spinRate: getSpinRate(2400, 2800),
 					};
 				case "changeup":
 					return {
 						horizontalBreak: getRandomInRange(-10, -6) * effectiveFactor,
 						verticalBreak: getRandomInRange(-8, -4) * effectiveFactor,
-						spinRate: getRandomInRange(1700, 2000),
+						spinRate: getSpinRate(1600, 1900),
 					};
 				case "splitter":
 					return {
 						horizontalBreak: getRandomInRange(-4, 0) * effectiveFactor,
 						verticalBreak: getRandomInRange(-12, -8) * effectiveFactor,
-						spinRate: getRandomInRange(1500, 1800),
+						spinRate: getSpinRate(1400, 1700),
 					};
 				case "sweeper":
 					return {
 						horizontalBreak: getRandomInRange(12, 18) * effectiveFactor,
 						verticalBreak: getRandomInRange(-4, 0) * effectiveFactor,
-						spinRate: getRandomInRange(2600, 3000),
+						spinRate: getSpinRate(2500, 2800),
 					};
 				case "slurve":
 					return {
 						horizontalBreak: getRandomInRange(8, 14) * effectiveFactor,
 						verticalBreak: getRandomInRange(-8, -4) * effectiveFactor,
-						spinRate: getRandomInRange(2400, 2800),
+						spinRate: getSpinRate(2300, 2600),
 					};
 				case "screwball":
 					return {
 						horizontalBreak: getRandomInRange(-12, -8) * effectiveFactor,
 						verticalBreak: getRandomInRange(-4, 0) * effectiveFactor,
-						spinRate: getRandomInRange(2000, 2400),
+						spinRate: getSpinRate(1900, 2200),
 					};
 				case "forkball":
 					return {
 						horizontalBreak: getRandomInRange(-2, 2) * effectiveFactor,
 						verticalBreak: getRandomInRange(-14, -10) * effectiveFactor,
-						spinRate: getRandomInRange(1400, 1700),
+						spinRate: getSpinRate(1300, 1600),
 					};
 				case "knuckleball":
 					return {
-						horizontalBreak: getRandomInRange(-10, 10),
-						verticalBreak: getRandomInRange(-5, 5),
-						spinRate: getRandomInRange(1000, 1400),
+						horizontalBreak: getRandomInRange(-10, 10) * 1.2, // Knuckleballs ignore stuff
+						verticalBreak: getRandomInRange(-5, 5) * 1.2,
+						spinRate: getRandomInRange(900, 1200), // Low spin by design
 					};
 				case "knuckleCurve":
 					return {
 						horizontalBreak: getRandomInRange(-8, 8) * effectiveFactor,
 						verticalBreak: getRandomInRange(-10, -6) * effectiveFactor,
-						spinRate: getRandomInRange(2200, 2600),
+						spinRate: getSpinRate(2100, 2400),
 					};
 				case "eephus":
 					return {
 						horizontalBreak: getRandomInRange(-4, 4),
 						verticalBreak: getRandomInRange(-20, -15),
-						spinRate: getRandomInRange(1200, 1600),
+						spinRate: getRandomInRange(1100, 1400), // Low spin by design
 					};
-				default: {
-					const exhaustiveCheck: never = pitchName;
-					throw new Error(`Unhandled pitch type: ${exhaustiveCheck}`);
-				}
 			}
 		};
 
-		// Calculate strike zone
-		const szBot = 1.5 + (playerHitterHeight - 500) / 1000;
-		const szTop = szBot + 2 + (playerHitterHeight - 500) / 500;
+		// Get control variation based on pitcher's skill and fatigue
+		const controlRating = this.player.pitching.control / RATING_MAX;
+		const standardDeviation =
+			(0.3 + (1 - controlRating) * 0.4) * fatigueMultiplier;
 
-		// Get intended location with pitcher's control
-		const controlFactor = (this.player.pitching.control / RATING_MAX) * 0.5;
-		const targetLocation = this._getTargetLocation(pitchName, szBot, szTop);
-		const intendedPlateX = targetLocation.x;
-		const intendedPlateZ = targetLocation.z;
+		// Add controlled randomness to target location
+		const actualX = targetX + randomNormal() * standardDeviation;
+		const actualZ = targetZ + randomNormal() * standardDeviation;
+
+		// Limit extreme misses
+		const maxMiss = 1.2;
+		const clampedX = Math.max(-maxMiss, Math.min(maxMiss, actualX));
+		const clampedZ = Math.max(szBot * 0.8, Math.min(szTop * 1.2, actualZ));
 
 		// Apply movement to get final location
 		const movement = getMovementProfile();
@@ -270,16 +373,9 @@ class GameSimPlayerState implements OGameSimObserver {
 			z: (movement.verticalBreak / 12) * timeToPlate * timeToPlate,
 		};
 
-		// Add control variance
-		const locationVariance = (1 - controlFactor) * 1.2 * fatigueMultiplier;
-		const controlVariance = {
-			x: getRandomInRange(-locationVariance, locationVariance),
-			z: getRandomInRange(-locationVariance, locationVariance),
-		};
-
 		// Calculate final plate location
-		const plateX = intendedPlateX + movementEffect.x + controlVariance.x;
-		const plateZ = intendedPlateZ + movementEffect.z + controlVariance.z;
+		const plateX = clampedX + movementEffect.x;
+		const plateZ = clampedZ + movementEffect.z;
 
 		return {
 			ax: -movement.horizontalBreak * 2,
@@ -309,20 +405,56 @@ class GameSimPlayerState implements OGameSimObserver {
 		const pitcherStamina = this.player.pitching.stamina;
 		const pitches = this.player.pitches;
 		const fatigueCurrent = this.fatigue.current;
+		const playerHitter = input.playerHitter;
+		const batting = playerHitter.player.batting;
+		const bats = playerHitter.player.bats;
+		const speed = playerHitter.player.running.speed;
+		const handThrowing = this.player.throws;
+		const handBatting = (() => {
+			if (bats === "s") {
+				if (handThrowing === "r") {
+					return "l";
+				}
 
-		// Only consider pitches the pitcher knows (rating > RATING_MIN)
+				return "r";
+			}
+			return bats;
+		})();
+
+		// Get the appropriate batting ratings based on pitcher's throwing arm
+		const batterRatings = {
+			contact: handThrowing === "l" ? batting.contactVL : batting.contactVR,
+			power: handThrowing === "l" ? batting.powerVL : batting.powerVR,
+			eye: handThrowing === "l" ? batting.eyeVL : batting.eyeVR,
+			avoidK: handThrowing === "l" ? batting.avoidKsVL : batting.avoidKsVR,
+		};
+
+		// Get pitcher's ratings against this batter's handedness
+		const pitcherRatings = {
+			control:
+				handBatting === "l"
+					? this.player.pitching.controlVL
+					: this.player.pitching.controlVR,
+			movement:
+				handBatting === "l"
+					? this.player.pitching.movementVL
+					: this.player.pitching.movementVR,
+			stuff:
+				handBatting === "l"
+					? this.player.pitching.stuffVL
+					: this.player.pitching.stuffVR,
+		};
+
 		const availablePitches = Object.entries(pitches).filter(
 			([, rating]) => rating > RATING_MIN,
 		) as [keyof typeof pitches, number][];
 
-		// Emergency random pitch for edge cases (0.1% chance)
 		if (Math.random() > 0.999) {
 			return Object.keys(pitches)[
 				Math.floor(Math.random() * Object.keys(pitches).length)
 			] as keyof typeof pitches;
 		}
 
-		// Calculate fatigue penalties
 		const fatiguePercentage = fatigueCurrent / FATIGUE_MAX;
 		const staminaPercentage = Math.max(
 			0,
@@ -332,57 +464,138 @@ class GameSimPlayerState implements OGameSimObserver {
 		const weightedPitches = availablePitches.map(([pitch, rating]) => {
 			let weight = rating;
 
-			// Base pitch type fatigue consideration
 			const fatigueCost = PITCH_TYPE_FATIGUE_MULTIPLIERS[pitch] || 1;
-
-			// Reduce weight of high-fatigue pitches when tired
 			const fatigueMultiplier = 1 - fatiguePercentage * (fatigueCost - 0.7);
 			weight *= fatigueMultiplier;
 
-			// Game situation adjustments
+			// Batter handedness considerations with platoon splits
+			const isOppositeHand =
+				(handBatting === "l" && handThrowing === "r") ||
+				(handBatting === "r" && handThrowing === "l");
+			if (isOppositeHand) {
+				// Adjust based on pitcher's opposite-hand effectiveness
+				switch (pitch) {
+					case "slider":
+					case "cutter":
+						weight *= 1.25 * (pitcherRatings.movement / RATING_MAX);
+						break;
+					case "changeup":
+						weight *= 1.2 * (pitcherRatings.stuff / RATING_MAX);
+						break;
+				}
+			} else {
+				// Same-hand matchup adjustments
+				switch (pitch) {
+					case "curveball":
+					case "splitter":
+						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+						break;
+				}
+			}
+
+			// Contact vs Power hitter adjustments using platoon splits
+			if (batterRatings.power > batterRatings.contact * 1.2) {
+				// Against power hitters
+				switch (pitch) {
+					case "sinker":
+					case "splitter":
+						weight *= 1.3 * (pitcherRatings.movement / RATING_MAX);
+						break;
+					case "fastball":
+						weight *= 0.8 * (pitcherRatings.stuff / RATING_MAX);
+						break;
+				}
+			} else if (batterRatings.contact > batterRatings.power * 1.2) {
+				// Against contact hitters
+				switch (pitch) {
+					case "curveball":
+					case "slider":
+						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+						break;
+					case "changeup":
+						weight *= 1.25 * (pitcherRatings.stuff / RATING_MAX);
+						break;
+				}
+			}
+
+			// Adjust for batter's eye/discipline with platoon splits
+			if (batterRatings.eye > RATING_MAX * 0.7) {
+				// Use pitcher's control rating to adjust effectiveness
+				switch (pitch) {
+					case "cutter":
+					case "slider":
+						weight *= 1.15 * (pitcherRatings.control / RATING_MAX);
+						break;
+					case "knuckleball":
+					case "eephus":
+						weight *= 0.8;
+						break;
+				}
+			}
+
+			// Strikeout avoidance consideration
+			if (batterRatings.avoidK > RATING_MAX * 0.7) {
+				// Against contact-oriented hitters who rarely strike out
+				switch (pitch) {
+					case "sinker":
+					case "cutter":
+						// Favor pitches that induce weak contact
+						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+						break;
+					case "curveball":
+					case "slider":
+						// Reduce reliance on pure strikeout pitches
+						weight *= 0.9;
+						break;
+				}
+			}
+
+			// Speed adaptation based on batter's physical attributes
+			if (speed > RATING_MAX * 0.7) {
+				switch (pitch) {
+					case "sinker":
+					case "splitter":
+						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+						break;
+				}
+			}
+
+			// Existing situation-based logic
 			if (numStrikes === 2) {
-				// Strikeout situation - favor breaking balls
 				switch (pitch) {
 					case "slider":
 					case "curveball":
 					case "splitter":
-						weight *= 1.3;
+						weight *= 1.3 * (pitcherRatings.stuff / RATING_MAX);
 						break;
 				}
 			}
 
 			if (numBalls === 3) {
-				// Must-throw strike situation - favor control pitches
 				switch (pitch) {
 					case "fastball":
 					case "sinker":
 					case "changeup":
-						weight *= 1.4;
+						weight *= 1.4 * (pitcherRatings.control / RATING_MAX);
 						break;
 					case "knuckleball":
 					case "eephus":
-						weight *= 0.5; // Too risky in full count
+						weight *= 0.5;
 						break;
 				}
 			}
 
-			// Adjust weight based on stamina/fatigue combination
+			// Stamina and fatigue considerations
 			if (["fastball", "sinker", "cutter"].includes(pitch)) {
-				// Power pitches become less appealing as stamina/fatigue worsen
 				weight *= staminaPercentage;
-
-				// Further reduce weight in high-fatigue situations
 				if (fatiguePercentage > 0.7) {
 					weight *= 0.7;
 				}
 			} else {
-				// Off-speed and breaking pitches become more appealing when tired
 				weight *= 1 + (1 - staminaPercentage) * 0.5;
 			}
 
-			// Pitcher tendency adjustments based on current fatigue
 			if (fatiguePercentage > 0.8) {
-				// Very tired - strongly favor low-effort pitches
 				switch (pitch) {
 					case "changeup":
 					case "eephus":
@@ -395,7 +608,6 @@ class GameSimPlayerState implements OGameSimObserver {
 						break;
 				}
 			} else if (fatiguePercentage > 0.6) {
-				// Moderately tired - start mixing in more off-speed
 				switch (pitch) {
 					case "changeup":
 					case "curveball":
@@ -405,9 +617,7 @@ class GameSimPlayerState implements OGameSimObserver {
 				}
 			}
 
-			// Critical situation adjustments
 			if (numOuts === 2 && (numBalls === 3 || numStrikes === 2)) {
-				// High-leverage situation - favor pitcher's best pitches despite fatigue
 				weight *=
 					(rating / Math.max(...availablePitches.map(([, r]) => r))) * 1.3;
 			}
@@ -415,10 +625,8 @@ class GameSimPlayerState implements OGameSimObserver {
 			return { pitch, weight };
 		});
 
-		// Sort pitches by weight in descending order
 		weightedPitches.sort((a, b) => b.weight - a.weight);
 
-		// If severely tired or in a crucial situation, rely more on best available pitch
 		if (
 			fatiguePercentage > 0.9 ||
 			(numOuts === 2 && numBalls === 3 && numStrikes === 2)
@@ -426,7 +634,6 @@ class GameSimPlayerState implements OGameSimObserver {
 			return weightedPitches[0].pitch;
 		}
 
-		// Otherwise, use weighted random selection
 		const totalWeight = weightedPitches.reduce(
 			(sum, { weight }) => sum + weight,
 			0,
@@ -440,7 +647,6 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 		}
 
-		// Fallback to the highest weighted pitch (should never reach here)
 		return weightedPitches[0].pitch;
 	}
 
@@ -960,5 +1166,6 @@ const VInputChoosePitch = object({
 	numBalls: number(),
 	numOuts: number(),
 	numStrikes: number(),
+	playerHitter: instance(GameSimPlayerState),
 });
 type TInputChoosePitch = InferInput<typeof VInputChoosePitch>;

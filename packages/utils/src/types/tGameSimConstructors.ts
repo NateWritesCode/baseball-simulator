@@ -87,7 +87,7 @@ export type TConstructorGameSimPark = InferInput<
 >;
 
 export const VConstructorGameSimPlayer = intersect([
-	pick(VDbPlayers, ["idPlayer", "idTeam"]),
+	pick(VDbPlayers, ["idPlayer", "idTeam", "bats", "throws"]),
 	pick(VDbPersons, [
 		"dateOfBirth",
 		"firstName",

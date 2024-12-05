@@ -3,6 +3,8 @@ import { Hono } from "hono";
 import { hc } from "hono/client";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
+import fs from "node:fs";
+import analyzeSimulation from "./data/analyzeSimulation";
 import analyze from "./db/analyze";
 import {
 	game,
@@ -62,12 +64,21 @@ const routes = app
 export const client = hc<typeof routes>("");
 export type THonoClient = typeof routes;
 
+const simulationJson =
+	"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/simulation.json";
+
+if (fs.existsSync(simulationJson)) {
+	fs.rmSync(simulationJson);
+}
+
 await simulateGames({
 	db,
 	simulationLength: "oneDay",
 });
 
 await analyze();
+
+await analyzeSimulation();
 
 export default {
 	idleTimeout: 60,

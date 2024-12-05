@@ -86,7 +86,11 @@ export default class GameSim {
 		[key: number]: GameSimTeamState;
 	};
 	// biome-ignore lint/suspicious/noExplicitAny: Need to allow for any possible value
-	testData: any;
+	testGame: any;
+	// biome-ignore lint/suspicious/noExplicitAny: Need to allow for any possible value
+	testPitch: any;
+	testsToRun: ("choosePitch" | "getPitchLocation")[];
+
 	private umpireHp: GameSimUmpireState;
 	private umpireFb: GameSimUmpireState;
 	private umpireSb: GameSimUmpireState;
@@ -122,7 +126,7 @@ export default class GameSim {
 		});
 		this.playerStates = {};
 		this.teamStates = {};
-		this.testData = null;
+
 		this.umpireHp = new GameSimUmpireState({
 			umpire: input.umpires[0],
 		});
@@ -141,6 +145,19 @@ export default class GameSim {
 			latitude: input.park.city.latitude,
 			longitude: input.park.city.longitude,
 		});
+
+		this.testGame = {
+			choosePitch: [],
+			getPitchLocation: [],
+			idGame: input.idGame,
+			park: input.park,
+			umpireFb: this.umpireFb.umpire,
+			umpireHp: this.umpireHp.umpire,
+			umpireSb: this.umpireSb.umpire,
+			umpireTb: this.umpireTb.umpire,
+		};
+
+		this.testsToRun = ["choosePitch"];
 
 		// team0 is the away team, team1 is the home team
 		this.teams = [input.teams[0], input.teams[1]];
@@ -199,46 +216,18 @@ export default class GameSim {
 	}
 
 	private _calculateAirDensity(temperature: number, humidity: number): number {
-		// Air density decreases more with temperature and humidity
-		const tempEffect = 1 - (temperature - this.TEMPERATURE_REFERENCE) * 0.003; // Increased effect
-		const humidityEffect = 1 - humidity * 0.001; // Increased effect
-		return this.AIR_DENSITY_SEA_LEVEL * tempEffect * humidityEffect * 0.9; // Reduced overall density
-	}
+		// Base air density at sea level (59°F/15°C): 0.0765 lb/ft^3
+		const baseAirDensity = 0.0765;
 
-	private _calculateContactQuality(_input: TInputDetermineContactQuality) {
-		const { pitchLocation, pitchName, playerHitter, playerPitcher } = parse(
-			VInputDetermineContactQuality,
-			_input,
-		);
+		// Temperature effect (more subtle)
+		// Each degree F above reference reduces density by ~0.15%
+		const tempEffect = 1 - (temperature - this.TEMPERATURE_REFERENCE) * 0.0015;
 
-		// Significantly boost contact quality
-		const batterContact =
-			0.6 + (playerHitter.player.batting.contact / RATING_MAX) * 0.4;
-		const batterWhiffResistance =
-			0.6 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.4;
-		const pitcherStuff =
-			(playerPitcher.player.pitching.stuff / RATING_MAX) * 0.7; // Reduced pitcher influence
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.3; // Further reduced
+		// Humidity effect (minimal)
+		// Each 10% humidity reduces density by ~0.1%
+		const humidityEffect = 1 - humidity * 0.01;
 
-		const distanceFromCenter = Math.sqrt(
-			pitchLocation.plateX ** 2 +
-				(pitchLocation.plateZ -
-					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
-					2,
-		);
-
-		const locationFactor = 1 - distanceFromCenter * 0.08; // Reduced penalty for location
-
-		const baseContactQuality =
-			batterContact *
-			batterWhiffResistance *
-			(1 - pitcherStuff * pitchWhiffFactor) *
-			locationFactor;
-
-		// Boost scaling to favor better contact
-		const scaledContactQuality = 0.5 + baseContactQuality * 0.5;
-
-		return scaledContactQuality * (0.95 + Math.random() * 0.1); // Less randomness
+		return baseAirDensity * tempEffect * humidityEffect;
 	}
 
 	private _calculateDistanceToBoundary(
@@ -431,28 +420,30 @@ export default class GameSim {
 		} = input;
 
 		// Dramatically increase base exit velocities
+		// Adjust ranges to be more realistic
 		const powerFactor = power / RATING_MAX;
-		const minExitVelo = 85 + powerFactor * 35; // Higher minimum
-		const maxExitVelo = 115 + powerFactor * 40; // Higher maximum
+		// Adjusted ranges to be more realistic
+		const minExitVelo = 65 + powerFactor * 15; // Range: 65-80 mph for weak contact
+		const maxExitVelo = 95 + powerFactor * 25; // Range: 95-120 mph for perfect contact
 
-		// Heavily favor hard contact
 		let scaledVelo: number;
-		if (contactQuality > 0.7) {
-			// Lowered threshold
-			// Great contact produces even harder hits
-			scaledVelo = maxExitVelo - 1 + Math.random() * 20;
+		if (contactQuality > 0.9) {
+			// Elite contact (10% of hits) - chance for max exit velo
+			scaledVelo = maxExitVelo - 3 + Math.random() * 8; // Max possible: 125 mph
+		} else if (contactQuality > 0.7) {
+			// Solid contact (20% of hits) - good but not elite exit velo
+			scaledVelo = maxExitVelo * 0.85 + Math.random() * 12;
 		} else if (contactQuality > 0.5) {
-			// Lowered threshold
-			// Good contact has higher chance of solid contact
+			// Average contact (30% of hits)
 			scaledVelo =
-				minExitVelo + (maxExitVelo - minExitVelo) * 0.9 + Math.random() * 25;
+				minExitVelo + (maxExitVelo - minExitVelo) * 0.6 + Math.random() * 10;
 		} else {
-			// Even weak contact produces decent exit velo
+			// Weak contact (40% of hits)
 			scaledVelo =
-				minExitVelo + (maxExitVelo - minExitVelo) * (contactQuality + 0.2);
+				minExitVelo + (maxExitVelo - minExitVelo) * contactQuality * 0.5;
 		}
 
-		return Math.min(scaledVelo, 140); // Increased maximum
+		return Math.min(scaledVelo, 125);
 	}
 
 	private _calculateFieldingDifficulty(
@@ -826,9 +817,11 @@ export default class GameSim {
 		let vy = initialVy;
 		let vz = verticalVelocity;
 
-		// Enhanced Magnus effect and reduced gravity
-		const magnusCoef = (spinRate / 4000) * this.MAGNUS_COEFFICIENT * 3.0; // Increased lift
-		const modifiedGravity = this.GRAVITY * 0.8; // Reduced gravity effect
+		// Reduced Magnus effect (was 3.0, now 2.0)
+		const magnusCoef = (spinRate / 4000) * this.MAGNUS_COEFFICIENT * 2.0;
+
+		// More realistic gravity effect (was 0.8, now 0.9)
+		const modifiedGravity = this.GRAVITY * 0.9;
 
 		while (z > 0 && trajectory.length < 1000) {
 			x += vx * timeStep;
@@ -836,7 +829,9 @@ export default class GameSim {
 			z += vz * timeStep;
 
 			const velocity = Math.sqrt(vx * vx + vy * vy + vz * vz);
-			const dragCoefficient = this.DRAG_COEFFICIENT * 0.65; // Reduced drag
+
+			// Slightly increased drag (was 0.65, now 0.7)
+			const dragCoefficient = this.DRAG_COEFFICIENT * 0.7;
 			const crossSectionalArea = Math.PI * this.BALL_RADIUS * this.BALL_RADIUS;
 
 			const dragForceMagnitude =
@@ -849,7 +844,8 @@ export default class GameSim {
 
 			const dragAcceleration = dragForceMagnitude / this.BALL_MASS;
 
-			vx += ((-dragAcceleration * vx) / velocity) * timeStep * 0.8;
+			// More realistic force scaling
+			vx += ((-dragAcceleration * vx) / velocity) * timeStep * 0.9;
 			vy += ((-dragAcceleration * vy) / velocity + magnusCoef * vx) * timeStep;
 			vz += (modifiedGravity + (-dragAcceleration * vz) / velocity) * timeStep;
 
@@ -1042,17 +1038,19 @@ export default class GameSim {
 		return null;
 	}
 	private _close = () => {
-		if (this.testData) {
+		if (this.testGame) {
+			this.testGame.choosePitch = this.testGame.choosePitch.slice(0, 5);
 			const filePath =
-				"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/testData.json";
+				"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/simulation.json";
 			const isFile = fs.existsSync(filePath);
 
 			if (!isFile) {
-				fs.writeFileSync(filePath, JSON.stringify(this.testData, null, 2));
+				fs.writeFileSync(filePath, JSON.stringify([this.testGame]));
 			} else {
 				const existingData = JSON.parse(fs.readFileSync(filePath, "utf8"));
-				const newData = [...existingData, ...this.testData];
-				fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
+
+				const newData = [...existingData, this.testGame];
+				fs.writeFileSync(filePath, JSON.stringify(newData));
 			}
 		}
 
@@ -1248,36 +1246,45 @@ export default class GameSim {
 			_input,
 		);
 
-		// Base quality factors
-		const batterContact =
-			0.5 + (playerHitter.player.batting.contact / RATING_MAX) * 0.5;
-		const batterPower =
-			0.4 + (playerHitter.player.batting.power / RATING_MAX) * 0.6;
-		const batterWhiffResistance =
-			0.5 + (playerHitter.player.batting.avoidKs / RATING_MAX) * 0.5;
+		// More dramatic batter skill impact
+		const batterContact = playerHitter.player.batting.contact / RATING_MAX;
+		const batterPower = playerHitter.player.batting.power / RATING_MAX;
+		const batterSkill = 0.2 + (batterContact * 0.5 + batterPower * 0.3) * 1.6; // Range: 0.2-2.0
 
-		// Pitcher influence
-		const pitcherStuff =
-			(playerPitcher.player.pitching.stuff / RATING_MAX) * 0.8;
-		const pitchWhiffFactor = this._getPitchWhiffFactor({ pitchName }) * 0.3;
+		// More dramatic pitcher impact
+		const pitcherStuff = playerPitcher.player.pitching.stuff / RATING_MAX;
+		const pitcherEffectiveness = 0.3 + pitcherStuff * 1.4; // Range: 0.3-1.7
 
-		// Location impact
+		const pitchWhiffFactor = this._getPitchWhiffFactor({
+			pitchName,
+			playerPitcher,
+		});
+
+		// Location impact (exponential penalty for poor location)
 		const distanceFromCenter = Math.sqrt(
 			pitchLocation.plateX ** 2 +
 				(pitchLocation.plateZ -
 					(pitchLocation.szTop + pitchLocation.szBot) / 2) **
 					2,
 		);
-		const locationFactor = 1 - distanceFromCenter * 0.15;
+		const locationFactor = Math.exp(-distanceFromCenter * 1.5);
+
+		// Edge of zone bonus for good hitters
+		const isOnCorner = distanceFromCenter > 0.5 && distanceFromCenter < 0.8;
+		const cornerBonus = isOnCorner ? batterContact * 0.15 : 0;
 
 		// Calculate final quality
-		const baseContactQuality =
-			(batterContact * 0.4 + batterPower * 0.6) *
-			batterWhiffResistance *
-			(1 - pitcherStuff * pitchWhiffFactor) *
-			locationFactor;
+		let quality =
+			batterSkill *
+				(1 - pitcherEffectiveness * pitchWhiffFactor) *
+				locationFactor +
+			cornerBonus;
 
-		return baseContactQuality * (0.9 + Math.random() * 0.2);
+		// Add some randomness, but maintain skill influence
+		const randomFactor = Math.random() * 0.2 - 0.1;
+		quality += randomFactor * (1 - Math.abs(quality - 0.5));
+
+		return Math.max(Math.min(quality, 1), 0);
 	}
 
 	private _determineHitByPitch(_input: TInputDetermineHitByPitch) {
@@ -1386,53 +1393,58 @@ export default class GameSim {
 		const verticalPosition = pitchLocation.plateZ;
 		const verticalCenter = (pitchLocation.szTop + pitchLocation.szBot) / 2;
 
-		// Core strike zone
-		const inStandardZone =
-			horizontalPosition < 0.7 &&
-			verticalPosition > pitchLocation.szBot &&
-			verticalPosition < pitchLocation.szTop;
+		// Core strike zone bounds
+		const inStandardStrikeZone =
+			horizontalPosition <= 0.7 && // Normal horizontal zone width
+			verticalPosition >= pitchLocation.szBot &&
+			verticalPosition <= pitchLocation.szTop;
 
-		// Expanded zones based on umpire tendencies
-		const expandedZone = {
-			inside: umpireHp.umpire.insideZone / RATING_MAX,
-			outside: umpireHp.umpire.outsideZone / RATING_MAX,
-			high: umpireHp.umpire.highZone / RATING_MAX,
-			low: umpireHp.umpire.lowZone / RATING_MAX,
-		};
-
-		// How far outside the zone is the pitch?
-		const distanceFromZone = Math.max(
-			horizontalPosition - 0.7, // Horizontal distance
-			Math.max(
-				pitchLocation.szBot - verticalPosition, // Distance below zone
-				verticalPosition - pitchLocation.szTop, // Distance above zone
-			),
-		);
-
-		// If well outside zone, it's definitely a ball
-		if (distanceFromZone > 0.5) {
+		// If clearly in zone or way outside, decision is automatic
+		if (
+			horizontalPosition > 1.2 ||
+			verticalPosition > pitchLocation.szTop + 0.5 ||
+			verticalPosition < pitchLocation.szBot - 0.5
+		) {
 			return false;
 		}
-
-		// If clearly in zone, it's definitely a strike
-		if (distanceFromZone < -0.2) {
+		if (
+			inStandardStrikeZone &&
+			horizontalPosition < 0.5 &&
+			Math.abs(verticalPosition - verticalCenter) < 0.25
+		) {
 			return true;
 		}
 
-		// For borderline pitches, use umpire tendencies
-		const relevantZone =
-			horizontalPosition > 0.7
-				? expandedZone.outside
-				: horizontalPosition < -0.7
-					? expandedZone.inside
-					: verticalPosition > pitchLocation.szTop
-						? expandedZone.high
-						: expandedZone.low;
+		// Umpire tendencies (normalized to smaller ranges)
+		const expandedZone = {
+			inside: 0.1 + (umpireHp.umpire.insideZone / RATING_MAX) * 0.15,
+			outside: 0.1 + (umpireHp.umpire.outsideZone / RATING_MAX) * 0.15,
+			high: 0.1 + (umpireHp.umpire.highZone / RATING_MAX) * 0.15,
+			low: 0.1 + (umpireHp.umpire.lowZone / RATING_MAX) * 0.15,
+		};
 
-		// Chance decreases as distance from zone increases
-		const callProbability = relevantZone * (1 - distanceFromZone);
+		// Calculate border zone probabilities
+		let strikeProbability = 0.5; // Base probability for borderline pitches
 
-		return Math.random() < callProbability;
+		// Adjust for horizontal location
+		if (horizontalPosition > 0.7) {
+			const borderDistance = horizontalPosition - 0.7;
+			strikeProbability *= Math.max(
+				0,
+				1 - borderDistance / expandedZone.outside,
+			);
+		}
+
+		// Adjust for vertical location
+		if (verticalPosition > pitchLocation.szTop) {
+			const borderDistance = verticalPosition - pitchLocation.szTop;
+			strikeProbability *= Math.max(0, 1 - borderDistance / expandedZone.high);
+		} else if (verticalPosition < pitchLocation.szBot) {
+			const borderDistance = pitchLocation.szBot - verticalPosition;
+			strikeProbability *= Math.max(0, 1 - borderDistance / expandedZone.low);
+		}
+
+		return Math.random() < strikeProbability;
 	}
 
 	private _endAtBat() {
@@ -1784,93 +1796,34 @@ export default class GameSim {
 	}
 
 	private _getPitchWhiffFactor(_input: TInputGetPitchWhiffFactor) {
-		const { pitchName } = parse(VInputGetPitchWhiffFactor, _input);
-		// Based loosely on MLB whiff rates per pitch type
-		const whiffFactors: Record<TPicklistPitchNames, number> = {
-			changeup: 0.31,
-			curveball: 0.32,
-			cutter: 0.25,
-			eephus: 0.2,
-			fastball: 0.22,
-			forkball: 0.3,
-			knuckleball: 0.23,
-			knuckleCurve: 0.33,
-			screwball: 0.29,
-			sinker: 0.18,
-			slider: 0.35,
-			slurve: 0.34,
-			splitter: 0.37,
-			sweeper: 0.36,
-		};
-
-		return whiffFactors[pitchName];
-	}
-
-	private _getPotentialFoulBallFielders(
-		_input: TInputGetPotentialFoulBallFielders,
-	) {
-		const { angle, ballInPlay, distance, teamDefenseState } = parse(
-			VInputGetPotentialFoulBallFielders,
+		const { pitchName, playerPitcher } = parse(
+			VInputGetPitchWhiffFactor,
 			_input,
 		);
-		const fielders: Array<{
-			fielder: GameSimPlayerState;
-			position: string;
-		}> = [];
 
-		if (distance < 40) {
-			// Very close to home - catcher only
-			fielders.push({
-				fielder: teamDefenseState.getFielderForPosition("c"),
-				position: "c",
-			});
-			return fielders;
-		}
+		// Base whiff rates adjusted for more differentiation
+		const whiffFactors: Record<TPicklistPitchNames, number> = {
+			changeup: 0.35,
+			curveball: 0.33,
+			cutter: 0.28,
+			eephus: 0.15,
+			fastball: 0.25,
+			forkball: 0.32,
+			knuckleball: 0.2,
+			knuckleCurve: 0.3,
+			screwball: 0.31,
+			sinker: 0.22,
+			slider: 0.38,
+			slurve: 0.34,
+			splitter: 0.4,
+			sweeper: 0.37,
+		};
 
-		if (angle < -70) {
-			// Deep left field foul territory
-			fielders.push({
-				fielder: teamDefenseState.getFielderForPosition("lf"),
-				position: "lf",
-			});
-		} else if (angle > 70) {
-			// Deep right field foul territory
-			fielders.push({
-				fielder: teamDefenseState.getFielderForPosition("rf"),
-				position: "rf",
-			});
-		}
+		// Apply stuff rating to create larger differences between pitchers
+		const stuffRating = playerPitcher.player.pitching.stuff / RATING_MAX;
+		const stuffMultiplier = 0.4 + stuffRating * 1.2; // Range: 0.4-1.6
 
-		if (distance < 150) {
-			// Infield territory
-			if (angle < -30) {
-				// Third base side
-				fielders.push({
-					fielder: teamDefenseState.getFielderForPosition("tb"),
-					position: "tb",
-				});
-			} else if (angle > 30) {
-				// First base side
-				fielders.push({
-					fielder: teamDefenseState.getFielderForPosition("fb"),
-					position: "fb",
-				});
-			}
-
-			// Catcher has a chance on shorter pops
-			if (distance < 100 && ballInPlay.launchAngle > 45) {
-				fielders.push({
-					fielder: teamDefenseState.getFielderForPosition("c"),
-					position: "C",
-				});
-			}
-		}
-
-		return fielders;
-	}
-
-	private _getRunnerTaggingChance({ distance }: { distance: number }) {
-		return Math.min((distance - 200) / 200, 0.9); // Max 90% chance on deep flies
+		return whiffFactors[pitchName] * stuffMultiplier;
 	}
 
 	private _getTeamDefense() {
@@ -1906,7 +1859,7 @@ export default class GameSim {
 		weather: TGameSimWeatherConditions,
 		centerFieldDirection: number,
 	): Array<{ x: number; y: number; z: number }> {
-		// Convert meteorological wind direction to radians and adjust for park orientation
+		// Convert wind direction to radians and adjust for park orientation
 		const windDirRadians =
 			((weather.windDirection + centerFieldDirection) % 360) * (Math.PI / 180);
 
@@ -1914,14 +1867,34 @@ export default class GameSim {
 		const windX = weather.windSpeed * Math.sin(windDirRadians);
 		const windY = weather.windSpeed * Math.cos(windDirRadians);
 
-		return trajectory.map((point) => {
-			// Wind effect increases with height (crude approximation)
-			const heightFactor = Math.min(point.z / 50, 1);
-			const windEffect = this.WIND_EFFECT_FACTOR * heightFactor;
+		// Reduced base wind effect (was 0.1, now 0.03)
+		const baseWindEffect = 0.03;
 
+		return trajectory.map((point) => {
+			// Height-based scaling (more gradual)
+			// Max effect at 100ft height, minimal effect near ground
+			const heightFactor = Math.min(point.z / 100, 1) * 0.8;
+
+			// Distance-based scaling (wind affects balls more the longer they're in the air)
+			const distance = Math.sqrt(point.x * point.x + point.y * point.y);
+			const distanceFactor = Math.min(distance / 300, 1) * 0.7;
+
+			// Combined scaling factor
+			const windEffect = baseWindEffect * heightFactor * distanceFactor;
+
+			// Calculate adjustments (more realistic scaling)
+			const xAdjustment = windX * windEffect;
+			const yAdjustment = windY * windEffect;
+
+			// Apply adjustments with maximum limits
+			const maxAdjustment = 15; // Maximum wind displacement in feet
 			return {
-				x: point.x + windX * windEffect,
-				y: point.y + windY * windEffect,
+				x:
+					point.x +
+					Math.min(Math.max(xAdjustment, -maxAdjustment), maxAdjustment),
+				y:
+					point.y +
+					Math.min(Math.max(yAdjustment, -maxAdjustment), maxAdjustment),
 				z: point.z, // Wind doesn't directly affect height
 			};
 		});
@@ -2473,6 +2446,7 @@ export default class GameSim {
 		const spinRate = this._calculateSpinRate(input);
 
 		const weather = this.weatherState.getWeather({ dateTime: this.dateTime });
+
 		const airDensity = this._calculateAirDensity(
 			weather.temperature,
 			weather.humidity,
@@ -2646,6 +2620,7 @@ export default class GameSim {
 
 		// Record the outcome
 		const wallInteraction = ballData.wallInteraction;
+
 		if (wallInteraction) {
 			if (
 				wallInteraction.isHomeRun ||
@@ -2688,11 +2663,6 @@ export default class GameSim {
 				ballData.outcome = "single";
 			}
 		}
-
-		if (!this.testData) {
-			this.testData = [];
-		}
-		this.testData.push(ballData);
 	}
 
 	private _simulatePitch() {
@@ -2701,6 +2671,7 @@ export default class GameSim {
 		const playerPitcher = this._getCurrentPitcher({
 			teamIndex: this.numTeamDefense,
 		});
+
 		const playerHitter = this._getCurrentHitter({
 			teamIndex: this.numTeamOffense,
 		});
@@ -2709,13 +2680,47 @@ export default class GameSim {
 			numBalls: this.numBalls,
 			numOuts: this.numOuts,
 			numStrikes: this.numStrikes,
+			playerHitter,
 		});
+
+		if (this.testsToRun.includes("choosePitch")) {
+			this.testGame.choosePitch.push({
+				fatigue: playerPitcher.fatigue.current,
+				playerHitter: {
+					batting: playerHitter.player.batting,
+					physical: playerHitter.player.physical,
+					running: playerHitter.player.running,
+				},
+				playerPitcher: {
+					pitches: playerPitcher.player.pitches,
+					pitching: playerPitcher.player.pitching,
+				},
+				numBalls: this.numBalls,
+				numOuts: this.numOuts,
+				numPitchesThrown: playerPitcher.statistics.pitching.pitchesThrown,
+				numStrikes: this.numStrikes,
+				pitchName,
+			});
+		}
 
 		const pitchLocation = playerPitcher.getPitchLocation({
 			pitchName,
 			playerHitter,
 			playerPitcher,
 		});
+
+		if (this.testsToRun.includes("getPitchLocation")) {
+			this.testGame.getPitchLocation.push({
+				pitchLocation,
+				pitchName,
+				pitcher: {
+					...playerPitcher.player.pitching,
+					pitchRating: playerPitcher.player.pitches[pitchName],
+				},
+				playerHitter,
+				playerPitcher,
+			});
+		}
 
 		const { contactQuality, pitchOutcome } = this._simulatePitchOutcome({
 			pitchLocation,
@@ -3033,6 +3038,7 @@ type TInputDetermineHitByPitch = InferInput<typeof VInputDetermineHitByPitch>;
 
 const VInputGetPitchWhiffFactor = object({
 	pitchName: VPicklistPitchNames,
+	playerPitcher: instance(GameSimPlayerState),
 });
 type TInputGetPitchWhiffFactor = InferInput<typeof VInputGetPitchWhiffFactor>;
 

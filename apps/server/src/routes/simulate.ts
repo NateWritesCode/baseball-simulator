@@ -157,6 +157,8 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
                     persons.nickname,
                     players.idPlayer,
                     players.idTeam,
+                    players.bats,
+                    players.throws,
                     personsAlignment.chaotic as "alignment.chaotic",
                     personsAlignment.evil as "alignment.evil",
                     personsAlignment.good as "alignment.good",
@@ -260,7 +262,7 @@ export const simulateGames = async (_input: TInputSimulateGames) => {
 			data: db.query(queryPlayers).all(...paramsTeams),
 			schema: array(
 				intersect([
-					pick(VDbPlayers, ["idPlayer", "idTeam"]),
+					pick(VDbPlayers, ["idPlayer", "idTeam", "bats", "throws"]),
 					pick(VDbPersons, [
 						"dateOfBirth",
 						"firstName",
