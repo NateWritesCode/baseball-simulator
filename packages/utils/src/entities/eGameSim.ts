@@ -2676,14 +2676,14 @@ export default class GameSim {
 			teamIndex: this.numTeamOffense,
 		});
 
-		const pitchName = playerPitcher.choosePitch({
+		const { pitchName, testDataChoosePitch } = playerPitcher.choosePitch({
 			numBalls: this.numBalls,
 			numOuts: this.numOuts,
 			numStrikes: this.numStrikes,
 			playerHitter,
 		});
 
-		if (this.testsToRun.includes("choosePitch")) {
+		if (this.testsToRun.includes("choosePitch") && testDataChoosePitch) {
 			this.testGame.choosePitch.push({
 				fatigue: playerPitcher.fatigue.current,
 				playerHitter: {

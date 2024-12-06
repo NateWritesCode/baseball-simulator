@@ -399,16 +399,15 @@ class GameSimPlayerState implements OGameSimObserver {
 	}
 
 	public choosePitch(_input: TInputChoosePitch) {
+		let pitchName: TPicklistPitchNames = "fastball";
 		const input = parse(VInputChoosePitch, _input);
 		const { numBalls, numOuts, numStrikes } = input;
 		const numPitchesThrown = this.statistics.pitching.pitchesThrown;
-		const pitcherStamina = this.player.pitching.stamina;
 		const pitches = this.player.pitches;
 		const fatigueCurrent = this.fatigue.current;
 		const playerHitter = input.playerHitter;
 		const batting = playerHitter.player.batting;
 		const bats = playerHitter.player.bats;
-		const speed = playerHitter.player.running.speed;
 		const handThrowing = this.player.throws;
 		const handBatting = (() => {
 			if (bats === "s") {
@@ -426,7 +425,8 @@ class GameSimPlayerState implements OGameSimObserver {
 			contact: handThrowing === "l" ? batting.contactVL : batting.contactVR,
 			power: handThrowing === "l" ? batting.powerVL : batting.powerVR,
 			eye: handThrowing === "l" ? batting.eyeVL : batting.eyeVR,
-			avoidK: handThrowing === "l" ? batting.avoidKsVL : batting.avoidKsVR,
+			avoidKs: handThrowing === "l" ? batting.avoidKsVL : batting.avoidKsVR,
+			speed: playerHitter.player.running.speed,
 		};
 
 		// Get pitcher's ratings against this batter's handedness
@@ -439,6 +439,7 @@ class GameSimPlayerState implements OGameSimObserver {
 				handBatting === "l"
 					? this.player.pitching.movementVL
 					: this.player.pitching.movementVR,
+			stamina: this.player.pitching.stamina,
 			stuff:
 				handBatting === "l"
 					? this.player.pitching.stuffVL
@@ -450,7 +451,7 @@ class GameSimPlayerState implements OGameSimObserver {
 		) as [keyof typeof pitches, number][];
 
 		if (Math.random() > 0.999) {
-			return Object.keys(pitches)[
+			pitchName = Object.keys(pitches)[
 				Math.floor(Math.random() * Object.keys(pitches).length)
 			] as keyof typeof pitches;
 		}
@@ -458,7 +459,7 @@ class GameSimPlayerState implements OGameSimObserver {
 		const fatiguePercentage = fatigueCurrent / FATIGUE_MAX;
 		const staminaPercentage = Math.max(
 			0,
-			1 - numPitchesThrown / (pitcherStamina * 0.7),
+			1 - numPitchesThrown / (pitcherRatings.stamina * 0.7),
 		);
 
 		const weightedPitches = availablePitches.map(([pitch, rating]) => {
@@ -534,7 +535,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 
 			// Strikeout avoidance consideration
-			if (batterRatings.avoidK > RATING_MAX * 0.7) {
+			if (batterRatings.avoidKs > RATING_MAX * 0.7) {
 				// Against contact-oriented hitters who rarely strike out
 				switch (pitch) {
 					case "sinker":
@@ -551,7 +552,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			}
 
 			// Speed adaptation based on batter's physical attributes
-			if (speed > RATING_MAX * 0.7) {
+			if (batterRatings.speed > RATING_MAX * 0.7) {
 				switch (pitch) {
 					case "sinker":
 					case "splitter":
@@ -631,7 +632,7 @@ class GameSimPlayerState implements OGameSimObserver {
 			fatiguePercentage > 0.9 ||
 			(numOuts === 2 && numBalls === 3 && numStrikes === 2)
 		) {
-			return weightedPitches[0].pitch;
+			pitchName = weightedPitches[0].pitch;
 		}
 
 		const totalWeight = weightedPitches.reduce(
@@ -643,11 +644,28 @@ class GameSimPlayerState implements OGameSimObserver {
 		for (const { pitch, weight } of weightedPitches) {
 			randomValue -= weight;
 			if (randomValue <= 0) {
-				return pitch;
+				pitchName = pitch;
+				break;
 			}
 		}
 
-		return weightedPitches[0].pitch;
+		return {
+			pitchName,
+			testDataChoosePitch: {
+				batterRatings,
+				fatigueCurrent,
+				fatiguePercentage,
+				handBatting,
+				handThrowing,
+				numBalls,
+				numOuts,
+				numPitchesThrown,
+				pitcherRatings,
+				RATING_MAX,
+				staminaPercentage,
+				weightedPitches,
+			},
+		};
 	}
 
 	public close() {
