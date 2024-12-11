@@ -85,11 +85,9 @@ export default class GameSim {
 	private teamStates: {
 		[key: number]: GameSimTeamState;
 	};
-	// biome-ignore lint/suspicious/noExplicitAny: Need to allow for any possible value
+
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	testGame: any;
-	// biome-ignore lint/suspicious/noExplicitAny: Need to allow for any possible value
-	testPitch: any;
-	testsToRun: ("choosePitch" | "getPitchLocation")[];
 
 	private umpireHp: GameSimUmpireState;
 	private umpireFb: GameSimUmpireState;
@@ -147,17 +145,14 @@ export default class GameSim {
 		});
 
 		this.testGame = {
-			choosePitch: [],
-			getPitchLocation: [],
 			idGame: input.idGame,
 			park: input.park,
+			pitches: [],
 			umpireFb: this.umpireFb.umpire,
 			umpireHp: this.umpireHp.umpire,
 			umpireSb: this.umpireSb.umpire,
 			umpireTb: this.umpireTb.umpire,
 		};
-
-		this.testsToRun = [];
 
 		// team0 is the away team, team1 is the home team
 		this.teams = [input.teams[0], input.teams[1]];
@@ -394,19 +389,6 @@ export default class GameSim {
 			distance,
 			isNearCorner: isNearStartCorner || isNearEndCorner,
 		};
-	}
-
-	private _calculateDoubleChance(
-		ballInPlay: TBallInPlay,
-		isHardHit: boolean,
-	): number {
-		if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 25) {
-			return isHardHit ? 0.85 : 0.75;
-		}
-		if (ballInPlay.launchAngle > 25 && ballInPlay.launchAngle <= 45) {
-			return isHardHit ? 0.8 : 0.7;
-		}
-		return isHardHit ? 0.75 : 0.65;
 	}
 
 	private _calculateExitVelocity(input: TInputSimulateBallInPlay) {
@@ -688,63 +670,6 @@ export default class GameSim {
 			return 0 + Math.random() * 15;
 		}
 		return 45 + Math.random() * 20; // Pop-ups
-	}
-
-	private _handleNonWallBallOutcome(_input: TInputHandleNonWallBallOutcome) {
-		const { ballInPlay, fieldingResult } = parse(
-			VInputHandleNonWallBallOutcome,
-			_input,
-		);
-
-		// If fielding is successful, it's always an out
-		if (fieldingResult.isSuccess) {
-			this._handleOut();
-			return;
-		}
-
-		// For line drives
-		if (fieldingResult.type === "lineDrive") {
-			if (ballInPlay.distance > 275) {
-				this._handleDouble();
-				return;
-			}
-			this._handleSingle();
-			return;
-		}
-
-		// For ground balls
-		if (fieldingResult.type === "groundBall") {
-			// If they're past the outfield, they should be extra base hits
-			if (ballInPlay.distance > 200) {
-				this._handleDouble();
-				return;
-			}
-
-			// Hard hit grounders that get through have a chance for extra bases
-			if (ballInPlay.exitVelocity > 105 && ballInPlay.distance > 150) {
-				const doubleChance = (ballInPlay.distance - 150) / 100;
-				if (Math.random() < doubleChance) {
-					this._handleDouble();
-					return;
-				}
-			}
-
-			this._handleSingle();
-			return;
-		}
-
-		// For fly balls that aren't caught
-		if (fieldingResult.type === "flyBall") {
-			if (ballInPlay.distance > 300) {
-				this._handleDouble();
-				return;
-			}
-			this._handleSingle();
-			return;
-		}
-
-		// Fallback case
-		this._handleSingle();
 	}
 
 	private _calculateSituationalDifficulty(
@@ -1039,7 +964,6 @@ export default class GameSim {
 	}
 	private _close = () => {
 		if (this.testGame) {
-			this.testGame.choosePitch = this.testGame.choosePitch.slice(0, 5);
 			const filePath =
 				"/home/nathanh81/Projects/baseball-simulator/apps/server/src/data/test/simulation.json";
 			const isFile = fs.existsSync(filePath);
@@ -1472,35 +1396,6 @@ export default class GameSim {
 		this.playerRunner3 = null;
 	}
 
-	private _findNearestWallHeight(_input: TInputFindNearestWallHeight) {
-		const { finalX, finalY, parkState } = parse(
-			VInputFindNearestWallHeight,
-			_input,
-		);
-
-		let nearestDistance = Number.POSITIVE_INFINITY;
-		let nearestHeight = 0;
-
-		// Find the closest wall segment
-		for (const segment of parkState.park.wallSegments) {
-			const distance = this._calculateDistanceToSegment({
-				endX: segment.segmentEndX,
-				endY: segment.segmentEndY,
-				finalX,
-				finalY,
-				startX: segment.segmentStartX,
-				startY: segment.segmentStartY,
-			});
-
-			if (distance.distance < nearestDistance) {
-				nearestDistance = distance.distance;
-				nearestHeight = segment.height;
-			}
-		}
-
-		return nearestHeight;
-	}
-
 	private _findTrajectoryWallIntersection({
 		trajectory,
 		wallEnd,
@@ -1687,43 +1582,6 @@ export default class GameSim {
 				throw new Error(exhaustiveCheck);
 			}
 		}
-	}
-	private _getGameSituationDifficulty({
-		gameTime,
-		numOuts,
-		runnersOn,
-	}: {
-		gameTime: { inning: number; isDay: boolean; isNightGame: boolean };
-		numOuts: number;
-		runnersOn: Array<{ base: number; isRunning: boolean; speed: number }>;
-	}): number {
-		let difficulty = 0;
-
-		// Time of day factors
-		if (gameTime.isNightGame && !gameTime.isDay) {
-			difficulty += 0.1; // Slightly harder at night
-		}
-
-		// Late game pressure
-		if (gameTime.inning >= 8) {
-			difficulty += 0.1;
-		}
-
-		// Runner distraction factor
-		for (const runner of runnersOn) {
-			if (runner.isRunning) {
-				// Fast runners create more pressure
-				const runnerPressure = (runner.speed / RATING_MAX) * 0.2;
-				difficulty += runnerPressure;
-			}
-		}
-
-		// Critical out situations
-		if (numOuts === 2 && runnersOn.length > 0) {
-			difficulty += 0.1; // Added pressure with RISP and 2 outs
-		}
-
-		return Math.min(difficulty, 1);
 	}
 
 	private _getMovementDifficulty({
@@ -2023,6 +1881,63 @@ export default class GameSim {
 		this._handleRun({
 			playerRunner: playerHitter,
 		});
+	}
+
+	private _handleNonWallBallOutcome(_input: TInputHandleNonWallBallOutcome) {
+		const { ballInPlay, fieldingResult } = parse(
+			VInputHandleNonWallBallOutcome,
+			_input,
+		);
+
+		// If fielding is successful, it's always an out
+		if (fieldingResult.isSuccess) {
+			this._handleOut();
+			return;
+		}
+
+		// For line drives
+		if (fieldingResult.type === "lineDrive") {
+			if (ballInPlay.distance > 275) {
+				this._handleDouble();
+				return;
+			}
+			this._handleSingle();
+			return;
+		}
+
+		// For ground balls
+		if (fieldingResult.type === "groundBall") {
+			// If they're past the outfield, they should be extra base hits
+			if (ballInPlay.distance > 200) {
+				this._handleDouble();
+				return;
+			}
+
+			// Hard hit grounders that get through have a chance for extra bases
+			if (ballInPlay.exitVelocity > 105 && ballInPlay.distance > 150) {
+				const doubleChance = (ballInPlay.distance - 150) / 100;
+				if (Math.random() < doubleChance) {
+					this._handleDouble();
+					return;
+				}
+			}
+
+			this._handleSingle();
+			return;
+		}
+
+		// For fly balls that aren't caught
+		if (fieldingResult.type === "flyBall") {
+			if (ballInPlay.distance > 300) {
+				this._handleDouble();
+				return;
+			}
+			this._handleSingle();
+			return;
+		}
+
+		// Fallback case
+		this._handleSingle();
 	}
 
 	private _handleOut() {
@@ -2343,30 +2258,6 @@ export default class GameSim {
 		}
 	};
 
-	// Helper functions to make the main function cleaner
-	private _shouldBeHit(
-		ballInPlay: TBallInPlay,
-		fieldingResult: TFieldingResult,
-	): boolean {
-		const exitVelo = ballInPlay.exitVelocity;
-		const isHardHit = exitVelo > 95;
-
-		if (ballInPlay.launchAngle > 45) {
-			return Math.random() < 0.2;
-		}
-		if (ballInPlay.launchAngle >= 10 && ballInPlay.launchAngle <= 25) {
-			return true;
-		}
-		if (ballInPlay.launchAngle > 25 && ballInPlay.launchAngle <= 45) {
-			return Math.random() < (isHardHit ? 0.95 : 0.85);
-		}
-
-		let hitChance = 0.85;
-		if (!fieldingResult.isSuccess) hitChance += 0.15;
-		if (isHardHit) hitChance += 0.1;
-		return Math.random() < Math.min(hitChance, 1);
-	}
-
 	public simulate() {
 		this._notifyObservers({
 			data: {
@@ -2666,6 +2557,8 @@ export default class GameSim {
 	}
 
 	private _simulatePitch() {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		const testPitch: any = {};
 		this._advanceTime(25);
 		let isAtBatOver = false;
 		const playerPitcher = this._getCurrentPitcher({
@@ -2676,7 +2569,7 @@ export default class GameSim {
 			teamIndex: this.numTeamOffense,
 		});
 
-		const { pitchName, testDataChoosePitch } = playerPitcher.choosePitch({
+		const { pitchName } = playerPitcher.choosePitch({
 			numBalls: this.numBalls,
 			numOuts: this.numOuts,
 			numStrikes: this.numStrikes,
@@ -2687,25 +2580,7 @@ export default class GameSim {
 			umpireHp: this.umpireHp,
 		});
 
-		if (this.testsToRun.includes("choosePitch") && testDataChoosePitch) {
-			this.testGame.choosePitch.push({
-				fatigue: playerPitcher.fatigue.current,
-				playerHitter: {
-					batting: playerHitter.player.batting,
-					physical: playerHitter.player.physical,
-					running: playerHitter.player.running,
-				},
-				playerPitcher: {
-					pitches: playerPitcher.player.pitches,
-					pitching: playerPitcher.player.pitching,
-				},
-				numBalls: this.numBalls,
-				numOuts: this.numOuts,
-				numPitchesThrown: playerPitcher.statistics.pitching.pitchesThrown,
-				numStrikes: this.numStrikes,
-				pitchName,
-			});
-		}
+		testPitch.pitchName = pitchName;
 
 		const pitchLocation = playerPitcher.getPitchLocation({
 			pitchName,
@@ -2713,18 +2588,7 @@ export default class GameSim {
 			playerPitcher,
 		});
 
-		if (this.testsToRun.includes("getPitchLocation")) {
-			this.testGame.getPitchLocation.push({
-				pitchLocation,
-				pitchName,
-				pitcher: {
-					...playerPitcher.player.pitching,
-					pitchRating: playerPitcher.player.pitches[pitchName],
-				},
-				playerHitter,
-				playerPitcher,
-			});
-		}
+		testPitch.pitchLocation = pitchLocation;
 
 		const { contactQuality, pitchOutcome } = this._simulatePitchOutcome({
 			pitchLocation,
@@ -2760,6 +2624,16 @@ export default class GameSim {
 					isAtBatOver = true;
 				}
 
+				break;
+			}
+			case "catcherInterference": {
+				this._handleWalk();
+				isAtBatOver = true;
+				break;
+			}
+			case "hitByPitch": {
+				this._handleHitByPitch();
+				isAtBatOver = true;
 				break;
 			}
 			case "inPlay": {
@@ -2808,7 +2682,7 @@ export default class GameSim {
 
 				break;
 			}
-			case "strike": {
+			case "strikeCalled": {
 				this.numStrikes++;
 
 				if (this.numStrikes === 3) {
@@ -2817,6 +2691,16 @@ export default class GameSim {
 				}
 				break;
 			}
+			case "strikeSwinging": {
+				this.numStrikes++;
+
+				if (this.numStrikes === 3) {
+					this._handleStrikeout();
+					isAtBatOver = true;
+				}
+				break;
+			}
+
 			default: {
 				const exhaustiveCheck: never = pitchOutcome;
 				throw new Error(exhaustiveCheck);
@@ -2846,9 +2730,7 @@ export default class GameSim {
 		});
 
 		if (isHbp) {
-			this._handleHitByPitch();
-			pitchOutcome.pitchOutcome = "ball";
-			return pitchOutcome;
+			pitchOutcome.pitchOutcome = "hitByPitch";
 		}
 
 		if (
@@ -2869,7 +2751,14 @@ export default class GameSim {
 		});
 
 		if (!isBatterSwinging) {
-			pitchOutcome.pitchOutcome = "strike";
+			pitchOutcome.pitchOutcome = "strikeSwinging";
+			return pitchOutcome;
+		}
+
+		const isCatcherInterference = Math.random() < 0.01;
+
+		if (isCatcherInterference) {
+			pitchOutcome.pitchOutcome = "catcherInterference";
 			return pitchOutcome;
 		}
 
@@ -2882,29 +2771,7 @@ export default class GameSim {
 
 		// More strikes on poor contact
 		if (contactQuality < 0.4) {
-			pitchOutcome.pitchOutcome = "strike";
-			return pitchOutcome;
-		}
-
-		// Determine early if it's a foul ball based on contact quality and location
-		const distanceFromCenter = Math.sqrt(
-			input.pitchLocation.plateX ** 2 +
-				(input.pitchLocation.plateZ -
-					(input.pitchLocation.szTop + input.pitchLocation.szBot) / 2) **
-					2,
-		);
-
-		// Higher chance of foul on pitches far from center of zone
-		const foulProbability =
-			0.15 + // Base foul chance
-			distanceFromCenter * 0.1 + // Location factor
-			(1 - contactQuality) * 0.2; // Contact quality factor
-
-		if (Math.random() < foulProbability) {
-			pitchOutcome.pitchOutcome = "strike";
-			if (this.numStrikes < 2) {
-				this.numStrikes++;
-			}
+			pitchOutcome.pitchOutcome = "strikeSwinging";
 			return pitchOutcome;
 		}
 

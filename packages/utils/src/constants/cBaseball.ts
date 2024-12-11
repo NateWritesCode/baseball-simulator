@@ -45,7 +45,14 @@ export const PITCH_NAMES = [
 	"sweeper",
 ] as const;
 
-export const PITCH_OUTCOMES = ["ball", "inPlay", "strike"] as const;
+export const PITCH_OUTCOMES = [
+	"ball",
+	"catcherInterference",
+	"hitByPitch",
+	"inPlay",
+	"strikeCalled",
+	"strikeSwinging",
+] as const;
 
 export const POSITIONS = [
 	"p",

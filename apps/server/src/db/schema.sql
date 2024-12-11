@@ -87,7 +87,7 @@
 				idTeamOffense integer,
 				pitchLocation text,
 				pitchName text check(pitchName in ('changeup', 'curveball', 'cutter', 'eephus', 'fastball', 'forkball', 'knuckleball', 'knuckleCurve', 'screwball', 'sinker', 'slider', 'slurve', 'splitter', 'sweeper')),
-				pitchOutcome text check(pitchOutcome in ('ball', 'inPlay', 'strike'))
+				pitchOutcome text check(pitchOutcome in ('ball', 'catcherInterference', 'hitByPitch', 'inPlay', 'strikeCalled', 'strikeSwinging'))
 		);
 
 		create table gameSimLogs (
