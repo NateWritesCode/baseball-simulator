@@ -23,6 +23,7 @@ import {
 	type TPicklistPitchNames,
 	VPicklistPitchNames,
 } from "../types/tPicklist";
+import GameSimUmpireState from "./eGameSimUmpireState";
 
 const PITCHES_THROWN_STANDARD_MAX = 125;
 
@@ -51,6 +52,28 @@ const BASE_FATIGUE = {
 	HUSTLE_MULTIPLIER: 2, // Multiplier for hustle plays
 	FIELD_ROUTINE: 0.15, // Routine fielding play
 	FIELD_SPECTACULAR: 0.4, // Spectacular fielding play
+} as const;
+
+export const WEIGHTS_CHOOSE_PITCH = {
+	batter: {
+		avoidKs: 0.05,
+		contact: 0.08,
+		eye: 0.07,
+		power: 0.05,
+	},
+	context: {
+		runnersOnBase: 0.2,
+	},
+	pitcher: {
+		fatigue: 0.05,
+		intelligence: 0.03,
+		pitchRatings: 0.2,
+		pitcherRatings: 0.15,
+		wisdom: 0.02,
+	},
+	umpire: {
+		consistency: 0.1,
+	},
 } as const;
 
 type TFatigue = {
@@ -399,273 +422,315 @@ class GameSimPlayerState implements OGameSimObserver {
 	}
 
 	public choosePitch(_input: TInputChoosePitch) {
-		let pitchName: TPicklistPitchNames = "fastball";
-		const input = parse(VInputChoosePitch, _input);
-		const { numBalls, numOuts, numStrikes } = input;
-		const numPitchesThrown = this.statistics.pitching.pitchesThrown;
+		const pitchName: TPicklistPitchNames = "fastball";
+		const {
+			numBalls,
+			numOuts,
+			numStrikes,
+			playerHitter,
+			playerRunner1,
+			playerRunner2,
+			playerRunner3,
+		} = parse(VInputChoosePitch, _input);
 		const pitches = this.player.pitches;
-		const fatigueCurrent = this.fatigue.current;
-		const playerHitter = input.playerHitter;
-		const batting = playerHitter.player.batting;
-		const bats = playerHitter.player.bats;
-		const handThrowing = this.player.throws;
-		const handBatting = (() => {
-			if (bats === "s") {
-				if (handThrowing === "r") {
-					return "l";
-				}
-
-				return "r";
-			}
-			return bats;
-		})();
-
-		// Get the appropriate batting ratings based on pitcher's throwing arm
-		const batterRatings = {
-			contact: handThrowing === "l" ? batting.contactVL : batting.contactVR,
-			power: handThrowing === "l" ? batting.powerVL : batting.powerVR,
-			eye: handThrowing === "l" ? batting.eyeVL : batting.eyeVR,
-			avoidKs: handThrowing === "l" ? batting.avoidKsVL : batting.avoidKsVR,
-			speed: playerHitter.player.running.speed,
-		};
-
-		// Get pitcher's ratings against this batter's handedness
-		const pitcherRatings = {
-			control:
-				handBatting === "l"
-					? this.player.pitching.controlVL
-					: this.player.pitching.controlVR,
-			movement:
-				handBatting === "l"
-					? this.player.pitching.movementVL
-					: this.player.pitching.movementVR,
-			stamina: this.player.pitching.stamina,
-			stuff:
-				handBatting === "l"
-					? this.player.pitching.stuffVL
-					: this.player.pitching.stuffVR,
-		};
 
 		const availablePitches = Object.entries(pitches).filter(
 			([, rating]) => rating > RATING_MIN,
 		) as [keyof typeof pitches, number][];
 
-		if (Math.random() > 0.999) {
-			pitchName = Object.keys(pitches)[
-				Math.floor(Math.random() * Object.keys(pitches).length)
-			] as keyof typeof pitches;
-		}
-
-		const fatiguePercentage = fatigueCurrent / FATIGUE_MAX;
-		const staminaPercentage = Math.max(
-			0,
-			1 - numPitchesThrown / (pitcherRatings.stamina * 0.7),
-		);
-
 		const weightedPitches = availablePitches.map(([pitch, rating]) => {
-			let weight = rating;
+			const scorePitcher =
+				(rating * 0.6 +
+					this.player.pitching.stuff * 0.15 +
+					this.player.pitching.control * 0.15 +
+					this.player.pitching.movement * 0.1) /
+				RATING_MAX;
 
-			const fatigueCost = PITCH_TYPE_FATIGUE_MULTIPLIERS[pitch] || 1;
-			const fatigueMultiplier = 1 - fatiguePercentage * (fatigueCost - 0.7);
-			weight *= fatigueMultiplier;
+			const scoreBatter =
+				((RATING_MAX - playerHitter.player.batting.contact) * 0.3 +
+					(RATING_MAX - playerHitter.player.batting.eye) * 0.3 +
+					(RATING_MAX - playerHitter.player.batting.power) * 0.2 +
+					(RATING_MAX - playerHitter.player.batting.avoidKs) * 0.2) /
+				RATING_MAX;
 
-			// Batter handedness considerations with platoon splits
-			const isOppositeHand =
-				(handBatting === "l" && handThrowing === "r") ||
-				(handBatting === "r" && handThrowing === "l");
-			if (isOppositeHand) {
-				// Adjust based on pitcher's opposite-hand effectiveness
-				switch (pitch) {
-					case "slider":
-					case "cutter":
-						weight *= 1.25 * (pitcherRatings.movement / RATING_MAX);
-						break;
-					case "changeup":
-						weight *= 1.2 * (pitcherRatings.stuff / RATING_MAX);
-						break;
-				}
-			} else {
-				// Same-hand matchup adjustments
-				switch (pitch) {
-					case "curveball":
-					case "splitter":
-						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
-						break;
-				}
-			}
+			const scoreContext = (() => {
+				return 0;
+			})();
 
-			// Contact vs Power hitter adjustments using platoon splits
-			if (batterRatings.power > batterRatings.contact * 1.2) {
-				// Against power hitters
-				switch (pitch) {
-					case "sinker":
-					case "splitter":
-						weight *= 1.3 * (pitcherRatings.movement / RATING_MAX);
-						break;
-					case "fastball":
-						weight *= 0.8 * (pitcherRatings.stuff / RATING_MAX);
-						break;
-				}
-			} else if (batterRatings.contact > batterRatings.power * 1.2) {
-				// Against contact hitters
-				switch (pitch) {
-					case "curveball":
-					case "slider":
-						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
-						break;
-					case "changeup":
-						weight *= 1.25 * (pitcherRatings.stuff / RATING_MAX);
-						break;
-				}
-			}
+			// let weight = rating;
 
-			// Adjust for batter's eye/discipline with platoon splits
-			if (batterRatings.eye > RATING_MAX * 0.7) {
-				// Use pitcher's control rating to adjust effectiveness
-				switch (pitch) {
-					case "cutter":
-					case "slider":
-						weight *= 1.15 * (pitcherRatings.control / RATING_MAX);
-						break;
-					case "knuckleball":
-					case "eephus":
-						weight *= 0.8;
-						break;
-				}
-			}
+			// const fatigueCost = PITCH_TYPE_FATIGUE_MULTIPLIERS[pitch] || 1;
+			// const fatigueMultiplier = 1 - fatigueCost * 0.7;
+			// weight *= fatigueMultiplier;
 
-			// Strikeout avoidance consideration
-			if (batterRatings.avoidKs > RATING_MAX * 0.7) {
-				// Against contact-oriented hitters who rarely strike out
-				switch (pitch) {
-					case "sinker":
-					case "cutter":
-						// Favor pitches that induce weak contact
-						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
-						break;
-					case "curveball":
-					case "slider":
-						// Reduce reliance on pure strikeout pitches
-						weight *= 0.9;
-						break;
-				}
-			}
-
-			// Speed adaptation based on batter's physical attributes
-			if (batterRatings.speed > RATING_MAX * 0.7) {
-				switch (pitch) {
-					case "sinker":
-					case "splitter":
-						weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
-						break;
-				}
-			}
-
-			// Existing situation-based logic
-			if (numStrikes === 2) {
-				switch (pitch) {
-					case "slider":
-					case "curveball":
-					case "splitter":
-						weight *= 1.3 * (pitcherRatings.stuff / RATING_MAX);
-						break;
-				}
-			}
-
-			if (numBalls === 3) {
-				switch (pitch) {
-					case "fastball":
-					case "sinker":
-					case "changeup":
-						weight *= 1.4 * (pitcherRatings.control / RATING_MAX);
-						break;
-					case "knuckleball":
-					case "eephus":
-						weight *= 0.5;
-						break;
-				}
-			}
-
-			// Stamina and fatigue considerations
-			if (["fastball", "sinker", "cutter"].includes(pitch)) {
-				weight *= staminaPercentage;
-				if (fatiguePercentage > 0.7) {
-					weight *= 0.7;
-				}
-			} else {
-				weight *= 1 + (1 - staminaPercentage) * 0.5;
-			}
-
-			if (fatiguePercentage > 0.8) {
-				switch (pitch) {
-					case "changeup":
-					case "eephus":
-					case "knuckleball":
-						weight *= 1.4;
-						break;
-					case "fastball":
-					case "sinker":
-						weight *= 0.6;
-						break;
-				}
-			} else if (fatiguePercentage > 0.6) {
-				switch (pitch) {
-					case "changeup":
-					case "curveball":
-					case "slider":
-						weight *= 1.2;
-						break;
-				}
-			}
-
-			if (numOuts === 2 && (numBalls === 3 || numStrikes === 2)) {
-				weight *=
-					(rating / Math.max(...availablePitches.map(([, r]) => r))) * 1.3;
-			}
-
-			return { pitch, weight };
+			// return { pitch, weight };
 		});
 
-		weightedPitches.sort((a, b) => b.weight - a.weight);
+		// const { numBalls, numOuts, numStrikes } = input;
+		// const numPitchesThrown = this.statistics.pitching.pitchesThrown;
 
-		if (
-			fatiguePercentage > 0.9 ||
-			(numOuts === 2 && numBalls === 3 && numStrikes === 2)
-		) {
-			pitchName = weightedPitches[0].pitch;
-		}
+		// const fatigueCurrent = this.fatigue.current;
+		// const playerHitter = input.playerHitter;
+		// const batting = playerHitter.player.batting;
+		// const bats = playerHitter.player.bats;
+		// const handThrowing = this.player.throws;
+		// const handBatting = (() => {
+		// 	if (bats === "s") {
+		// 		if (handThrowing === "r") {
+		// 			return "l";
+		// 		}
 
-		const totalWeight = weightedPitches.reduce(
-			(sum, { weight }) => sum + weight,
-			0,
-		);
-		let randomValue = Math.random() * totalWeight;
+		// 		return "r";
+		// 	}
+		// 	return bats;
+		// })();
 
-		for (const { pitch, weight } of weightedPitches) {
-			randomValue -= weight;
-			if (randomValue <= 0) {
-				pitchName = pitch;
-				break;
-			}
-		}
+		// // Get the appropriate batting ratings based on pitcher's throwing arm
+		// const batterRatings = {
+		// 	contact: handThrowing === "l" ? batting.contactVL : batting.contactVR,
+		// 	power: handThrowing === "l" ? batting.powerVL : batting.powerVR,
+		// 	eye: handThrowing === "l" ? batting.eyeVL : batting.eyeVR,
+		// 	avoidKs: handThrowing === "l" ? batting.avoidKsVL : batting.avoidKsVR,
+		// 	speed: playerHitter.player.running.speed,
+		// };
 
-		return {
-			pitchName,
-			testDataChoosePitch: {
-				batterRatings,
-				fatigueCurrent,
-				fatiguePercentage,
-				handBatting,
-				handThrowing,
-				numBalls,
-				numOuts,
-				numPitchesThrown,
-				pitcherRatings,
-				RATING_MAX,
-				staminaPercentage,
-				weightedPitches,
-			},
-		};
+		// // Get pitcher's ratings against this batter's handedness
+		// const pitcherRatings = {
+		// 	control:
+		// 		handBatting === "l"
+		// 			? this.player.pitching.controlVL
+		// 			: this.player.pitching.controlVR,
+		// 	movement:
+		// 		handBatting === "l"
+		// 			? this.player.pitching.movementVL
+		// 			: this.player.pitching.movementVR,
+		// 	stamina: this.player.pitching.stamina,
+		// 	stuff:
+		// 		handBatting === "l"
+		// 			? this.player.pitching.stuffVL
+		// 			: this.player.pitching.stuffVR,
+		// };
+
+		// const availablePitches = Object.entries(pitches).filter(
+		// 	([, rating]) => rating > RATING_MIN,
+		// ) as [keyof typeof pitches, number][];
+
+		// if (Math.random() > 0.999) {
+		// 	pitchName = Object.keys(pitches)[
+		// 		Math.floor(Math.random() * Object.keys(pitches).length)
+		// 	] as keyof typeof pitches;
+		// }
+
+		// const fatiguePercentage = fatigueCurrent / FATIGUE_MAX;
+		// const staminaPercentage = Math.max(
+		// 	0,
+		// 	1 - numPitchesThrown / (pitcherRatings.stamina * 0.7),
+		// );
+
+		// const weightedPitches = availablePitches.map(([pitch, rating]) => {
+		// 	let weight = rating;
+
+		// 	const fatigueCost = PITCH_TYPE_FATIGUE_MULTIPLIERS[pitch] || 1;
+		// 	const fatigueMultiplier = 1 - fatiguePercentage * (fatigueCost - 0.7);
+		// 	weight *= fatigueMultiplier;
+
+		// 	// Batter handedness considerations with platoon splits
+		// 	const isOppositeHand =
+		// 		(handBatting === "l" && handThrowing === "r") ||
+		// 		(handBatting === "r" && handThrowing === "l");
+		// 	if (isOppositeHand) {
+		// 		// Adjust based on pitcher's opposite-hand effectiveness
+		// 		switch (pitch) {
+		// 			case "slider":
+		// 			case "cutter":
+		// 				weight *= 1.25 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 			case "changeup":
+		// 				weight *= 1.2 * (pitcherRatings.stuff / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	} else {
+		// 		// Same-hand matchup adjustments
+		// 		switch (pitch) {
+		// 			case "curveball":
+		// 			case "splitter":
+		// 				weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Contact vs Power hitter adjustments using platoon splits
+		// 	if (batterRatings.power > batterRatings.contact * 1.2) {
+		// 		// Against power hitters
+		// 		switch (pitch) {
+		// 			case "sinker":
+		// 			case "splitter":
+		// 				weight *= 1.3 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 			case "fastball":
+		// 				weight *= 0.8 * (pitcherRatings.stuff / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	} else if (batterRatings.contact > batterRatings.power * 1.2) {
+		// 		// Against contact hitters
+		// 		switch (pitch) {
+		// 			case "curveball":
+		// 			case "slider":
+		// 				weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 			case "changeup":
+		// 				weight *= 1.25 * (pitcherRatings.stuff / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Adjust for batter's eye/discipline with platoon splits
+		// 	if (batterRatings.eye > RATING_MAX * 0.7) {
+		// 		// Use pitcher's control rating to adjust effectiveness
+		// 		switch (pitch) {
+		// 			case "cutter":
+		// 			case "slider":
+		// 				weight *= 1.15 * (pitcherRatings.control / RATING_MAX);
+		// 				break;
+		// 			case "knuckleball":
+		// 			case "eephus":
+		// 				weight *= 0.8;
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Strikeout avoidance consideration
+		// 	if (batterRatings.avoidKs > RATING_MAX * 0.7) {
+		// 		// Against contact-oriented hitters who rarely strike out
+		// 		switch (pitch) {
+		// 			case "sinker":
+		// 			case "cutter":
+		// 				// Favor pitches that induce weak contact
+		// 				weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 			case "curveball":
+		// 			case "slider":
+		// 				// Reduce reliance on pure strikeout pitches
+		// 				weight *= 0.9;
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Speed adaptation based on batter's physical attributes
+		// 	if (batterRatings.speed > RATING_MAX * 0.7) {
+		// 		switch (pitch) {
+		// 			case "sinker":
+		// 			case "splitter":
+		// 				weight *= 1.2 * (pitcherRatings.movement / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Existing situation-based logic
+		// 	if (numStrikes === 2) {
+		// 		switch (pitch) {
+		// 			case "slider":
+		// 			case "curveball":
+		// 			case "splitter":
+		// 				weight *= 1.3 * (pitcherRatings.stuff / RATING_MAX);
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	if (numBalls === 3) {
+		// 		switch (pitch) {
+		// 			case "fastball":
+		// 			case "sinker":
+		// 			case "changeup":
+		// 				weight *= 1.4 * (pitcherRatings.control / RATING_MAX);
+		// 				break;
+		// 			case "knuckleball":
+		// 			case "eephus":
+		// 				weight *= 0.5;
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	// Stamina and fatigue considerations
+		// 	if (["fastball", "sinker", "cutter"].includes(pitch)) {
+		// 		weight *= staminaPercentage;
+		// 		if (fatiguePercentage > 0.7) {
+		// 			weight *= 0.7;
+		// 		}
+		// 	} else {
+		// 		weight *= 1 + (1 - staminaPercentage) * 0.5;
+		// 	}
+
+		// 	if (fatiguePercentage > 0.8) {
+		// 		switch (pitch) {
+		// 			case "changeup":
+		// 			case "eephus":
+		// 			case "knuckleball":
+		// 				weight *= 1.4;
+		// 				break;
+		// 			case "fastball":
+		// 			case "sinker":
+		// 				weight *= 0.6;
+		// 				break;
+		// 		}
+		// 	} else if (fatiguePercentage > 0.6) {
+		// 		switch (pitch) {
+		// 			case "changeup":
+		// 			case "curveball":
+		// 			case "slider":
+		// 				weight *= 1.2;
+		// 				break;
+		// 		}
+		// 	}
+
+		// 	if (numOuts === 2 && (numBalls === 3 || numStrikes === 2)) {
+		// 		weight *=
+		// 			(rating / Math.max(...availablePitches.map(([, r]) => r))) * 1.3;
+		// 	}
+
+		// 	return { pitch, weight };
+		// });
+
+		// weightedPitches.sort((a, b) => b.weight - a.weight);
+
+		// if (
+		// 	fatiguePercentage > 0.9 ||
+		// 	(numOuts === 2 && numBalls === 3 && numStrikes === 2)
+		// ) {
+		// 	pitchName = weightedPitches[0].pitch;
+		// }
+
+		// const totalWeight = weightedPitches.reduce(
+		// 	(sum, { weight }) => sum + weight,
+		// 	0,
+		// );
+		// let randomValue = Math.random() * totalWeight;
+
+		// for (const { pitch, weight } of weightedPitches) {
+		// 	randomValue -= weight;
+		// 	if (randomValue <= 0) {
+		// 		pitchName = pitch;
+		// 		break;
+		// 	}
+		// }
+
+		// return {
+		// 	pitchName,
+		// 	testDataChoosePitch: {
+		// 		batterRatings,
+		// 		fatigueCurrent,
+		// 		fatiguePercentage,
+		// 		handBatting,
+		// 		handThrowing,
+		// 		numBalls,
+		// 		numOuts,
+		// 		numPitchesThrown,
+		// 		pitcherRatings,
+		// 		RATING_MAX,
+		// 		staminaPercentage,
+		// 		weightedPitches,
+		// 	},
+		// };
 	}
 
 	public close() {
@@ -1185,5 +1250,9 @@ const VInputChoosePitch = object({
 	numOuts: number(),
 	numStrikes: number(),
 	playerHitter: instance(GameSimPlayerState),
+	playerRunner1: nullable(instance(GameSimPlayerState)),
+	playerRunner2: nullable(instance(GameSimPlayerState)),
+	playerRunner3: nullable(instance(GameSimPlayerState)),
+	umpireHp: instance(GameSimUmpireState),
 });
 type TInputChoosePitch = InferInput<typeof VInputChoosePitch>;

@@ -157,7 +157,7 @@ export default class GameSim {
 			umpireTb: this.umpireTb.umpire,
 		};
 
-		this.testsToRun = ["choosePitch"];
+		this.testsToRun = [];
 
 		// team0 is the away team, team1 is the home team
 		this.teams = [input.teams[0], input.teams[1]];
@@ -2681,6 +2681,10 @@ export default class GameSim {
 			numOuts: this.numOuts,
 			numStrikes: this.numStrikes,
 			playerHitter,
+			playerRunner1: this.playerRunner1,
+			playerRunner2: this.playerRunner2,
+			playerRunner3: this.playerRunner3,
+			umpireHp: this.umpireHp,
 		});
 
 		if (this.testsToRun.includes("choosePitch") && testDataChoosePitch) {
