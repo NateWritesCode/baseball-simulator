@@ -1,8 +1,3 @@
-# Auro Wallet
-
-### Wallet Password
-Helloworld1
-
 # shadcn/ui
 To add a component `cd apps/webapp && bunx shadcn@latest add badge`
 
